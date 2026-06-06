@@ -7,7 +7,7 @@ async function bootstrap() {
   app.enableCors({
     origin: [
       'https://tgmini-blue.vercel.app',
-      'http://localhost:5173',
+      'http://localhost:5173'
     ],
     credentials: true,
   });
