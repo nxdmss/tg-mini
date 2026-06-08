@@ -76,6 +76,11 @@ model Order {
   user      User   @relation(fields: [userId], references: [id])
 
   status    OrderStatus @default(PENDING)
+  customerName String?
+  phone     String?
+  deliveryMethod String?
+  address   String?
+  comment   String?
 
   items     OrderItem[]
 

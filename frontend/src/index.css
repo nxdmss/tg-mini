@@ -159,14 +159,6 @@ img {
   padding-bottom: 18px;
 }
 
-.store-hero__eyebrow {
-  margin: 0 0 8px;
-  color: var(--text-muted);
-  font-size: 12px;
-  font-weight: 650;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-}
 
 .store-hero h1 {
   max-width: 720px;
