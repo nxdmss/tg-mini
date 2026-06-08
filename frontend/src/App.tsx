@@ -62,7 +62,7 @@ export default function App() {
 
       <section className="store-hero container" aria-label="Магазин одежды">
         <div>
-          <h1>ZOV.</h1>
+          <h1>ZOV</h1>
         </div>
         <button className="store-hero__cart" onClick={() => setCartOpen(true)}>
           Корзина
