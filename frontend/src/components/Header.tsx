@@ -6,8 +6,8 @@ export function Header({ onCartClick }: { onCartClick: () => void }) {
     <header className="header">
       <div className="container header__inner">
         <div className="brand">
-          <span className="brand__mark">A</span>
-          <span className="brand__name">ATELIER</span>
+          <span className="brand__mark">Z</span>
+          <span className="brand__name">YaDaun</span>
         </div>
         <button className="cart-btn" onClick={onCartClick} aria-label="Корзина">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
