@@ -1,13 +1,13 @@
 :root {
-  --bg: #f7f3ee;
-  --bg-warm: #efe8df;
-  --bg-secondary: #e8e0d5;
-  --surface: #fffcf8;
+  --bg: #ffffff;
+  --bg-warm: #ffffff;
+  --bg-secondary: #ffffff;
+  --surface: #ffffff;
   --text: #1c1917;
   --text-secondary: #78716c;
   --text-muted: #a8a29e;
   --hairline: rgba(28, 25, 23, 0.08);
-  --accent: #8b6914;
+  --accent: #000000;
   --accent-light: #c4a035;
   --accent-hover: #6b5010;
   --accent-soft: rgba(139, 105, 20, 0.1);
@@ -81,7 +81,7 @@ img {
   height: var(--header-h);
   display: flex;
   align-items: center;
-  background: rgba(247, 243, 238, 0.85);
+  background: rgba(255, 255, 255, 0.85);
   backdrop-filter: saturate(180%) blur(16px);
   -webkit-backdrop-filter: saturate(180%) blur(16px);
   border-bottom: 1px solid var(--hairline);
@@ -262,7 +262,7 @@ img {
   position: sticky;
   top: var(--header-h);
   z-index: 40;
-  background: rgba(247, 243, 238, 0.92);
+  background: rgba(255, 255, 255, 0.92);
   backdrop-filter: saturate(180%) blur(16px);
   -webkit-backdrop-filter: saturate(180%) blur(16px);
   padding: 16px 0;
