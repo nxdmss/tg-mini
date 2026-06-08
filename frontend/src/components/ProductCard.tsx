@@ -19,9 +19,9 @@ export function ProductCard({
     >
       <div className="card__media">
         {image && <img src={image} alt={product.name} loading="lazy" />}
-        {!product.inStock && <span className="tag-out">Sold out</span>}
+        {!product.inStock && <span className="tag-out">Нет в наличии</span>}
         <span className="card__overlay">
-          <span className="card__cta">Смотреть</span>
+          <span className="card__cta">Открыть</span>
         </span>
       </div>
       <div className="card__body">

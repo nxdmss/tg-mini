@@ -18,7 +18,7 @@ export function Filters({ categories, query, count, onChange }: Props) {
           </svg>
           <input
             className="search"
-            placeholder="Поиск брендов и вещей…"
+            placeholder="Поиск вещей и брендов"
             value={query.search ?? ""}
             onChange={(e) => onChange({ ...query, search: e.target.value })}
           />
@@ -42,7 +42,7 @@ export function Filters({ categories, query, count, onChange }: Props) {
         </div>
         <div className="toolbar__row">
           <span className="count">
-            <strong>{count}</strong> {count === 1 ? "товар" : count < 5 ? "товара" : "товаров"}
+            <strong>{count}</strong> {count === 1 ? "товар" : count > 1 && count < 5 ? "товара" : "товаров"}
           </span>
           <select
             className="sort"

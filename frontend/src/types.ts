@@ -17,6 +17,12 @@ export type Product = {
 export type Category = NamedRef & { _count?: { products: number } };
 export type Brand = NamedRef & { _count?: { products: number } };
 
+export type Order = {
+  id: string;
+  status: "PENDING" | "PAID" | "CANCELLED" | "SHIPPED" | "DONE";
+  createdAt?: string;
+};
+
 export type CartItem = {
   productId: string;
   name: string;

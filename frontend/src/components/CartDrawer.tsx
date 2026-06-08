@@ -13,6 +13,7 @@ export function CartDrawer({ onClose }: { onClose: () => void }) {
   const [phone, setPhone] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const canSubmit = name.trim().length >= 2 && phone.trim().length >= 5;
 
   useEffect(() => {
     document.body.style.overflow = "hidden";
@@ -134,6 +135,7 @@ export function CartDrawer({ onClose }: { onClose: () => void }) {
                   <input
                     className="field"
                     placeholder="Телефон"
+                    inputMode="tel"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                   />
@@ -151,7 +153,7 @@ export function CartDrawer({ onClose }: { onClose: () => void }) {
                   Оформить заказ
                 </button>
               ) : (
-                <button className="btn" onClick={submit} disabled={submitting}>
+                <button className="btn" onClick={submit} disabled={submitting || !canSubmit}>
                   {submitting ? "Отправляем…" : "Подтвердить заказ"}
                 </button>
               )}

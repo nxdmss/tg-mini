@@ -18,9 +18,8 @@ export class OrderItemDto {
   @Min(1)
   quantity: number;
 
-  @IsOptional()
   @IsString()
-  size?: string;
+  size: string;
 }
 
 export class CreateOrderDto {

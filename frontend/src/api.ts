@@ -1,5 +1,5 @@
 import axios from "axios";
-import type { Brand, Category, Product, ProductsQuery } from "./types";
+import type { Brand, Category, Order, Product, ProductsQuery } from "./types";
 import { filterMockProducts, MOCK_CATEGORIES } from "./mock";
 
 const baseURL =
@@ -81,11 +81,11 @@ export type CreateOrderPayload = {
   items: { productId: string; quantity: number; size?: string }[];
 };
 
-export async function createOrder(payload: CreateOrderPayload) {
+export async function createOrder(payload: CreateOrderPayload): Promise<Order> {
   if (useMock) {
     await new Promise((r) => setTimeout(r, 800));
-    return { id: "mock-order", ...payload };
+    return { id: "mock-order", status: "PENDING", createdAt: new Date().toISOString() };
   }
-  const res = await api.post("/orders", payload);
+  const res = await api.post<Order>("/orders", payload);
   return res.data;
 }
