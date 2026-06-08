@@ -20,15 +20,6 @@ type Seed = {
 
 const PRODUCTS: Seed[] = [
   {
-    name: 'Oversize Hoodie',
-    price: 4990,
-    description: 'Премиальное худи свободного кроя из плотного хлопка с начёсом.',
-    brand: 'Nike',
-    category: 'Худи',
-    images: [img('1576566588028-4147f3842f27')],
-    sizes: CLOTHING_SIZES,
-  },
-  {
     name: 'Essential Cotton Hoodie',
     price: 3490,
     description: 'Базовое худи на каждый день. Мягкий хлопок, аккуратные швы.',
