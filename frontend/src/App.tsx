@@ -60,38 +60,7 @@ export default function App() {
     <div className="app">
       <Header onCartClick={() => setCartOpen(true)} />
 
-      <section className="hero">
-        <div className="hero__bg" aria-hidden />
-        <div className="container hero__content">
-          <p className="hero__eyebrow">Коллекция SS / 26</p>
-          <h1 className="hero__title">
-            Гардероб
-            <br />
-            <em>без лишнего</em>
-          </h1>
-          <p className="hero__desc">
-            Тщательно отобранные вещи от любимых брендов — чистые линии,
-            честные цены, доставка в один клик.
-          </p>
-          <div className="hero__stats">
-            <div className="hero__stat">
-              <span className="hero__stat-value">12+</span>
-              <span className="hero__stat-label">брендов</span>
-            </div>
-            <div className="hero__divider" />
-            <div className="hero__stat">
-              <span className="hero__stat-value">1–3</span>
-              <span className="hero__stat-label">дня доставка</span>
-            </div>
-            <div className="hero__divider" />
-            <div className="hero__stat">
-              <span className="hero__stat-value">100%</span>
-              <span className="hero__stat-label">оригинал</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
+      
       <Filters
         categories={categories}
         query={query}
