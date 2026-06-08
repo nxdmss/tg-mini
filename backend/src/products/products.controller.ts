@@ -1,13 +1,15 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { ProductsService } from './products.service';
+import { CreateProductDto } from './create-product.dto';
+import { QueryProductsDto } from './query-products.dto';
 
 @Controller('products')
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 
   @Get()
-  findAll() {
-    return this.productsService.findAll();
+  findAll(@Query() query: QueryProductsDto) {
+    return this.productsService.findAll(query);
   }
 
   @Get(':id')
@@ -16,7 +18,7 @@ export class ProductsController {
   }
 
   @Post()
-  create(@Body() body: any) {
+  create(@Body() body: CreateProductDto) {
     return this.productsService.create(body);
   }
 }
