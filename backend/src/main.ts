@@ -26,7 +26,10 @@ async function bootstrap() {
   );
 
   // Исправленный путь: выходим из папки dist/src наружу в backend/uploads
-  app.use('/uploads', express.static(path.join(__dirname, '..', '..', 'uploads')));
+  app.use(
+    '/uploads',
+    express.static(path.join(process.cwd(), 'uploads')),
+  );
 
   await app.listen(process.env.PORT || 3000);
 }

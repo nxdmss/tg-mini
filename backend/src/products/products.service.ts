@@ -15,94 +15,161 @@ const productInclude = {
 
 @Injectable()
 export class ProductsService {
-  private readonly uploadDir = path.join(process.cwd(), 'uploads'); // Папка для картинок в корне проекта
+  private readonly uploadDir = path.join(process.cwd(), 'uploads');
 
   constructor(private prisma: PrismaService) {
-    // Автоматически создаем папку 'uploads', если её ещё нет на компьютере
     if (!fs.existsSync(this.uploadDir)) {
       fs.mkdirSync(this.uploadDir, { recursive: true });
     }
   }
 
-// === ИДЕАЛЬНЫЙ ПРОДАКШН FINDALL ДЛЯ VERCEL + RENDER ===
-async findAll(query: QueryProductsDto = {}) {
-  const where: Prisma.ProductWhereInput = {};
+  async findAll(query: QueryProductsDto = {}) {
+    const where: Prisma.ProductWhereInput = {};
 
-  if (query.category) where.category = { name: { equals: query.category, mode: 'insensitive' } };
-  if (query.brand) where.brand = { name: { equals: query.brand, mode: 'insensitive' } };
-  if (query.search) {
-    where.OR = [
-      { name: { contains: query.search, mode: 'insensitive' } },
-      { description: { contains: query.search, mode: 'insensitive' } },
-    ];
-  }
-  if (query.inStock !== undefined) where.inStock = query.inStock;
-
-  let orderBy: Prisma.ProductOrderByWithRelationInput = { createdAt: 'desc' };
-  if (query.sort === 'price_asc') orderBy = { price: 'asc' };
-  else if (query.sort === 'price_desc') orderBy = { price: 'desc' };
-
-  // 1. Получаем продукты из базы данных
-  const products = await this.prisma.product.findMany({ where, orderBy, include: productInclude });
-
-  // 2. Берем адрес твоего живого сайта на Vercel из переменной окружения
-  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
-
-  // 3. Возвращаем данные. Размеры не трогаем, а к картинкам клеим адрес Vercel
-  return products.map((product) => ({
-    ...product,
-    sizes: product.sizes, // Размеры остаются объектами, фронт работает идеально
-    images: product.images.map((img) => {
-      const cleanPath = img.url.replace('http://localhost:3000/', '');
-      return {
-        ...img,
-        // Картинка будет запрашиваться напрямую с Vercel, где она лежит железно
-        url: cleanPath.startsWith('http') ? cleanPath : `${frontendUrl}/${cleanPath}`,
+    if (query.category) {
+      where.category = {
+        name: {
+          equals: query.category,
+          mode: 'insensitive',
+        },
       };
-    }),
-  }));
-}
+    }
+
+    if (query.brand) {
+      where.brand = {
+        name: {
+          equals: query.brand,
+          mode: 'insensitive',
+        },
+      };
+    }
+
+    if (query.search) {
+      where.OR = [
+        {
+          name: {
+            contains: query.search,
+            mode: 'insensitive',
+          },
+        },
+        {
+          description: {
+            contains: query.search,
+            mode: 'insensitive',
+          },
+        },
+      ];
+    }
+
+    if (query.inStock !== undefined) {
+      where.inStock = query.inStock;
+    }
+
+    let orderBy: Prisma.ProductOrderByWithRelationInput = {
+      createdAt: 'desc',
+    };
+
+    if (query.sort === 'price_asc') {
+      orderBy = { price: 'asc' };
+    } else if (query.sort === 'price_desc') {
+      orderBy = { price: 'desc' };
+    }
+
+    const products = await this.prisma.product.findMany({
+      where,
+      orderBy,
+      include: productInclude,
+    });
+
+    const backendUrl = (
+      process.env.BACKEND_URL ||
+      'https://tg-mini-backend.onrender.com'
+    ).replace(/\/$/, '');
+
+    return products.map((product) => ({
+      ...product,
+      sizes: product.sizes || [],
+      images: (product.images || []).map((img) => {
+        if (img.url.startsWith('http')) {
+          return img;
+        }
+
+        const cleanPath = img.url.replace(/^\/+/, '');
+
+        return {
+          ...img,
+          url: `${backendUrl}/${cleanPath}`,
+        };
+      }),
+    }));
+  }
 
   async findOne(id: string) {
     const product = await this.prisma.product.findUnique({
       where: { id },
       include: productInclude,
     });
+
     if (!product) {
       throw new NotFoundException(`Product ${id} not found`);
     }
-    return product;
+
+    const backendUrl = (
+      process.env.BACKEND_URL ||
+      'https://tg-mini-backend.onrender.com'
+    ).replace(/\/$/, '');
+
+    return {
+      ...product,
+      images: (product.images || []).map((img) => {
+        if (img.url.startsWith('http')) {
+          return img;
+        }
+
+        const cleanPath = img.url.replace(/^\/+/, '');
+
+        return {
+          ...img,
+          url: `${backendUrl}/${cleanPath}`,
+        };
+      }),
+    };
   }
 
-  // Принимаем данные и массив реальных файлов из контроллера
-  async create(data: CreateProductDto, imageFiles: any[] = []) {    
-    // 1. Проходимся по каждому файлу, сохраняем его на диск и получаем массив путей
+  async create(data: CreateProductDto, imageFiles: any[] = []) {
     const savedImageUrls = imageFiles.map((file) => {
-      // Делаем уникальное имя: ТЕКУЩЕЕ_ВРЕМЯ_имя_файла.jpg
       const uniqueFilename = `${Date.now()}_${file.originalname}`;
       const filePath = path.join(this.uploadDir, uniqueFilename);
 
-      // Физически пишем байты картинки на жесткий диск сервера
       fs.writeFileSync(filePath, file.buffer);
 
-      // Этот путь пойдет в базу данных (например: "uploads/1717800000_tshirt.jpg")
       return `uploads/${uniqueFilename}`;
     });
 
-    // 2. Создаем продукт в Prisma, скармливая ей сгенерированные пути
     return this.prisma.product.create({
       data: {
         name: data.name,
         price: data.price,
         description: data.description,
-        brand: { connect: { id: data.brandId } },
-        category: { connect: { id: data.categoryId } },
+        brand: {
+          connect: {
+            id: data.brandId,
+          },
+        },
+        category: {
+          connect: {
+            id: data.categoryId,
+          },
+        },
         images: {
-          // Берем наш массив сохраненных путей и создаем записи в таблице картинок
-          create: savedImageUrls.map((url: string) => ({ url })),
+          create: savedImageUrls.map((url) => ({
+            url,
+          })),
         },
         sizes: {
-          create: (data.sizes || []).map((size: string) => ({ size })),
+          create: (data.sizes || []).map((size) => ({
+            size,
+          })),
         },
       },
       include: productInclude,
