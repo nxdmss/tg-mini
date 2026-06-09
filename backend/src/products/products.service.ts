@@ -25,37 +25,41 @@ export class ProductsService {
   }
 
 // === НАЙДИТЕ МЕТОД findAll В products.service.ts И ЗАМЕНИТЕ НА ЭТОТ ===
+// === НАЙДИТЕ МЕТОД findAll В products.service.ts И ЗАМЕНИТЕ НА ЭТОТ ===
 async findAll(query: QueryProductsDto = {}) {
   const where: Prisma.ProductWhereInput = {};
 
-  if (query.category) {
-    where.category = { name: { equals: query.category, mode: 'insensitive' } };
-  }
-  if (query.brand) {
-    where.brand = { name: { equals: query.brand, mode: 'insensitive' } };
-  }
+  // ... (тут идет ваш стандартный код фильтрации по категориям/брендам/поиску) ...
+  if (query.category) where.category = { name: { equals: query.category, mode: 'insensitive' } };
+  if (query.brand) where.brand = { name: { equals: query.brand, mode: 'insensitive' } };
   if (query.search) {
     where.OR = [
       { name: { contains: query.search, mode: 'insensitive' } },
       { description: { contains: query.search, mode: 'insensitive' } },
     ];
   }
-  if (query.inStock !== undefined) {
-    where.inStock = query.inStock;
-  }
+  if (query.inStock !== undefined) where.inStock = query.inStock;
 
   let orderBy: Prisma.ProductOrderByWithRelationInput = { createdAt: 'desc' };
   if (query.sort === 'price_asc') orderBy = { price: 'asc' };
   else if (query.sort === 'price_desc') orderBy = { price: 'desc' };
 
-  // 1. Получаем продукты из базы данных как обычно
+  // 1. Берем продукты из базы (где пути лежат в виде "uploads/chifir.jpg")
   const products = await this.prisma.product.findMany({ where, orderBy, include: productInclude });
 
-  // 2. ВАЖНАЯ СТРОКА: Пересобираем ответ специально для капризного фронтенда
+  // 2. Узнаем текущий адрес бэкенда (на компе это будет localhost, на Render — их ссылка)
+  const appUrl = process.env.BACKEND_URL || 'http://localhost:3000';
+
+  // 3. Модифицируем ответ для фронтенда на лету
   return products.map((product) => ({
     ...product,
-    // Превращаем [{id: "1", size: "S"}, {id: "2", size: "M"}] просто в ["S", "M"]
-    sizes: product.sizes.map((s) => s.size), 
+    // Превращаем размеры объектов в плоский массив строк для фронта
+    sizes: product.sizes.map((s) => s.size),
+    // Автоматически подставляем домен сервера к каждой картинке!
+    images: product.images.map((img) => ({
+      ...img,
+      url: img.url.startsWith('http') ? img.url : `${appUrl}/${img.url}`,
+    })),
   }));
 }
 
