@@ -24,7 +24,7 @@ export class ProductsService {
     }
   }
 
-// === ЛОКАЛЬНЫЙ ВАРИАНТ FINDALL С КОРРЕКТНЫМИ ССЫЛКАМИ ===
+// === НАЙДИ МЕТОД findAll В products.service.ts И ЗАМЕНИ НА ЭТОТ ===
 async findAll(query: QueryProductsDto = {}) {
   const where: Prisma.ProductWhereInput = {};
 
@@ -42,23 +42,23 @@ async findAll(query: QueryProductsDto = {}) {
   if (query.sort === 'price_asc') orderBy = { price: 'asc' };
   else if (query.sort === 'price_desc') orderBy = { price: 'desc' };
 
-  // 1. Берем чистые данные из вашей локальной базы PostgreSQL
+  // 1. Берем продукты из твоей локальной базы
   const products = await this.prisma.product.findMany({ where, orderBy, include: productInclude });
 
-  // 2. Наш локальный адрес бэкенда
-  const appUrl = 'https://thick-suits-leave.loca.lt';
+  // 2. Берем живую ссылку ngrok из файла .env
+  const appUrl = process.env.BACKEND_URL || 'http://localhost:3000';
 
-  // 3. Отдаем оригинальную структуру, которую требует фронтенд
+  // 3. Формируем ответ: размеры оставляем объектами, а к картинкам клеим ссылку ngrok
   return products.map((product) => ({
     ...product,
-    // Размеры возвращаем объектами из базы (фронтенд оживет!)
-    sizes: product.sizes, 
-    // К каждой картинке принудительно приклеиваем http://localhost:3000/
+    sizes: product.sizes, // Фронтенд видит правильные объекты и не ломается
     images: product.images.map((img) => {
+      // Чистим путь от старых localhost, если они записались в Бикипер
       const cleanPath = img.url.replace('http://localhost:3000/', '');
       return {
         ...img,
-        url: `${appUrl}/${cleanPath}`,
+        // Склеиваем ссылку ngrok и локальную папку
+        url: cleanPath.startsWith('http') ? cleanPath : `${appUrl}/${cleanPath}`,
       };
     }),
   }));

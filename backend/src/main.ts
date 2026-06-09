@@ -1,7 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
-// === ТОЧНО СЮДА ДОБАВЛЯЕМ ИМПОРТЫ ДЛЯ СТАТИКИ ===
 import * as express from 'express';
 import * as path from 'path';
 
@@ -26,9 +25,8 @@ async function bootstrap() {
     }),
   );
 
-  // === ТОЧНО СЮДА ВСТАВЛЯЕМ СТРОЧКУ РАЗДАЧИ ПАПКИ UPLOADS ===
-  // Она должна быть строго ПЕРЕД app.listen
-  app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
+  // Исправленный путь: выходим из папки dist/src наружу в backend/uploads
+  app.use('/uploads', express.static(path.join(__dirname, '..', '..', 'uploads')));
 
   await app.listen(process.env.PORT || 3000);
 }
