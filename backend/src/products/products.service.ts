@@ -24,31 +24,40 @@ export class ProductsService {
     }
   }
 
-  async findAll(query: QueryProductsDto = {}) {
-    const where: Prisma.ProductWhereInput = {};
+// === НАЙДИТЕ МЕТОД findAll В products.service.ts И ЗАМЕНИТЕ НА ЭТОТ ===
+async findAll(query: QueryProductsDto = {}) {
+  const where: Prisma.ProductWhereInput = {};
 
-    if (query.category) {
-      where.category = { name: { equals: query.category, mode: 'insensitive' } };
-    }
-    if (query.brand) {
-      where.brand = { name: { equals: query.brand, mode: 'insensitive' } };
-    }
-    if (query.search) {
-      where.OR = [
-        { name: { contains: query.search, mode: 'insensitive' } },
-        { description: { contains: query.search, mode: 'insensitive' } },
-      ];
-    }
-    if (query.inStock !== undefined) {
-      where.inStock = query.inStock;
-    }
-
-    let orderBy: Prisma.ProductOrderByWithRelationInput = { createdAt: 'desc' };
-    if (query.sort === 'price_asc') orderBy = { price: 'asc' };
-    else if (query.sort === 'price_desc') orderBy = { price: 'desc' };
-
-    return this.prisma.product.findMany({ where, orderBy, include: productInclude });
+  if (query.category) {
+    where.category = { name: { equals: query.category, mode: 'insensitive' } };
   }
+  if (query.brand) {
+    where.brand = { name: { equals: query.brand, mode: 'insensitive' } };
+  }
+  if (query.search) {
+    where.OR = [
+      { name: { contains: query.search, mode: 'insensitive' } },
+      { description: { contains: query.search, mode: 'insensitive' } },
+    ];
+  }
+  if (query.inStock !== undefined) {
+    where.inStock = query.inStock;
+  }
+
+  let orderBy: Prisma.ProductOrderByWithRelationInput = { createdAt: 'desc' };
+  if (query.sort === 'price_asc') orderBy = { price: 'asc' };
+  else if (query.sort === 'price_desc') orderBy = { price: 'desc' };
+
+  // 1. Получаем продукты из базы данных как обычно
+  const products = await this.prisma.product.findMany({ where, orderBy, include: productInclude });
+
+  // 2. ВАЖНАЯ СТРОКА: Пересобираем ответ специально для капризного фронтенда
+  return products.map((product) => ({
+    ...product,
+    // Превращаем [{id: "1", size: "S"}, {id: "2", size: "M"}] просто в ["S", "M"]
+    sizes: product.sizes.map((s) => s.size), 
+  }));
+}
 
   async findOne(id: string) {
     const product = await this.prisma.product.findUnique({
