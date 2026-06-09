@@ -24,7 +24,7 @@ export class ProductsService {
     }
   }
 
-// === ОКОНЧАТЕЛЬНЫЙ И НАДЁЖНЫЙ ВАРИАНТ FINDALL ===
+// === ЛОКАЛЬНЫЙ ВАРИАНТ FINDALL С КОРРЕКТНЫМИ ССЫЛКАМИ ===
 async findAll(query: QueryProductsDto = {}) {
   const where: Prisma.ProductWhereInput = {};
 
@@ -42,23 +42,23 @@ async findAll(query: QueryProductsDto = {}) {
   if (query.sort === 'price_asc') orderBy = { price: 'asc' };
   else if (query.sort === 'price_desc') orderBy = { price: 'desc' };
 
-  // 1. Загружаем из базы чистые данные (оригинальная структура со всеми ID объектов)
+  // 1. Берем чистые данные из вашей локальной базы PostgreSQL
   const products = await this.prisma.product.findMany({ where, orderBy, include: productInclude });
 
-  // 2. Берем адрес живого сервера из Render (или локальный, если запускаешь на компе)
-  const appUrl = process.env.BACKEND_URL || 'http://localhost:3000';
+  // 2. Наш локальный адрес бэкенда
+  const appUrl = 'https://thick-suits-leave.loca.lt';
 
-  // 3. Возвращаем структуру ОДИН В ОДИН как просит фронтенд, меняя только домен в ссылке
+  // 3. Отдаем оригинальную структуру, которую требует фронтенд
   return products.map((product) => ({
     ...product,
-    // Размеры НЕ ТРОГАЕМ, отдаем как есть объектами из базы: [{"id":"1razm","size":"S"...}]
+    // Размеры возвращаем объектами из базы (фронтенд оживет!)
     sizes: product.sizes, 
-    // В картинках меняем только localhost на адрес Render, сохраняя структуру объектов
+    // К каждой картинке принудительно приклеиваем http://localhost:3000/
     images: product.images.map((img) => {
       const cleanPath = img.url.replace('http://localhost:3000/', '');
       return {
         ...img,
-        url: cleanPath.startsWith('http') ? cleanPath : `${appUrl}/${cleanPath}`,
+        url: `${appUrl}/${cleanPath}`,
       };
     }),
   }));
