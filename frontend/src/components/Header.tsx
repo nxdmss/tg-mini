@@ -2,14 +2,17 @@ import { useCart } from "../cart";
 
 export function Header({ onCartClick }: { onCartClick: () => void }) {
   const { count } = useCart();
+
   return (
     <header className="header">
       <div className="container header__inner">
-        <div className="brand">
-          <span className="brand__mark">Z</span>
-          <span className="brand__name">YaDaun</span>
-        </div>
-        <button className="cart-btn" onClick={onCartClick} aria-label="Корзина">
+        <h1 className="logo">ZOV</h1>
+
+        <button
+          className="cart-btn"
+          onClick={onCartClick}
+          aria-label="Корзина"
+        >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
             <path
               d="M6 7h12l-1 13H7L6 7Z"
@@ -24,7 +27,12 @@ export function Header({ onCartClick }: { onCartClick: () => void }) {
               strokeLinecap="round"
             />
           </svg>
-          {count > 0 && <span className="cart-btn__badge">{count}</span>}
+
+          {count > 0 && (
+            <span className="cart-btn__badge">
+              {count}
+            </span>
+          )}
         </button>
       </div>
     </header>

@@ -1,77 +1,53 @@
-import { useEffect, useMemo, useState } from "react";
-import { getCategories, getProducts } from "./api";
-import type { Category, Product, ProductsQuery } from "./types";
+import { useEffect, useState } from "react";
+import { getProducts } from "./api";
+import type { Product } from "./types";
 import { Header } from "./components/Header";
-import { Filters } from "./components/Filters";
 import { ProductCard } from "./components/ProductCard";
 import { ProductDetail } from "./components/ProductDetail";
 import { CartDrawer } from "./components/CartDrawer";
 
 export default function App() {
   const [products, setProducts] = useState<Product[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [query, setQuery] = useState<ProductsQuery>({ sort: "newest" });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [selected, setSelected] = useState<Product | null>(null);
   const [cartOpen, setCartOpen] = useState(false);
 
-  const [debouncedSearch, setDebouncedSearch] = useState("");
-  useEffect(() => {
-    const t = setTimeout(() => setDebouncedSearch(query.search ?? ""), 300);
-    return () => clearTimeout(t);
-  }, [query.search]);
-
-  useEffect(() => {
-    getCategories()
-      .then(setCategories)
-      .catch(() => setCategories([]));
-  }, []);
-
-  const effectiveQuery = useMemo(
-    () => ({ ...query, search: debouncedSearch || undefined }),
-    [query, debouncedSearch],
-  );
-
   useEffect(() => {
     let active = true;
+
     async function load() {
       setLoading(true);
       setError(false);
+
       try {
-        const data = await getProducts(effectiveQuery);
-        if (active) setProducts(data);
+        const data = await getProducts();
+
+        if (active) {
+          setProducts(data);
+        }
       } catch {
         if (active) {
           setError(true);
           setProducts([]);
         }
       } finally {
-        if (active) setLoading(false);
+        if (active) {
+          setLoading(false);
+        }
       }
     }
+
     void load();
+
     return () => {
       active = false;
     };
-  }, [effectiveQuery]);
+  }, []);
 
   return (
     <div className="app">
       <Header onCartClick={() => setCartOpen(true)} />
-
-      <section className="store-hero container" aria-label="Магазин одежды">
-        <div>
-          <h1>ZOV</h1>
-        </div>
-      </section>
-
-      <Filters
-        categories={categories}
-        query={query}
-        count={products.length}
-        onChange={setQuery}
-      />
 
       <main className="container">
         {loading ? (
@@ -92,7 +68,7 @@ export default function App() {
         ) : products.length === 0 ? (
           <div className="state">
             <div className="state__icon">∅</div>
-            Ничего не найдено — попробуйте другой фильтр
+            Товаров пока нет
           </div>
         ) : (
           <div className="grid">
@@ -108,16 +84,18 @@ export default function App() {
         )}
       </main>
 
-      <footer className="footer">
-        <div className="container footer__inner">
-          <span className="footer__brand">KIZILURT KUZNICA LVOV</span>
-        </div>
-      </footer>
-
       {selected && (
-        <ProductDetail product={selected} onClose={() => setSelected(null)} />
+        <ProductDetail
+          product={selected}
+          onClose={() => setSelected(null)}
+        />
       )}
-      {cartOpen && <CartDrawer onClose={() => setCartOpen(false)} />}
+
+      {cartOpen && (
+        <CartDrawer
+          onClose={() => setCartOpen(false)}
+        />
+      )}
     </div>
   );
 }
