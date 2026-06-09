@@ -7,7 +7,11 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 const productInclude = {
-  images: true,
+  images: {
+    orderBy: {
+      url: 'asc',
+    },
+  },
   sizes: true,
   brand: true,
   category: true,
