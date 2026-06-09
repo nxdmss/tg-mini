@@ -24,7 +24,7 @@ export class ProductsService {
     }
   }
 
-// === НАЙДИТЕ МЕТОД findAll В products.service.ts И ЗАМЕНИТЕ НА ЭТОТ ===
+// === ОКОНЧАТЕЛЬНЫЙ И НАДЁЖНЫЙ ВАРИАНТ FINDALL ===
 async findAll(query: QueryProductsDto = {}) {
   const where: Prisma.ProductWhereInput = {};
 
@@ -42,28 +42,25 @@ async findAll(query: QueryProductsDto = {}) {
   if (query.sort === 'price_asc') orderBy = { price: 'asc' };
   else if (query.sort === 'price_desc') orderBy = { price: 'desc' };
 
-  // 1. Получаем продукты из базы
+  // 1. Загружаем из базы чистые данные (оригинальная структура со всеми ID объектов)
   const products = await this.prisma.product.findMany({ where, orderBy, include: productInclude });
 
-  // 2. Берём адрес вашего живого сервера из переменных окружения Render
+  // 2. Берем адрес живого сервера из Render (или локальный, если запускаешь на компе)
   const appUrl = process.env.BACKEND_URL || 'http://localhost:3000';
 
-  // 3. Форматируем ответ строго под ожидания фронтенда
+  // 3. Возвращаем структуру ОДИН В ОДИН как просит фронтенд, меняя только домен в ссылке
   return products.map((product) => ({
     ...product,
-    // Размеры отдаем плоским массивом строк (фронтенд это одобрил)
-    sizes: product.sizes.map((s) => s.size),
-    // Картинки отдаем МАССИВОМ ОБЪЕКТОВ, но подменяем URL на сетевой
+    // Размеры НЕ ТРОГАЕМ, отдаем как есть объектами из базы: [{"id":"1razm","size":"S"...}]
+    sizes: product.sizes, 
+    // В картинках меняем только localhost на адрес Render, сохраняя структуру объектов
     images: product.images.map((img) => {
-      // Очищаем путь от старых локалхостов, если они там застряли
       const cleanPath = img.url.replace('http://localhost:3000/', '');
-      
       return {
         ...img,
-        // Склеиваем живой адрес Render и чистый путь к файлу
-        url: cleanPath.startsWith('http') ? cleanPath : `${appUrl}/${cleanPath}`
+        url: cleanPath.startsWith('http') ? cleanPath : `${appUrl}/${cleanPath}`,
       };
-    })
+    }),
   }));
 }
 
