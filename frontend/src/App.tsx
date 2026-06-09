@@ -64,9 +64,6 @@ export default function App() {
         <div>
           <h1>ZOV</h1>
         </div>
-        <button className="store-hero__cart" onClick={() => setCartOpen(true)}>
-          Корзина
-        </button>
       </section>
 
       <Filters
