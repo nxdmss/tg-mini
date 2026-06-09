@@ -24,7 +24,7 @@ export class ProductsService {
     }
   }
 
-// === НАЙДИ МЕТОД findAll В products.service.ts И ЗАМЕНИ НА ЭТОТ ===
+// === ИДЕАЛЬНЫЙ ПРОДАКШН FINDALL ДЛЯ VERCEL + RENDER ===
 async findAll(query: QueryProductsDto = {}) {
   const where: Prisma.ProductWhereInput = {};
 
@@ -42,23 +42,22 @@ async findAll(query: QueryProductsDto = {}) {
   if (query.sort === 'price_asc') orderBy = { price: 'asc' };
   else if (query.sort === 'price_desc') orderBy = { price: 'desc' };
 
-  // 1. Берем продукты из твоей локальной базы
+  // 1. Получаем продукты из базы данных
   const products = await this.prisma.product.findMany({ where, orderBy, include: productInclude });
 
-  // 2. Берем живую ссылку ngrok из файла .env
-  const appUrl = process.env.BACKEND_URL || 'http://localhost:3000';
+  // 2. Берем адрес твоего живого сайта на Vercel из переменной окружения
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
 
-  // 3. Формируем ответ: размеры оставляем объектами, а к картинкам клеим ссылку ngrok
+  // 3. Возвращаем данные. Размеры не трогаем, а к картинкам клеим адрес Vercel
   return products.map((product) => ({
     ...product,
-    sizes: product.sizes, // Фронтенд видит правильные объекты и не ломается
+    sizes: product.sizes, // Размеры остаются объектами, фронт работает идеально
     images: product.images.map((img) => {
-      // Чистим путь от старых localhost, если они записались в Бикипер
       const cleanPath = img.url.replace('http://localhost:3000/', '');
       return {
         ...img,
-        // Склеиваем ссылку ngrok и локальную папку
-        url: cleanPath.startsWith('http') ? cleanPath : `${appUrl}/${cleanPath}`,
+        // Картинка будет запрашиваться напрямую с Vercel, где она лежит железно
+        url: cleanPath.startsWith('http') ? cleanPath : `${frontendUrl}/${cleanPath}`,
       };
     }),
   }));
