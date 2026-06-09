@@ -62,8 +62,7 @@ export class ProductsService {
   }
 
   // Принимаем данные и массив реальных файлов из контроллера
-  async create(data: CreateProductDto, imageFiles: Express.Multer.File[] = []) {
-    
+  async create(data: CreateProductDto, imageFiles: any[] = []) {    
     // 1. Проходимся по каждому файлу, сохраняем его на диск и получаем массив путей
     const savedImageUrls = imageFiles.map((file) => {
       // Делаем уникальное имя: ТЕКУЩЕЕ_ВРЕМЯ_имя_файла.jpg
