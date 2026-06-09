@@ -1,4 +1,5 @@
-import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query, UseInterceptors, UploadedFiles } from '@nestjs/common';
+import { FilesInterceptor } from '@nestjs/platform-express';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './create-product.dto';
 import { QueryProductsDto } from './query-products.dto';
@@ -14,11 +15,19 @@ export class ProductsController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
+    return this.prismaService.findOne(id); // (у вас тут было this.productsService.findOne)
     return this.productsService.findOne(id);
   }
 
   @Post()
-  create(@Body() body: CreateProductDto) {
-    return this.productsService.create(body);
+  // 1. Говорим NestJS ловить массив файлов из поля 'images' (максимум 10 штук)
+  @UseInterceptors(FilesInterceptor('images', 10)) 
+  create(
+    @Body() body: CreateProductDto,
+    // 2. Забираем эти файлы в переменную
+    @UploadedFiles() images: Express.Multer.File[], 
+  ) {
+    // 3. Передаем и текстовые данные, и сами файлы в Сервис
+    return this.productsService.create(body, images);
   }
 }

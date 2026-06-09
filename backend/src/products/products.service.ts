@@ -3,6 +3,8 @@ import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateProductDto } from './create-product.dto';
 import { QueryProductsDto } from './query-products.dto';
+import * as fs from 'fs';
+import * as path from 'path';
 
 const productInclude = {
   images: true,
@@ -13,7 +15,14 @@ const productInclude = {
 
 @Injectable()
 export class ProductsService {
-  constructor(private prisma: PrismaService) {}
+  private readonly uploadDir = path.join(process.cwd(), 'uploads'); // Папка для картинок в корне проекта
+
+  constructor(private prisma: PrismaService) {
+    // Автоматически создаем папку 'uploads', если её ещё нет на компьютере
+    if (!fs.existsSync(this.uploadDir)) {
+      fs.mkdirSync(this.uploadDir, { recursive: true });
+    }
+  }
 
   async findAll(query: QueryProductsDto = {}) {
     const where: Prisma.ProductWhereInput = {};
@@ -52,7 +61,23 @@ export class ProductsService {
     return product;
   }
 
-  async create(data: CreateProductDto) {
+  // Принимаем данные и массив реальных файлов из контроллера
+  async create(data: CreateProductDto, imageFiles: Express.Multer.File[] = []) {
+    
+    // 1. Проходимся по каждому файлу, сохраняем его на диск и получаем массив путей
+    const savedImageUrls = imageFiles.map((file) => {
+      // Делаем уникальное имя: ТЕКУЩЕЕ_ВРЕМЯ_имя_файла.jpg
+      const uniqueFilename = `${Date.now()}_${file.originalname}`;
+      const filePath = path.join(this.uploadDir, uniqueFilename);
+
+      // Физически пишем байты картинки на жесткий диск сервера
+      fs.writeFileSync(filePath, file.buffer);
+
+      // Этот путь пойдет в базу данных (например: "uploads/1717800000_tshirt.jpg")
+      return `uploads/${uniqueFilename}`;
+    });
+
+    // 2. Создаем продукт в Prisma, скармливая ей сгенерированные пути
     return this.prisma.product.create({
       data: {
         name: data.name,
@@ -61,7 +86,8 @@ export class ProductsService {
         brand: { connect: { id: data.brandId } },
         category: { connect: { id: data.categoryId } },
         images: {
-          create: (data.images || []).map((url: string) => ({ url })),
+          // Берем наш массив сохраненных путей и создаем записи в таблице картинок
+          create: savedImageUrls.map((url: string) => ({ url })),
         },
         sizes: {
           create: (data.sizes || []).map((size: string) => ({ size })),
