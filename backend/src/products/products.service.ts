@@ -25,11 +25,9 @@ export class ProductsService {
   }
 
 // === НАЙДИТЕ МЕТОД findAll В products.service.ts И ЗАМЕНИТЕ НА ЭТОТ ===
-// === НАЙДИТЕ МЕТОД findAll В products.service.ts И ЗАМЕНИТЕ НА ЭТОТ ===
 async findAll(query: QueryProductsDto = {}) {
   const where: Prisma.ProductWhereInput = {};
 
-  // ... (тут идет ваш стандартный код фильтрации по категориям/брендам/поиску) ...
   if (query.category) where.category = { name: { equals: query.category, mode: 'insensitive' } };
   if (query.brand) where.brand = { name: { equals: query.brand, mode: 'insensitive' } };
   if (query.search) {
@@ -44,22 +42,28 @@ async findAll(query: QueryProductsDto = {}) {
   if (query.sort === 'price_asc') orderBy = { price: 'asc' };
   else if (query.sort === 'price_desc') orderBy = { price: 'desc' };
 
-  // 1. Берем продукты из базы (где пути лежат в виде "uploads/chifir.jpg")
+  // 1. Получаем продукты из базы
   const products = await this.prisma.product.findMany({ where, orderBy, include: productInclude });
 
-  // 2. Узнаем текущий адрес бэкенда (на компе это будет localhost, на Render — их ссылка)
+  // 2. Берём адрес вашего живого сервера из переменных окружения Render
   const appUrl = process.env.BACKEND_URL || 'http://localhost:3000';
 
-  // 3. Модифицируем ответ для фронтенда на лету
+  // 3. Форматируем ответ строго под ожидания фронтенда
   return products.map((product) => ({
     ...product,
-    // Превращаем размеры объектов в плоский массив строк для фронта
+    // Размеры отдаем плоским массивом строк (фронтенд это одобрил)
     sizes: product.sizes.map((s) => s.size),
-    // Автоматически подставляем домен сервера к каждой картинке!
-    images: product.images.map((img) => ({
-      ...img,
-      url: img.url.startsWith('http') ? img.url : `${appUrl}/${img.url}`,
-    })),
+    // Картинки отдаем МАССИВОМ ОБЪЕКТОВ, но подменяем URL на сетевой
+    images: product.images.map((img) => {
+      // Очищаем путь от старых локалхостов, если они там застряли
+      const cleanPath = img.url.replace('http://localhost:3000/', '');
+      
+      return {
+        ...img,
+        // Склеиваем живой адрес Render и чистый путь к файлу
+        url: cleanPath.startsWith('http') ? cleanPath : `${appUrl}/${cleanPath}`
+      };
+    })
   }));
 }
 
