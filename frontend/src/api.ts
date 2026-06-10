@@ -55,6 +55,42 @@ export async function createOrder(payload: CreateOrderPayload): Promise<Order> {
   return res.data;
 }
 
+export function getApiErrorMessage(error: unknown) {
+  if (!axios.isAxiosError(error)) {
+    return "Не удалось выполнить запрос. Попробуйте ещё раз.";
+  }
+
+  const status = error.response?.status;
+  const message = error.response?.data?.message;
+  const normalizedMessage = Array.isArray(message) ? message.join(" ") : String(message ?? "");
+
+  if (status === 401) {
+    return "Откройте магазин через Telegram, чтобы оформить заказ.";
+  }
+
+  if (status === 400 && normalizedMessage.includes("phone")) {
+    return "Введите телефон полностью, минимум 10 цифр.";
+  }
+
+  if (status === 400 && normalizedMessage.includes("address")) {
+    return "Для доставки нужен адрес.";
+  }
+
+  if (status === 400 && normalizedMessage.includes("Size")) {
+    return "Этот размер уже недоступен. Выберите другой товар или размер.";
+  }
+
+  if (status === 400 && normalizedMessage.includes("out of stock")) {
+    return "Товар закончился. Уберите его из корзины.";
+  }
+
+  if (!error.response) {
+    return "Сервер не отвечает. Проверьте интернет и попробуйте ещё раз.";
+  }
+
+  return "Не удалось оформить заказ. Попробуйте ещё раз.";
+}
+
 export async function getMe(): Promise<AuthUser> {
   const res = await api.get<AuthUser>("/auth/me", { headers: authHeaders() });
   return res.data;

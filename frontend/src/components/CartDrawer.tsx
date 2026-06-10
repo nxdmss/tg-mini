@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useCart } from "../cart";
 import { formatPrice } from "../utils";
-import { createOrder } from "../api";
+import { createOrder, getApiErrorMessage } from "../api";
 import { getUserName, tg } from "../telegram";
 
 type Step = "cart" | "checkout" | "done";
@@ -65,8 +65,8 @@ export function CartDrawer({ onClose }: { onClose: () => void }) {
       } catch {
         // not in Telegram
       }
-    } catch {
-      setError("Не удалось оформить заказ. Попробуйте ещё раз.");
+    } catch (orderError) {
+      setError(getApiErrorMessage(orderError));
     } finally {
       setSubmitting(false);
     }
