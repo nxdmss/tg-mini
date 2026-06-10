@@ -9,12 +9,20 @@ export type TgUser = {
 
 let initialized = false;
 
+function getRawWebApp() {
+  return (window as unknown as { Telegram?: { WebApp?: typeof WebApp } }).Telegram?.WebApp;
+}
+
+function getWebApp() {
+  return getRawWebApp() ?? WebApp;
+}
+
 export function initTelegram() {
   if (initialized) return;
   initialized = true;
   try {
-    WebApp.ready();
-    WebApp.expand();
+    getWebApp().ready();
+    getWebApp().expand();
   } catch {
     // Not running inside Telegram (e.g. local browser) — ignore.
   }
@@ -22,7 +30,7 @@ export function initTelegram() {
 
 export function getTelegramUser(): TgUser | null {
   try {
-    return WebApp.initDataUnsafe?.user ?? null;
+    return getWebApp().initDataUnsafe?.user ?? null;
   } catch {
     return null;
   }
@@ -36,10 +44,25 @@ export function getTelegramId(): string {
 
 export function getTelegramInitData(): string {
   try {
-    return WebApp.initData ?? "";
+    return getWebApp().initData ?? "";
   } catch {
     return "";
   }
+}
+
+export function getTelegramLaunchInfo() {
+  const webApp = getWebApp();
+  const initData = getTelegramInitData();
+  const user = getTelegramUser();
+
+  return {
+    hasTelegramObject: Boolean(getRawWebApp()),
+    hasInitData: initData.length > 0,
+    initDataLength: initData.length,
+    userId: user?.id ? String(user.id) : undefined,
+    platform: webApp.platform,
+    version: webApp.version,
+  };
 }
 
 export function getUserName(): string | undefined {

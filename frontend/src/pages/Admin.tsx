@@ -11,6 +11,7 @@ import {
   type ProductFormPayload,
 } from "../api";
 import type { AuthUser, Brand, Category, Product } from "../types";
+import { getTelegramLaunchInfo } from "../telegram";
 import { formatPrice } from "../utils";
 
 type FormState = {
@@ -198,6 +199,7 @@ export default function Admin() {
     () => form.files.map((file) => file.name).join(", "),
     [form.files],
   );
+  const telegramInfo = getTelegramLaunchInfo();
 
   if (booting) {
     return (
@@ -213,6 +215,14 @@ export default function Admin() {
         <div className="state">
           <div className="state__icon">!</div>
           {error}
+          <div className="debug-card">
+            <span>Telegram object: {telegramInfo.hasTelegramObject ? "yes" : "no"}</span>
+            <span>initData: {telegramInfo.hasInitData ? "yes" : "no"}</span>
+            <span>initData length: {telegramInfo.initDataLength}</span>
+            <span>User ID: {telegramInfo.userId ?? "none"}</span>
+            <span>Platform: {telegramInfo.platform ?? "unknown"}</span>
+            <span>Version: {telegramInfo.version ?? "unknown"}</span>
+          </div>
         </div>
       </main>
     );

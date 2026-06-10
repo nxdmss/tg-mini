@@ -920,6 +920,21 @@ textarea.field {
   color: #b42318;
 }
 
+.debug-card {
+  margin: 18px auto 0;
+  max-width: 420px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  display: grid;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--text-secondary);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 12px;
+  text-align: left;
+}
+
 .admin-page {
   padding-top: 28px;
   padding-bottom: calc(42px + env(safe-area-inset-bottom));

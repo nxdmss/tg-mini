@@ -1,5 +1,5 @@
 import axios from "axios";
-import { getTelegramInitData } from "./telegram";
+import { getTelegramInitData, getTelegramLaunchInfo } from "./telegram";
 import type { AuthUser, Brand, Category, Order, Product, ProductsQuery } from "./types";
 
 // Берем URL бэкенда из переменных окружения. Убедись, что на хостинге фронта прописан VITE_API_URL!
@@ -65,7 +65,12 @@ export function getApiErrorMessage(error: unknown) {
   const normalizedMessage = Array.isArray(message) ? message.join(" ") : String(message ?? "");
 
   if (status === 401) {
-    return "Откройте магазин через Telegram, чтобы оформить заказ.";
+    const launchInfo = getTelegramLaunchInfo();
+    if (!launchInfo.hasInitData) {
+      return "Telegram не передал данные входа. Откройте магазин через кнопку Mini App у бота, а не через обычную ссылку.";
+    }
+
+    return "Telegram-доступ не прошел проверку. Проверьте, что на backend токен именно этого бота.";
   }
 
   if (status === 400 && normalizedMessage.includes("phone")) {
