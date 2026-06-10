@@ -18,7 +18,11 @@ export function ProductCard({
       style={{ animationDelay: `${Math.min(index * 60, 480)}ms` }}
     >
       <div className="card__media">
-        {image && <img src={image} alt={product.name} loading="lazy" />}
+        {image ? (
+          <img src={image} alt={product.name} loading="lazy" />
+        ) : (
+          <div className="media-fallback">ZOV</div>
+        )}
         {!product.inStock && <span className="tag-out">Нет в наличии</span>}
         <span className="card__overlay">
           <span className="card__cta">Открыть</span>

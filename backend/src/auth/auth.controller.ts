@@ -5,7 +5,7 @@ import { TelegramAuthGuard } from './telegram-auth.guard';
 export class AuthController {
   @Get('me')
   @UseGuards(TelegramAuthGuard)
-  me(@Req() req: { telegramUser?: unknown }) {
-    return req.telegramUser ?? { role: 'USER' };
-  }
+  me(@Req() req: any) {
+  return req.user ?? { role: 'USER' };
+}
 }

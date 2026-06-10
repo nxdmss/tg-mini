@@ -6,30 +6,20 @@ export function Header({ onCartClick }: { onCartClick: () => void }) {
   return (
     <header className="header">
       <div className="container header__inner">
-        <h1 className="logo">ZOV</h1>
+        <div className="brand" aria-label="ZOV">
+          <span className="brand__mark">Z</span>
+          <span className="brand__name">ZOV</span>
+        </div>
 
         <button
-          className="cart-btn"
+          className="header-cart"
           onClick={onCartClick}
           aria-label="Корзина"
         >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-            <path
-              d="M6 7h12l-1 13H7L6 7Z"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinejoin="round"
-            />
-            <path
-              d="M9 7a3 3 0 0 1 6 0"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-            />
-          </svg>
+          Корзина
 
           {count > 0 && (
-            <span className="cart-btn__badge">
+            <span className="header-cart__badge">
               {count}
             </span>
           )}

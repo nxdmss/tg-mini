@@ -1,11 +1,17 @@
 import axios from "axios";
-import type { Brand, Category, Order, Product, ProductsQuery } from "./types";
+import { getTelegramInitData } from "./telegram";
+import type { AuthUser, Brand, Category, Order, Product, ProductsQuery } from "./types";
 
 // Берем URL бэкенда из переменных окружения. Убедись, что на хостинге фронта прописан VITE_API_URL!
 const baseURL =
   import.meta.env.VITE_API_URL?.replace(/\/$/, "") || "https://tg-mini-backend.onrender.com";
 
-export const api = axios.create({ baseURL, timeout: 5000 });
+export const api = axios.create({ baseURL, timeout: 15000 });
+
+function authHeaders() {
+  const initData = getTelegramInitData();
+  return initData ? { "x-telegram-init-data": initData } : {};
+}
 
 // Полностью отключаем спасательный круг в виде моков для живых запросов
 export async function getProducts(query: ProductsQuery = {}): Promise<Product[]> {
@@ -14,6 +20,7 @@ export async function getProducts(query: ProductsQuery = {}): Promise<Product[]>
   if (query.brand) params.brand = query.brand;
   if (query.search) params.search = query.search;
   if (query.sort) params.sort = query.sort;
+  if (query.inStock !== undefined) params.inStock = String(query.inStock);
   
   const res = await api.get<Product[]>("/products", { params });
   return res.data;
@@ -35,13 +42,64 @@ export async function getBrands(): Promise<Brand[]> {
 }
 
 export type CreateOrderPayload = {
-  telegramId: string;
   name?: string;
   phone?: string;
+  deliveryMethod?: string;
+  address?: string;
+  comment?: string;
   items: { productId: string; quantity: number; size?: string }[];
 };
 
 export async function createOrder(payload: CreateOrderPayload): Promise<Order> {
-  const res = await api.post<Order>("/orders", payload);
+  const res = await api.post<Order>("/orders", payload, { headers: authHeaders() });
   return res.data;
+}
+
+export async function getMe(): Promise<AuthUser> {
+  const res = await api.get<AuthUser>("/auth/me", { headers: authHeaders() });
+  return res.data;
+}
+
+export type ProductFormPayload = {
+  name: string;
+  price: number;
+  description?: string;
+  brandId: string;
+  categoryId: string;
+  inStock: boolean;
+  sizes: string[];
+  existingImages?: string[];
+  files?: File[];
+};
+
+function productFormData(payload: ProductFormPayload) {
+  const form = new FormData();
+  form.append("name", payload.name);
+  form.append("price", String(payload.price));
+  form.append("description", payload.description ?? "");
+  form.append("brandId", payload.brandId);
+  form.append("categoryId", payload.categoryId);
+  form.append("inStock", String(payload.inStock));
+  payload.sizes.forEach((size) => form.append("sizes", size));
+  payload.existingImages?.forEach((url) => form.append("images", url));
+  payload.files?.forEach((file) => form.append("images", file));
+  return form;
+}
+
+export async function createProduct(payload: ProductFormPayload): Promise<Product> {
+  const res = await api.post<Product>("/products", productFormData(payload), {
+    headers: authHeaders(),
+  });
+  return res.data;
+}
+
+export async function updateProduct(id: string, payload: ProductFormPayload): Promise<Product> {
+  const res = await api.patch<Product>(`/products/${id}`, productFormData(payload), {
+    headers: authHeaders(),
+  });
+  return res.data;
+}
+
+export async function deleteProduct(id: string): Promise<void> {
+  await api.delete(`/products/${id}`, { headers: authHeaders() });
 }

@@ -40,9 +40,18 @@ export class TelegramAuthService {
     } satisfies TelegramRequestUser;
   }
 
-  isAdmin(user: TelegramRequestUser | null) {
-    return user?.role === Role.ADMIN || user?.role === Role.MANAGER;
-  }
+isAdmin(user: TelegramRequestUser | null) {
+  if (!user) return false;
+
+  const adminIds = new Set(
+    (process.env.ADMIN_TELEGRAM_IDS ?? '')
+      .split(',')
+      .map((id) => id.trim())
+      .filter(Boolean),
+  );
+
+  return adminIds.has(user.telegramId);
+}
 
   private getInitData(req: { headers?: Record<string, string | string[] | undefined> }) {
     const value =

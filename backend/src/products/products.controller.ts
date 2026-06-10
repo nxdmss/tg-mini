@@ -1,10 +1,23 @@
-import { Body, Controller, Get, Param, Post, Query, UseInterceptors, UploadedFiles } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+  UploadedFiles,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './create-product.dto';
 import { QueryProductsDto } from './query-products.dto';
-// Явно импортируем Multer, чтобы TypeScript не ругался на Express.Multer.File
-import { Multer } from 'multer'; 
+import { UpdateProductDto } from './update-product.dto';
+import { TelegramAuthGuard } from '../auth/telegram-auth.guard';
+import { AdminGuard } from '../auth/admin.guard';
 
 @Controller('products')
 export class ProductsController {
@@ -21,11 +34,29 @@ export class ProductsController {
   }
 
   @Post()
+  @UseGuards(TelegramAuthGuard, AdminGuard)
   @UseInterceptors(FilesInterceptor('images', 10)) 
   create(
     @Body() body: CreateProductDto,
-    @UploadedFiles() images: any[], // Заменили на any[], чтобы на Render всё железно собралось без конфликтов типов
+    @UploadedFiles() images: any[],
   ) {
     return this.productsService.create(body, images);
+  }
+
+  @Patch(':id')
+  @UseGuards(TelegramAuthGuard, AdminGuard)
+  @UseInterceptors(FilesInterceptor('images', 10))
+  update(
+    @Param('id') id: string,
+    @Body() body: UpdateProductDto,
+    @UploadedFiles() images: any[],
+  ) {
+    return this.productsService.update(id, body, images);
+  }
+
+  @Delete(':id')
+  @UseGuards(TelegramAuthGuard, AdminGuard)
+  remove(@Param('id') id: string) {
+    return this.productsService.remove(id);
   }
 }

@@ -34,6 +34,14 @@ export function getTelegramId(): string {
   return "web-guest";
 }
 
+export function getTelegramInitData(): string {
+  try {
+    return WebApp.initData ?? "";
+  } catch {
+    return "";
+  }
+}
+
 export function getUserName(): string | undefined {
   const user = getTelegramUser();
   if (!user) return undefined;

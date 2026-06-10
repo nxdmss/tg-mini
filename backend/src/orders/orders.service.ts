@@ -1,12 +1,27 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateOrderDto } from './create-order.dto';
+import { TelegramRequestUser } from '../auth/telegram-user';
+import { NotificationsService } from '../notifications/notifications.service';
+
+const orderInclude = {
+  items: { include: { product: { include: { images: true } } } },
+  user: true,
+} satisfies Prisma.OrderInclude;
+
+type OrderWithItems = Prisma.OrderGetPayload<{ include: typeof orderInclude }>;
 
 @Injectable()
 export class OrdersService {
-  constructor(private prisma: PrismaService) {}
+  private readonly logger = new Logger(OrdersService.name);
 
-  async create(dto: CreateOrderDto) {
+  constructor(
+    private prisma: PrismaService,
+    private notifications: NotificationsService,
+  ) {}
+
+  async create(dto: CreateOrderDto, requestUser: TelegramRequestUser | null) {
     const productIds = dto.items.map((i) => i.productId);
     const products = await this.prisma.product.findMany({
       where: { id: { in: productIds } },
@@ -27,22 +42,33 @@ export class OrdersService {
       }
     }
 
+    const telegramId = requestUser?.telegramId ?? 'web-guest';
+    const fallbackName = [requestUser?.firstName, requestUser?.lastName]
+      .filter(Boolean)
+      .join(' ');
+    const displayName = dto.name ?? (fallbackName || requestUser?.username);
+
     const user = await this.prisma.user.upsert({
-      where: { telegramId: dto.telegramId },
+      where: { telegramId },
       update: {
-        name: dto.name ?? undefined,
+        name: displayName || undefined,
         phone: dto.phone ?? undefined,
       },
       create: {
-        telegramId: dto.telegramId,
-        name: dto.name,
+        telegramId,
+        name: displayName,
         phone: dto.phone,
       },
     });
 
-    return this.prisma.order.create({
+    const order = await this.prisma.order.create({
       data: {
         userId: user.id,
+        customerName: dto.name,
+        phone: dto.phone,
+        deliveryMethod: dto.deliveryMethod,
+        address: dto.address,
+        comment: dto.comment,
         items: {
           create: dto.items.map((item) => ({
             productId: item.productId,
@@ -52,11 +78,12 @@ export class OrdersService {
           })),
         },
       },
-      include: {
-        items: { include: { product: { include: { images: true } } } },
-        user: true,
-      },
+      include: orderInclude,
     });
+
+    await this.notifyOrderCreated(order);
+
+    return order;
   }
 
   async findByTelegramId(telegramId: string) {
@@ -67,5 +94,27 @@ export class OrdersService {
         items: { include: { product: { include: { images: true } } } },
       },
     });
+  }
+
+  private async notifyOrderCreated(order: OrderWithItems) {
+    try {
+      await this.notifications.sendOrderCreated({
+        id: order.id,
+        customerName: order.customerName,
+        phone: order.phone,
+        deliveryMethod: order.deliveryMethod,
+        address: order.address,
+        comment: order.comment,
+        total: order.items.reduce((sum, item) => sum + item.price * item.quantity, 0),
+        items: order.items.map((item) => ({
+          name: item.product.name,
+          size: item.size,
+          quantity: item.quantity,
+          price: item.price,
+        })),
+      });
+    } catch (error) {
+      this.logger.error('Failed to send order notification', error);
+    }
   }
 }

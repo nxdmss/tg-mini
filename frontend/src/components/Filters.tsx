@@ -39,6 +39,12 @@ export function Filters({ categories, query, count, onChange }: Props) {
               {c.name}
             </button>
           ))}
+          <button
+            className={`chip ${query.inStock ? "chip--active" : ""}`}
+            onClick={() => onChange({ ...query, inStock: query.inStock ? undefined : true })}
+          >
+            В наличии
+          </button>
         </div>
         <div className="toolbar__row">
           <span className="count">

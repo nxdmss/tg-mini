@@ -18,13 +18,15 @@ function toBoolean(value: unknown) {
   return value;
 }
 
-export class CreateProductDto {
+export class UpdateProductDto {
+  @IsOptional()
   @IsString()
-  name: string;
+  name?: string;
 
+  @IsOptional()
   @Type(() => Number)
   @IsNumber()
-  price: number;
+  price?: number;
 
   @IsOptional()
   @IsString()
@@ -35,11 +37,13 @@ export class CreateProductDto {
   @IsBoolean()
   inStock?: boolean;
 
+  @IsOptional()
   @IsString()
-  brandId: string;
+  brandId?: string;
 
+  @IsOptional()
   @IsString()
-  categoryId: string;
+  categoryId?: string;
 
   @IsOptional()
   @Transform(({ value }) => toStringArray(value))

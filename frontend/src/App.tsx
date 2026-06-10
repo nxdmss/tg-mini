@@ -1,13 +1,16 @@
 import { useEffect, useState } from "react";
-import { getProducts } from "./api";
-import type { Product } from "./types";
+import { getCategories, getProducts } from "./api";
+import type { Category, Product, ProductsQuery } from "./types";
 import { Header } from "./components/Header";
 import { ProductCard } from "./components/ProductCard";
 import { ProductDetail } from "./components/ProductDetail";
 import { CartDrawer } from "./components/CartDrawer";
+import { Filters } from "./components/Filters";
 
 export default function App() {
   const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [query, setQuery] = useState<ProductsQuery>({ sort: "newest" });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [selected, setSelected] = useState<Product | null>(null);
@@ -21,7 +24,7 @@ export default function App() {
       setError(false);
 
       try {
-        const data = await getProducts();
+        const data = await getProducts(query);
 
         if (active) {
           setProducts(data);
@@ -43,11 +46,41 @@ export default function App() {
     return () => {
       active = false;
     };
+  }, [query]);
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadCategories() {
+      try {
+        const data = await getCategories();
+        if (active) {
+          setCategories(data);
+        }
+      } catch {
+        if (active) {
+          setCategories([]);
+        }
+      }
+    }
+
+    void loadCategories();
+
+    return () => {
+      active = false;
+    };
   }, []);
 
   return (
     <div className="app">
       <Header onCartClick={() => setCartOpen(true)} />
+
+      <Filters
+        categories={categories}
+        query={query}
+        count={products.length}
+        onChange={(nextQuery) => setQuery(nextQuery)}
+      />
 
       <main className="container">
         {loading ? (
@@ -68,7 +101,7 @@ export default function App() {
         ) : products.length === 0 ? (
           <div className="state">
             <div className="state__icon">∅</div>
-            Товаров пока нет
+            По выбранным фильтрам товаров нет
           </div>
         ) : (
           <div className="grid">
@@ -96,6 +129,13 @@ export default function App() {
           onClose={() => setCartOpen(false)}
         />
       )}
+
+      <footer className="footer">
+        <div className="container footer__inner">
+          <span className="footer__brand">ZOV</span>
+          <span>Telegram Mini App storefront</span>
+        </div>
+      </footer>
     </div>
   );
 }

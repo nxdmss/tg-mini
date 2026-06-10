@@ -7,7 +7,7 @@ export class TelegramAuthGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext) {
     const request = context.switchToHttp().getRequest();
-    request.telegramUser = await this.auth.getRequestUser(request);
+    request.user = await this.auth.getRequestUser(request);
     return true;
   }
 }

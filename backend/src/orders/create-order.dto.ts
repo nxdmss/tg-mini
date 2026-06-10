@@ -3,9 +3,12 @@ import {
   ArrayMinSize,
   IsArray,
   IsInt,
+  IsNotEmpty,
   IsOptional,
   IsString,
+  Matches,
   Min,
+  ValidateIf,
   ValidateNested,
 } from 'class-validator';
 
@@ -24,15 +27,27 @@ export class OrderItemDto {
 
 export class CreateOrderDto {
   @IsString()
-  telegramId: string;
-
-  @IsOptional()
-  @IsString()
+  @IsNotEmpty()
   name?: string;
 
+  @IsString()
+  @Matches(/(?:\D*\d){10,}/, {
+    message: 'phone must contain at least 10 digits',
+  })
+  phone?: string;
+
   @IsOptional()
   @IsString()
-  phone?: string;
+  deliveryMethod?: string;
+
+  @ValidateIf((order: CreateOrderDto) => order.deliveryMethod === 'Доставка')
+  @IsString()
+  @IsNotEmpty()
+  address?: string;
+
+  @IsOptional()
+  @IsString()
+  comment?: string;
 
   @IsArray()
   @ArrayMinSize(1)

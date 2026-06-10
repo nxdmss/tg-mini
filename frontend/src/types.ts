@@ -23,6 +23,14 @@ export type Order = {
   createdAt?: string;
 };
 
+export type AuthUser = {
+  telegramId?: string;
+  firstName?: string;
+  lastName?: string;
+  username?: string;
+  role: "USER" | "ADMIN" | "MANAGER";
+};
+
 export type CartItem = {
   productId: string;
   name: string;
@@ -37,4 +45,5 @@ export type ProductsQuery = {
   brand?: string;
   search?: string;
   sort?: 'newest' | 'price_asc' | 'price_desc';
+  inStock?: boolean;
 };

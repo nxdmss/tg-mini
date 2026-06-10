@@ -2,18 +2,29 @@ import { useEffect, useState } from "react";
 import { useCart } from "../cart";
 import { formatPrice } from "../utils";
 import { createOrder } from "../api";
-import { getTelegramId, getUserName, tg } from "../telegram";
+import { getUserName, tg } from "../telegram";
 
 type Step = "cart" | "checkout" | "done";
+const DELIVERY = "Доставка";
+
+function phoneDigits(value: string) {
+  return value.replace(/\D/g, "");
+}
 
 export function CartDrawer({ onClose }: { onClose: () => void }) {
   const { items, total, setQuantity, remove, clear } = useCart();
   const [step, setStep] = useState<Step>("cart");
   const [name, setName] = useState(getUserName() ?? "");
   const [phone, setPhone] = useState("");
+  const [deliveryMethod, setDeliveryMethod] = useState(DELIVERY);
+  const [address, setAddress] = useState("");
+  const [comment, setComment] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const canSubmit = name.trim().length >= 2 && phone.trim().length >= 5;
+  const isDelivery = deliveryMethod === DELIVERY;
+  const isPhoneValid = phoneDigits(phone).length >= 10;
+  const isAddressValid = !isDelivery || address.trim().length >= 6;
+  const canSubmit = name.trim().length >= 2 && isPhoneValid && isAddressValid;
 
   useEffect(() => {
     document.body.style.overflow = "hidden";
@@ -23,13 +34,24 @@ export function CartDrawer({ onClose }: { onClose: () => void }) {
   }, []);
 
   async function submit() {
+    if (!canSubmit) {
+      setError(
+        !isPhoneValid
+          ? "Введите телефон полностью, чтобы мы могли подтвердить заказ."
+          : "Для доставки нужен адрес.",
+      );
+      return;
+    }
+
     setSubmitting(true);
     setError(null);
     try {
       await createOrder({
-        telegramId: getTelegramId(),
         name: name || undefined,
         phone: phone || undefined,
+        deliveryMethod,
+        address: address || undefined,
+        comment: comment || undefined,
         items: items.map((i) => ({
           productId: i.productId,
           quantity: i.quantity,
@@ -70,7 +92,7 @@ export function CartDrawer({ onClose }: { onClose: () => void }) {
               Заказ оформлен
             </h3>
             <p style={{ margin: 0, color: "var(--text-secondary)" }}>
-              Мы свяжемся с вами для подтверждения.
+              Заявка отправлена. Мы напишем для подтверждения заказа и оплаты.
             </p>
             <button className="btn" onClick={onClose} style={{ marginTop: 8 }}>
               Продолжить покупки
@@ -134,10 +156,32 @@ export function CartDrawer({ onClose }: { onClose: () => void }) {
                   />
                   <input
                     className="field"
-                    placeholder="Телефон"
+                    placeholder="Телефон для связи"
                     inputMode="tel"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
+                  />
+                  <select
+                    className="field"
+                    value={deliveryMethod}
+                    onChange={(e) => setDeliveryMethod(e.target.value)}
+                  >
+                    <option value={DELIVERY}>Доставка</option>
+                    <option value="Самовывоз">Самовывоз</option>
+                  </select>
+                  {isDelivery && (
+                    <input
+                      className="field"
+                      placeholder="Адрес доставки"
+                      value={address}
+                      onChange={(e) => setAddress(e.target.value)}
+                    />
+                  )}
+                  <input
+                    className="field"
+                    placeholder="Комментарий к заказу (необязательно)"
+                    value={comment}
+                    onChange={(e) => setComment(e.target.value)}
                   />
                 </>
               )}
@@ -153,9 +197,14 @@ export function CartDrawer({ onClose }: { onClose: () => void }) {
                   Оформить заказ
                 </button>
               ) : (
-                <button className="btn" onClick={submit} disabled={submitting || !canSubmit}>
-                  {submitting ? "Отправляем…" : "Подтвердить заказ"}
-                </button>
+                <>
+                  <button className="btn btn--ghost" onClick={() => setStep("cart")}>
+                    Назад к корзине
+                  </button>
+                  <button className="btn" onClick={submit} disabled={submitting || !canSubmit}>
+                    {submitting ? "Отправляем..." : "Подтвердить заказ"}
+                  </button>
+                </>
               )}
             </div>
           </>
