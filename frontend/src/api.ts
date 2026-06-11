@@ -6,7 +6,7 @@ import type { AuthUser, Brand, Category, Order, Product, ProductsQuery } from ".
 const baseURL =
   import.meta.env.VITE_API_URL?.replace(/\/$/, "") || "https://tg-mini-backend.onrender.com";
 
-export const api = axios.create({ baseURL, timeout: 15000 });
+export const api = axios.create({ baseURL, timeout: 45000 });
 
 function authHeaders() {
   const initData = getTelegramInitData();
@@ -90,7 +90,7 @@ export function getApiErrorMessage(error: unknown) {
   }
 
   if (!error.response) {
-    return "Сервер не отвечает. Проверьте интернет и попробуйте ещё раз.";
+    return "Сервер не ответил. Подождите 30 секунд и попробуйте ещё раз: backend на Render может просыпаться после простоя.";
   }
 
   return "Не удалось оформить заказ. Попробуйте ещё раз.";
