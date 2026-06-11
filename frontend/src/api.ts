@@ -63,6 +63,7 @@ export function getApiErrorMessage(error: unknown) {
   const status = error.response?.status;
   const message = error.response?.data?.message;
   const normalizedMessage = Array.isArray(message) ? message.join(" ") : String(message ?? "");
+  const backendError = normalizedMessage || error.response?.data?.error;
 
   if (status === 401) {
     const launchInfo = getTelegramLaunchInfo();
@@ -91,6 +92,10 @@ export function getApiErrorMessage(error: unknown) {
 
   if (!error.response) {
     return "Сервер не ответил. Подождите 30 секунд и попробуйте ещё раз: backend на Render может просыпаться после простоя.";
+  }
+
+  if (status && backendError) {
+    return `Ошибка сервера (${status}): ${backendError}`;
   }
 
   return "Не удалось оформить заказ. Попробуйте ещё раз.";

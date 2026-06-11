@@ -1,4 +1,9 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  InternalServerErrorException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { v2 as cloudinary, UploadApiResponse } from 'cloudinary';
 import { PrismaService } from '../prisma/prisma.service';
@@ -225,7 +230,11 @@ export class ProductsService {
             },
             (error, result?: UploadApiResponse) => {
               if (error || !result) {
-                reject(error ?? new Error('Cloudinary upload failed'));
+                reject(
+                  new InternalServerErrorException(
+                    error?.message || 'Cloudinary upload failed',
+                  ),
+                );
                 return;
               }
 

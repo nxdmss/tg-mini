@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import {
   createProduct,
   deleteProduct,
+  getApiErrorMessage,
   getBrands,
   getCategories,
   getMe,
@@ -169,8 +170,8 @@ export default function Admin() {
 
       await refreshProducts();
       resetForm();
-    } catch {
-      setError("Не удалось сохранить товар. Проверьте права администратора и Cloudinary.");
+    } catch (saveError) {
+      setError(getApiErrorMessage(saveError));
     } finally {
       setSaving(false);
     }
@@ -188,8 +189,8 @@ export default function Admin() {
       await refreshProducts();
       if (form.id === product.id) resetForm();
       setMessage("Товар удален.");
-    } catch {
-      setError("Не удалось удалить товар.");
+    } catch (deleteError) {
+      setError(getApiErrorMessage(deleteError));
     } finally {
       setSaving(false);
     }
