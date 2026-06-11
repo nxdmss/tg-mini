@@ -60,6 +60,14 @@ export async function createCategory(name: string): Promise<Category> {
   return res.data;
 }
 
+export async function deleteBrand(id: string): Promise<void> {
+  await api.delete(`/brands/${id}`, { headers: authHeaders() });
+}
+
+export async function deleteCategory(id: string): Promise<void> {
+  await api.delete(`/categories/${id}`, { headers: authHeaders() });
+}
+
 export type CreateOrderPayload = {
   name?: string;
   phone?: string;

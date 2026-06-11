@@ -4,6 +4,8 @@ import {
   createBrand,
   createCategory,
   createProduct,
+  deleteBrand,
+  deleteCategory,
   deleteProduct,
   getApiErrorMessage,
   getAdminOrders,
@@ -33,6 +35,7 @@ type FormState = {
 };
 
 type AdminTab = "products" | "catalog" | "orders";
+type OrderView = "active" | "archive";
 
 const emptyForm: FormState = {
   name: "",
@@ -86,6 +89,7 @@ export default function Admin() {
   const [products, setProducts] = useState<Product[]>([]);
   const [orders, setOrders] = useState<AdminOrder[]>([]);
   const [activeTab, setActiveTab] = useState<AdminTab>("products");
+  const [orderView, setOrderView] = useState<OrderView>("active");
   const [form, setForm] = useState<FormState>(emptyForm);
   const [brandName, setBrandName] = useState("");
   const [categoryName, setCategoryName] = useState("");
@@ -281,6 +285,52 @@ export default function Admin() {
     }
   }
 
+  async function removeBrand(brand: Brand) {
+    if ((brand._count?.products ?? 0) > 0) {
+      setError("Сначала перенесите или удалите товары этого бренда.");
+      return;
+    }
+
+    if (!window.confirm(`Удалить бренд "${brand.name}"?`)) return;
+
+    setSaving(true);
+    setError(null);
+    setMessage(null);
+
+    try {
+      await deleteBrand(brand.id);
+      await refreshCatalog();
+      setMessage("Бренд удален.");
+    } catch (deleteError) {
+      setError(getApiErrorMessage(deleteError));
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function removeCategory(category: Category) {
+    if ((category._count?.products ?? 0) > 0) {
+      setError("Сначала перенесите или удалите товары этой категории.");
+      return;
+    }
+
+    if (!window.confirm(`Удалить категорию "${category.name}"?`)) return;
+
+    setSaving(true);
+    setError(null);
+    setMessage(null);
+
+    try {
+      await deleteCategory(category.id);
+      await refreshCatalog();
+      setMessage("Категория удалена.");
+    } catch (deleteError) {
+      setError(getApiErrorMessage(deleteError));
+    } finally {
+      setSaving(false);
+    }
+  }
+
   async function setOrderStatus(order: AdminOrder, status: OrderStatus) {
     setSaving(true);
     setError(null);
@@ -304,6 +354,13 @@ export default function Admin() {
     [form.files],
   );
   const telegramInfo = getTelegramLaunchInfo();
+  const activeOrders = orders.filter(
+    (order) => order.status !== "DONE" && order.status !== "CANCELLED",
+  );
+  const archivedOrders = orders.filter(
+    (order) => order.status === "DONE" || order.status === "CANCELLED",
+  );
+  const visibleOrders = orderView === "active" ? activeOrders : archivedOrders;
 
   if (booting) {
     return (
@@ -585,7 +642,16 @@ export default function Admin() {
               {brands.map((brand) => (
                 <div className="admin-row" key={brand.id}>
                   <span>{brand.name}</span>
-                  <span className="count">{brand._count?.products ?? 0} товаров</span>
+                  <div className="admin-row__actions">
+                    <span className="count">{brand._count?.products ?? 0} товаров</span>
+                    <button
+                      className="link-remove"
+                      onClick={() => void removeBrand(brand)}
+                      disabled={saving || (brand._count?.products ?? 0) > 0}
+                    >
+                      Удалить
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -615,7 +681,16 @@ export default function Admin() {
               {categories.map((category) => (
                 <div className="admin-row" key={category.id}>
                   <span>{category.name}</span>
-                  <span className="count">{category._count?.products ?? 0} товаров</span>
+                  <div className="admin-row__actions">
+                    <span className="count">{category._count?.products ?? 0} товаров</span>
+                    <button
+                      className="link-remove"
+                      onClick={() => void removeCategory(category)}
+                      disabled={saving || (category._count?.products ?? 0) > 0}
+                    >
+                      Удалить
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -636,7 +711,7 @@ export default function Admin() {
             <h2>Заказы</h2>
             <div className="admin-panel__actions">
               <span className="count">
-                <strong>{orders.length}</strong> всего
+                <strong>{visibleOrders.length}</strong> в списке
               </span>
               <button className="chip" onClick={() => void refreshOrders()}>
                 Обновить
@@ -644,14 +719,31 @@ export default function Admin() {
             </div>
           </div>
 
+          <div className="admin-tabs admin-tabs--inner">
+            <button
+              className={`chip ${orderView === "active" ? "chip--active" : ""}`}
+              onClick={() => setOrderView("active")}
+            >
+              Активные {activeOrders.length}
+            </button>
+            <button
+              className={`chip ${orderView === "archive" ? "chip--active" : ""}`}
+              onClick={() => setOrderView("archive")}
+            >
+              Архив {archivedOrders.length}
+            </button>
+          </div>
+
           {message && <div className="notice notice--ok">{message}</div>}
           {error && <div className="notice notice--error">{error}</div>}
 
           <div className="admin-orders">
-            {orders.length === 0 ? (
-              <div className="state">Заказов пока нет</div>
+            {visibleOrders.length === 0 ? (
+              <div className="state">
+                {orderView === "active" ? "Активных заказов нет" : "Архив заказов пуст"}
+              </div>
             ) : (
-              orders.map((order) => (
+              visibleOrders.map((order) => (
                 <article className="admin-order" key={order.id}>
                   <div className="admin-order__head">
                     <div>

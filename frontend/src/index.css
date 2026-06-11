@@ -37,8 +37,32 @@ body,
 body {
   background:
     radial-gradient(circle at 50% -20%, rgba(255, 255, 255, 0.95), transparent 36rem),
+    radial-gradient(ellipse at 18% 18%, rgba(17, 17, 19, 0.13), transparent 28rem),
+    radial-gradient(ellipse at 82% 8%, rgba(255, 255, 255, 0.9), transparent 24rem),
+    radial-gradient(ellipse at 72% 72%, rgba(17, 17, 19, 0.1), transparent 30rem),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.82), rgba(214, 214, 220, 0.68) 42%, rgba(255, 255, 255, 0.78)),
     var(--bg);
+  background-attachment: fixed;
   color: var(--text);
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: -20%;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.58;
+  background:
+    repeating-radial-gradient(
+      ellipse at 50% 50%,
+      rgba(17, 17, 19, 0.08) 0,
+      rgba(17, 17, 19, 0.08) 1px,
+      transparent 1px,
+      transparent 46px
+    );
+  filter: blur(0.2px);
+  transform: rotate(-8deg) scale(1.1);
 }
 
 button,
@@ -1060,6 +1084,10 @@ textarea.field {
   overflow-x: auto;
 }
 
+.admin-tabs--inner {
+  margin-bottom: 14px;
+}
+
 .admin-panel {
   padding: 18px;
   border: 1px solid var(--line);
@@ -1196,6 +1224,12 @@ textarea.field {
 
 .admin-row:last-child {
   border-bottom: 0;
+}
+
+.admin-row__actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .admin-product {

@@ -24,6 +24,24 @@ export class CatalogService {
     }
   }
 
+  async deleteBrand(id: string) {
+    const brand = await this.prisma.brand.findUnique({
+      where: { id },
+      include: { _count: { select: { products: true } } },
+    });
+
+    if (!brand) {
+      throw new BadRequestException('Brand not found');
+    }
+
+    if (brand._count.products > 0) {
+      throw new BadRequestException('Brand has products and cannot be deleted');
+    }
+
+    await this.prisma.brand.delete({ where: { id } });
+    return { ok: true };
+  }
+
   async categories() {
     return this.prisma.category.findMany({
       orderBy: { name: 'asc' },
@@ -40,6 +58,24 @@ export class CatalogService {
     } catch (error) {
       this.handleCreateError(error, 'Category');
     }
+  }
+
+  async deleteCategory(id: string) {
+    const category = await this.prisma.category.findUnique({
+      where: { id },
+      include: { _count: { select: { products: true } } },
+    });
+
+    if (!category) {
+      throw new BadRequestException('Category not found');
+    }
+
+    if (category._count.products > 0) {
+      throw new BadRequestException('Category has products and cannot be deleted');
+    }
+
+    await this.prisma.category.delete({ where: { id } });
+    return { ok: true };
   }
 
   private handleCreateError(error: unknown, label: string): never {
