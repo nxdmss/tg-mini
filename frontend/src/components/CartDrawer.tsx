@@ -6,23 +6,35 @@ import { getUserName, tg } from "../telegram";
 
 type Step = "cart" | "checkout" | "done";
 const DELIVERY = "Доставка";
+const PHONE_PREFIX = "+7";
 
 function phoneDigits(value: string) {
   return value.replace(/\D/g, "");
+}
+
+function normalizeRussianPhone(value: string) {
+  const digits = phoneDigits(value);
+  const withoutCountry = digits.startsWith("7")
+    ? digits.slice(1)
+    : digits.startsWith("8")
+      ? digits.slice(1)
+      : digits;
+
+  return `${PHONE_PREFIX}${withoutCountry.slice(0, 10)}`;
 }
 
 export function CartDrawer({ onClose }: { onClose: () => void }) {
   const { items, total, setQuantity, remove, clear } = useCart();
   const [step, setStep] = useState<Step>("cart");
   const [name, setName] = useState(getUserName() ?? "");
-  const [phone, setPhone] = useState("");
+  const [phone, setPhone] = useState(PHONE_PREFIX);
   const [deliveryMethod, setDeliveryMethod] = useState(DELIVERY);
   const [address, setAddress] = useState("");
   const [comment, setComment] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const isDelivery = deliveryMethod === DELIVERY;
-  const isPhoneValid = phoneDigits(phone).length >= 10;
+  const isPhoneValid = /^\+7\d{10}$/.test(phone);
   const isAddressValid = !isDelivery || address.trim().length >= 6;
   const canSubmit = name.trim().length >= 2 && isPhoneValid && isAddressValid;
 
@@ -48,7 +60,7 @@ export function CartDrawer({ onClose }: { onClose: () => void }) {
     try {
       await createOrder({
         name: name || undefined,
-        phone: phone || undefined,
+        phone,
         deliveryMethod,
         address: address || undefined,
         comment: comment || undefined,
@@ -159,7 +171,7 @@ export function CartDrawer({ onClose }: { onClose: () => void }) {
                     placeholder="Телефон для связи"
                     inputMode="tel"
                     value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
+                    onChange={(e) => setPhone(normalizeRussianPhone(e.target.value))}
                   />
                   <select
                     className="field"

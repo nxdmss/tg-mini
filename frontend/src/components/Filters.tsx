@@ -1,3 +1,4 @@
+import { useState } from "react";
 import type { Category, ProductsQuery } from "../types";
 
 type Props = {
@@ -8,20 +9,63 @@ type Props = {
 };
 
 export function Filters({ categories, query, count, onChange }: Props) {
+  const [sortOpen, setSortOpen] = useState(false);
+  const sort = query.sort ?? "newest";
+  const sortLabel =
+    sort === "price_asc" ? "Дешевле" : sort === "price_desc" ? "Дороже" : "Новые";
+
+  function setSort(nextSort: ProductsQuery["sort"]) {
+    onChange({ ...query, sort: nextSort });
+    setSortOpen(false);
+  }
+
   return (
     <div className="toolbar">
       <div className="container">
-        <div className="search-wrap">
-          <svg className="search__icon" width="18" height="18" viewBox="0 0 24 24" fill="none">
-            <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="1.6" />
-            <path d="M20 20l-3-3" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-          </svg>
-          <input
-            className="search"
-            placeholder="Поиск вещей и брендов"
-            value={query.search ?? ""}
-            onChange={(e) => onChange({ ...query, search: e.target.value })}
-          />
+        <div className="toolbar__top">
+          <div className="search-wrap">
+            <svg className="search__icon" width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="1.6" />
+              <path d="M20 20l-3-3" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+            </svg>
+            <input
+              className="search"
+              placeholder="Поиск вещей и брендов"
+              value={query.search ?? ""}
+              onChange={(e) => onChange({ ...query, search: e.target.value })}
+            />
+          </div>
+          <div className="sort-popover">
+            <button
+              className="sort-btn"
+              onClick={() => setSortOpen((open) => !open)}
+              aria-label={`Сортировка: ${sortLabel}`}
+            >
+              ⇅
+            </button>
+            {sortOpen && (
+              <div className="sort-menu">
+                <button
+                  className={sort === "newest" ? "sort-menu__item sort-menu__item--active" : "sort-menu__item"}
+                  onClick={() => setSort("newest")}
+                >
+                  Сначала новые
+                </button>
+                <button
+                  className={sort === "price_asc" ? "sort-menu__item sort-menu__item--active" : "sort-menu__item"}
+                  onClick={() => setSort("price_asc")}
+                >
+                  Сначала дешёвые
+                </button>
+                <button
+                  className={sort === "price_desc" ? "sort-menu__item sort-menu__item--active" : "sort-menu__item"}
+                  onClick={() => setSort("price_desc")}
+                >
+                  Сначала дорогие
+                </button>
+              </div>
+            )}
+          </div>
         </div>
         <div className="chips">
           <button
@@ -50,17 +94,7 @@ export function Filters({ categories, query, count, onChange }: Props) {
           <span className="count">
             <strong>{count}</strong> {count === 1 ? "товар" : count > 1 && count < 5 ? "товара" : "товаров"}
           </span>
-          <select
-            className="sort"
-            value={query.sort ?? "newest"}
-            onChange={(e) =>
-              onChange({ ...query, sort: e.target.value as ProductsQuery["sort"] })
-            }
-          >
-            <option value="newest">Сначала новые</option>
-            <option value="price_asc">Сначала дешёвые</option>
-            <option value="price_desc">Сначала дорогие</option>
-          </select>
+          <span className="count">Сортировка: {sortLabel}</span>
         </div>
       </div>
     </div>

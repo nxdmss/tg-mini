@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { OrderStatus, Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateOrderDto } from './create-order.dto';
 import { TelegramRequestUser } from '../auth/telegram-user';
@@ -93,6 +93,21 @@ export class OrdersService {
       include: {
         items: { include: { product: { include: { images: true } } } },
       },
+    });
+  }
+
+  async findAllForAdmin() {
+    return this.prisma.order.findMany({
+      orderBy: { createdAt: 'desc' },
+      include: orderInclude,
+    });
+  }
+
+  async updateStatus(id: string, status: OrderStatus) {
+    return this.prisma.order.update({
+      where: { id },
+      data: { status },
+      include: orderInclude,
     });
   }
 

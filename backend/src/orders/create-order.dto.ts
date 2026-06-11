@@ -31,8 +31,8 @@ export class CreateOrderDto {
   name?: string;
 
   @IsString()
-  @Matches(/(?:\D*\d){10,}/, {
-    message: 'phone must contain at least 10 digits',
+  @Matches(/^\+7\d{10}$/, {
+    message: 'phone must be in +7XXXXXXXXXX format',
   })
   phone?: string;
 

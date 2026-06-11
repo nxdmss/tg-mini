@@ -32,8 +32,8 @@ export class TelegramBotService {
 
     await this.sendMessage(chatId, {
       text:
-        'Привет! Добро пожаловать в SWA6Y5TAN.\n\n' +
-        'Нажмите кнопку ниже, чтобы открыть магазин в Telegram Mini App.',
+        'Добро пожаловать в SWA6Y5TAN.\n\n' +
+        'Нажмите кнопку ниже, чтобы открыть магазин.',
       reply_markup: {
         inline_keyboard: [
           [

@@ -1,6 +1,15 @@
 import axios from "axios";
 import { getTelegramInitData, getTelegramLaunchInfo } from "./telegram";
-import type { AuthUser, Brand, Category, Order, Product, ProductsQuery } from "./types";
+import type {
+  AdminOrder,
+  AuthUser,
+  Brand,
+  Category,
+  Order,
+  OrderStatus,
+  Product,
+  ProductsQuery,
+} from "./types";
 
 // Берем URL бэкенда из переменных окружения. Убедись, что на хостинге фронта прописан VITE_API_URL!
 const baseURL =
@@ -41,6 +50,16 @@ export async function getBrands(): Promise<Brand[]> {
   return res.data;
 }
 
+export async function createBrand(name: string): Promise<Brand> {
+  const res = await api.post<Brand>("/brands", { name }, { headers: authHeaders() });
+  return res.data;
+}
+
+export async function createCategory(name: string): Promise<Category> {
+  const res = await api.post<Category>("/categories", { name }, { headers: authHeaders() });
+  return res.data;
+}
+
 export type CreateOrderPayload = {
   name?: string;
   phone?: string;
@@ -75,7 +94,7 @@ export function getApiErrorMessage(error: unknown) {
   }
 
   if (status === 400 && normalizedMessage.includes("phone")) {
-    return "Введите телефон полностью, минимум 10 цифр.";
+    return "Введите телефон в формате +7XXXXXXXXXX.";
   }
 
   if (status === 400 && normalizedMessage.includes("address")) {
@@ -148,4 +167,18 @@ export async function updateProduct(id: string, payload: ProductFormPayload): Pr
 
 export async function deleteProduct(id: string): Promise<void> {
   await api.delete(`/products/${id}`, { headers: authHeaders() });
+}
+
+export async function getAdminOrders(): Promise<AdminOrder[]> {
+  const res = await api.get<AdminOrder[]>("/orders/admin", { headers: authHeaders() });
+  return res.data;
+}
+
+export async function updateOrderStatus(id: string, status: OrderStatus): Promise<AdminOrder> {
+  const res = await api.patch<AdminOrder>(
+    `/orders/admin/${id}/status`,
+    { status },
+    { headers: authHeaders() },
+  );
+  return res.data;
 }

@@ -1,17 +1,21 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import {
+  createBrand,
+  createCategory,
   createProduct,
   deleteProduct,
   getApiErrorMessage,
+  getAdminOrders,
   getBrands,
   getCategories,
   getMe,
   getProducts,
+  updateOrderStatus,
   updateProduct,
   type ProductFormPayload,
 } from "../api";
-import type { AuthUser, Brand, Category, Product } from "../types";
+import type { AdminOrder, AuthUser, Brand, Category, OrderStatus, Product } from "../types";
 import { getTelegramLaunchInfo } from "../telegram";
 import { formatPrice } from "../utils";
 
@@ -27,6 +31,8 @@ type FormState = {
   existingImages: string[];
   files: File[];
 };
+
+type AdminTab = "products" | "catalog" | "orders";
 
 const emptyForm: FormState = {
   name: "",
@@ -51,12 +57,38 @@ function hasLegacyUpload(product: Product) {
   return product.images.some((image) => image.url.includes("/uploads/"));
 }
 
+function shortOrderNumber(id: string) {
+  let hash = 0;
+
+  for (let i = 0; i < id.length; i += 1) {
+    hash = (hash * 31 + id.charCodeAt(i)) % 100000;
+  }
+
+  return String(hash).padStart(5, "0");
+}
+
+function orderTotal(order: AdminOrder) {
+  return order.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+}
+
+const orderStatusLabel: Record<OrderStatus, string> = {
+  PENDING: "Новый",
+  PAID: "В работе",
+  SHIPPED: "Отправлен",
+  DONE: "Готово",
+  CANCELLED: "Отменен",
+};
+
 export default function Admin() {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [brands, setBrands] = useState<Brand[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
+  const [orders, setOrders] = useState<AdminOrder[]>([]);
+  const [activeTab, setActiveTab] = useState<AdminTab>("products");
   const [form, setForm] = useState<FormState>(emptyForm);
+  const [brandName, setBrandName] = useState("");
+  const [categoryName, setCategoryName] = useState("");
   const [booting, setBooting] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -75,17 +107,19 @@ export default function Admin() {
     setError(null);
 
     try {
-      const [me, brandsData, categoriesData, productsData] = await Promise.all([
+      const [me, brandsData, categoriesData, productsData, ordersData] = await Promise.all([
         getMe(),
         getBrands(),
         getCategories(),
         getProducts(),
+        getAdminOrders(),
       ]);
 
       setUser(me);
       setBrands(brandsData);
       setCategories(categoriesData);
       setProducts(productsData);
+      setOrders(ordersData);
       setForm((current) => ({
         ...current,
         brandId: current.brandId || brandsData[0]?.id || "",
@@ -107,6 +141,17 @@ export default function Admin() {
   async function refreshProducts() {
     const data = await getProducts();
     setProducts(data);
+  }
+
+  async function refreshCatalog() {
+    const [brandsData, categoriesData] = await Promise.all([getBrands(), getCategories()]);
+    setBrands(brandsData);
+    setCategories(categoriesData);
+  }
+
+  async function refreshOrders() {
+    const data = await getAdminOrders();
+    setOrders(data);
   }
 
   function resetForm() {
@@ -196,6 +241,64 @@ export default function Admin() {
     }
   }
 
+  async function submitBrand() {
+    const name = brandName.trim();
+    if (!name) return;
+
+    setSaving(true);
+    setError(null);
+    setMessage(null);
+
+    try {
+      await createBrand(name);
+      setBrandName("");
+      await refreshCatalog();
+      setMessage("Бренд добавлен.");
+    } catch (createError) {
+      setError(getApiErrorMessage(createError));
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function submitCategory() {
+    const name = categoryName.trim();
+    if (!name) return;
+
+    setSaving(true);
+    setError(null);
+    setMessage(null);
+
+    try {
+      await createCategory(name);
+      setCategoryName("");
+      await refreshCatalog();
+      setMessage("Категория добавлена.");
+    } catch (createError) {
+      setError(getApiErrorMessage(createError));
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function setOrderStatus(order: AdminOrder, status: OrderStatus) {
+    setSaving(true);
+    setError(null);
+    setMessage(null);
+
+    try {
+      const updatedOrder = await updateOrderStatus(order.id, status);
+      setOrders((current) =>
+        current.map((item) => (item.id === updatedOrder.id ? updatedOrder : item)),
+      );
+      setMessage(`Заказ ${shortOrderNumber(order.id)} обновлен.`);
+    } catch (updateError) {
+      setError(getApiErrorMessage(updateError));
+    } finally {
+      setSaving(false);
+    }
+  }
+
   const selectedFiles = useMemo(
     () => form.files.map((file) => file.name).join(", "),
     [form.files],
@@ -253,6 +356,28 @@ export default function Admin() {
         </Link>
       </div>
 
+      <div className="admin-tabs">
+        <button
+          className={`chip ${activeTab === "products" ? "chip--active" : ""}`}
+          onClick={() => setActiveTab("products")}
+        >
+          Товары
+        </button>
+        <button
+          className={`chip ${activeTab === "catalog" ? "chip--active" : ""}`}
+          onClick={() => setActiveTab("catalog")}
+        >
+          Бренды и категории
+        </button>
+        <button
+          className={`chip ${activeTab === "orders" ? "chip--active" : ""}`}
+          onClick={() => setActiveTab("orders")}
+        >
+          Заказы
+        </button>
+      </div>
+
+      {activeTab === "products" && (
       <section className="admin-grid">
         <div className="admin-panel">
           <div className="admin-panel__head">
@@ -436,6 +561,169 @@ export default function Admin() {
           </div>
         </div>
       </section>
+      )}
+
+      {activeTab === "catalog" && (
+        <section className="admin-grid">
+          <div className="admin-panel">
+            <div className="admin-panel__head">
+              <h2>Новый бренд</h2>
+            </div>
+            <label className="admin-field">
+              Название бренда
+              <input
+                className="field"
+                value={brandName}
+                onChange={(e) => setBrandName(e.target.value)}
+              />
+            </label>
+            <button className="btn" onClick={submitBrand} disabled={saving || !brandName.trim()}>
+              Добавить бренд
+            </button>
+
+            <div className="admin-list admin-list--compact">
+              {brands.map((brand) => (
+                <div className="admin-row" key={brand.id}>
+                  <span>{brand.name}</span>
+                  <span className="count">{brand._count?.products ?? 0} товаров</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="admin-panel">
+            <div className="admin-panel__head">
+              <h2>Новая категория</h2>
+            </div>
+            <label className="admin-field">
+              Название категории
+              <input
+                className="field"
+                value={categoryName}
+                onChange={(e) => setCategoryName(e.target.value)}
+              />
+            </label>
+            <button
+              className="btn"
+              onClick={submitCategory}
+              disabled={saving || !categoryName.trim()}
+            >
+              Добавить категорию
+            </button>
+
+            <div className="admin-list admin-list--compact">
+              {categories.map((category) => (
+                <div className="admin-row" key={category.id}>
+                  <span>{category.name}</span>
+                  <span className="count">{category._count?.products ?? 0} товаров</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {(message || error) && (
+            <div className="admin-panel">
+              {message && <div className="notice notice--ok">{message}</div>}
+              {error && <div className="notice notice--error">{error}</div>}
+            </div>
+          )}
+        </section>
+      )}
+
+      {activeTab === "orders" && (
+        <section className="admin-panel">
+          <div className="admin-panel__head">
+            <h2>Заказы</h2>
+            <div className="admin-panel__actions">
+              <span className="count">
+                <strong>{orders.length}</strong> всего
+              </span>
+              <button className="chip" onClick={() => void refreshOrders()}>
+                Обновить
+              </button>
+            </div>
+          </div>
+
+          {message && <div className="notice notice--ok">{message}</div>}
+          {error && <div className="notice notice--error">{error}</div>}
+
+          <div className="admin-orders">
+            {orders.length === 0 ? (
+              <div className="state">Заказов пока нет</div>
+            ) : (
+              orders.map((order) => (
+                <article className="admin-order" key={order.id}>
+                  <div className="admin-order__head">
+                    <div>
+                      <span className="admin-product__name">
+                        Заказ {shortOrderNumber(order.id)}
+                      </span>
+                      <span className="admin-product__meta">
+                        {order.createdAt
+                          ? new Date(order.createdAt).toLocaleString("ru-RU")
+                          : "без даты"}
+                      </span>
+                    </div>
+                    <span className="admin-badge">{orderStatusLabel[order.status]}</span>
+                  </div>
+
+                  <div className="admin-order__details">
+                    <span>Имя: {order.customerName || order.user.name || "не указано"}</span>
+                    <span>Телефон: {order.phone || order.user.phone || "не указан"}</span>
+                    <span>
+                      Telegram:{" "}
+                      <a href={`tg://user?id=${order.user.telegramId}`}>
+                        {order.user.telegramId}
+                      </a>
+                    </span>
+                    <span>Получение: {order.deliveryMethod || "не указано"}</span>
+                    <span>Адрес: {order.address || "не указан"}</span>
+                    <span>Комментарий: {order.comment || "нет"}</span>
+                  </div>
+
+                  <div className="admin-order__items">
+                    {order.items.map((item) => (
+                      <span key={item.id}>
+                        {item.product.name} · размер {item.size} · {item.quantity} шт. ·{" "}
+                        {formatPrice(item.price * item.quantity)}
+                      </span>
+                    ))}
+                  </div>
+
+                  <div className="summary-row">
+                    <span>Итого</span>
+                    <span>{formatPrice(orderTotal(order))}</span>
+                  </div>
+
+                  <div className="admin-product__actions">
+                    <button
+                      className="chip"
+                      onClick={() => void setOrderStatus(order, "PAID")}
+                      disabled={saving}
+                    >
+                      В работе
+                    </button>
+                    <button
+                      className="chip"
+                      onClick={() => void setOrderStatus(order, "DONE")}
+                      disabled={saving}
+                    >
+                      Готово
+                    </button>
+                    <button
+                      className="chip"
+                      onClick={() => void setOrderStatus(order, "CANCELLED")}
+                      disabled={saving}
+                    >
+                      Отменить
+                    </button>
+                  </div>
+                </article>
+              ))
+            )}
+          </div>
+        </section>
+      )}
     </main>
   );
 }

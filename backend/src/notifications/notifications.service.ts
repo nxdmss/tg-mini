@@ -64,7 +64,7 @@ export class NotificationsService {
         chat_id: order.telegramId,
         text:
           `Заказ SWA6Y5TAN принят.\n\n` +
-          `Номер: ${order.id}\n` +
+          `Номер: ${this.shortOrderNumber(order.id)}\n` +
           `Сумма: ${this.formatPrice(order.total)}\n\n` +
           'С вами скоро свяжутся для подтверждения и оплаты.',
       }),
@@ -88,6 +88,7 @@ export class NotificationsService {
 
     return [
       'Новый заказ SWA6Y5TAN',
+      `Номер: ${this.shortOrderNumber(order.id)}`,
       `ID: ${order.id}`,
       '',
       items,
@@ -104,6 +105,16 @@ export class NotificationsService {
 
   private formatPrice(value: number) {
     return new Intl.NumberFormat('ru-RU').format(value) + ' ₽';
+  }
+
+  private shortOrderNumber(id: string) {
+    let hash = 0;
+
+    for (let i = 0; i < id.length; i += 1) {
+      hash = (hash * 31 + id.charCodeAt(i)) % 100000;
+    }
+
+    return String(hash).padStart(5, '0');
   }
 
   private formatCustomer(order: OrderNotification) {

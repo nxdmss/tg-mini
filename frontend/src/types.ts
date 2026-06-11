@@ -23,6 +23,28 @@ export type Order = {
   createdAt?: string;
 };
 
+export type OrderStatus = Order["status"];
+
+export type AdminOrder = Order & {
+  customerName?: string | null;
+  phone?: string | null;
+  deliveryMethod?: string | null;
+  address?: string | null;
+  comment?: string | null;
+  user: {
+    telegramId: string;
+    name?: string | null;
+    phone?: string | null;
+  };
+  items: Array<{
+    id: string;
+    quantity: number;
+    size: string;
+    price: number;
+    product: Product;
+  }>;
+};
+
 export type AuthUser = {
   telegramId?: string;
   firstName?: string;
