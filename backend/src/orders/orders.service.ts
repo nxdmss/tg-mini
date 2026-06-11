@@ -81,7 +81,7 @@ export class OrdersService {
       include: orderInclude,
     });
 
-    await this.notifyOrderCreated(order);
+    await this.notifyOrderCreated(order, requestUser);
 
     return order;
   }
@@ -96,25 +96,35 @@ export class OrdersService {
     });
   }
 
-  private async notifyOrderCreated(order: OrderWithItems) {
+  private async notifyOrderCreated(order: OrderWithItems, requestUser: TelegramRequestUser | null) {
+    const notification = {
+      id: order.id,
+      telegramId: requestUser?.telegramId ?? order.user.telegramId,
+      username: requestUser?.username,
+      customerName: order.customerName,
+      phone: order.phone,
+      deliveryMethod: order.deliveryMethod,
+      address: order.address,
+      comment: order.comment,
+      total: order.items.reduce((sum, item) => sum + item.price * item.quantity, 0),
+      items: order.items.map((item) => ({
+        name: item.product.name,
+        size: item.size,
+        quantity: item.quantity,
+        price: item.price,
+      })),
+    };
+
     try {
-      await this.notifications.sendOrderCreated({
-        id: order.id,
-        customerName: order.customerName,
-        phone: order.phone,
-        deliveryMethod: order.deliveryMethod,
-        address: order.address,
-        comment: order.comment,
-        total: order.items.reduce((sum, item) => sum + item.price * item.quantity, 0),
-        items: order.items.map((item) => ({
-          name: item.product.name,
-          size: item.size,
-          quantity: item.quantity,
-          price: item.price,
-        })),
-      });
+      await this.notifications.sendOrderCreated(notification);
     } catch (error) {
-      this.logger.error('Failed to send order notification', error);
+      this.logger.error('Failed to send admin order notification', error);
+    }
+
+    try {
+      await this.notifications.sendCustomerOrderAccepted(notification);
+    } catch (error) {
+      this.logger.error('Failed to send customer order notification', error);
     }
   }
 }

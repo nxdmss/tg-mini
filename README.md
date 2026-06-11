@@ -1,6 +1,6 @@
-# ZOV Telegram Mini App
+# SWA6Y5TAN Telegram Mini App
 
-ZOV is a Telegram Mini App storefront for a clothing catalog. The project has a React/Vite frontend and a NestJS/Prisma backend with PostgreSQL, Telegram initData auth, admin-only product management, Cloudinary image uploads, search, categories and cart checkout.
+SWA6Y5TAN is a Telegram Mini App storefront for a clothing catalog. The project has a React/Vite frontend and a NestJS/Prisma backend with PostgreSQL, Telegram initData auth, admin-only product management, Cloudinary image uploads, search, categories and cart checkout.
 
 ## Structure
 

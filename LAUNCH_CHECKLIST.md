@@ -1,4 +1,4 @@
-# ZOV Buyer Launch Checklist
+# SWA6Y5TAN Buyer Launch Checklist
 
 Use this checklist before sharing the shop with buyers.
 
@@ -47,7 +47,7 @@ In `@BotFather`:
 
 1. Open your bot.
 2. Set the bot menu button / web app URL to the deployed frontend URL.
-3. Add a short bot description: `ZOV - магазин одежды в Telegram. Выберите товар, оставьте заявку, мы подтвердим оплату и доставку.`
+3. Add a short bot description: `SWA6Y5TAN - магазин одежды в Telegram. Выберите товар, оставьте заявку, мы подтвердим оплату и доставку.`
 4. Open the Mini App from Telegram, not only from a browser, to verify `initData`.
 
 ## 5. Catalog Readiness
@@ -94,7 +94,7 @@ Buyer flow inside Telegram:
 Order confirmation:
 
 ```text
-Привет! Получили вашу заявку ZOV: [товары]. Сумма: [сумма]. Подтверждаете заказ?
+Привет! Получили вашу заявку SWA6Y5TAN: [товары]. Сумма: [сумма]. Подтверждаете заказ?
 ```
 
 Payment:

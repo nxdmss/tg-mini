@@ -5,6 +5,7 @@ import { ProductsModule } from './products/products.module';
 import { CatalogModule } from './catalog/catalog.module';
 import { OrdersModule } from './orders/orders.module';
 import { AuthModule } from './auth/auth.module';
+import { TelegramModule } from './telegram/telegram.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
@@ -16,6 +17,7 @@ import { AppService } from './app.service';
     CatalogModule,
     OrdersModule,
     AuthModule,
+    TelegramModule,
   ],
   controllers: [AppController],
   providers: [AppService],

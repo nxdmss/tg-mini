@@ -132,7 +132,7 @@ export default function App() {
 
       <footer className="footer">
         <div className="container footer__inner">
-          <span className="footer__brand">ZOV</span>
+          <span className="footer__brand">SWA6Y5TAN</span>
           <span>Telegram Mini App storefront</span>
         </div>
       </footer>

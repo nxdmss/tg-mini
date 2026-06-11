@@ -234,7 +234,7 @@ export default function Admin() {
       <main className="admin-page container">
         <div className="state">
           <div className="state__icon">!</div>
-          Доступ только для администраторов ZOV.
+          Доступ только для администраторов SWA6Y5TAN.
         </div>
       </main>
     );
@@ -244,7 +244,7 @@ export default function Admin() {
     <main className="admin-page container">
       <div className="admin-hero">
         <div>
-          <span className="eyebrow">ZOV admin</span>
+          <span className="eyebrow">SWA6Y5TAN admin</span>
           <h1>Управление каталогом</h1>
           <p>Создавайте карточки, обновляйте размеры, наличие и фото без доступа к базе.</p>
         </div>
@@ -398,7 +398,7 @@ export default function Admin() {
                   {product.images[0]?.url ? (
                     <img src={product.images[0].url} alt={product.name} />
                   ) : (
-                    <div className="media-fallback">ZOV</div>
+                    <div className="media-fallback">SWA6Y5TAN</div>
                   )}
                 </div>
                 <div className="admin-product__body">

@@ -256,7 +256,15 @@ export class ProductsService {
     const apiSecret = process.env.CLOUDINARY_API_SECRET;
 
     if (!cloudName || !apiKey || !apiSecret) {
-      throw new BadRequestException('Cloudinary is not configured');
+      const missing = [
+        !cloudName ? 'CLOUDINARY_CLOUD_NAME' : null,
+        !apiKey ? 'CLOUDINARY_API_KEY' : null,
+        !apiSecret ? 'CLOUDINARY_API_SECRET' : null,
+      ].filter(Boolean);
+
+      throw new BadRequestException(
+        `Cloudinary is not configured. Missing: ${missing.join(', ')}. Alternatively set CLOUDINARY_URL.`,
+      );
     }
 
     cloudinary.config({

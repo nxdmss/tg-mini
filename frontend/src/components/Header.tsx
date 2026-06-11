@@ -28,16 +28,16 @@ export function Header({ onCartClick }: { onCartClick: () => void }) {
   return (
     <header className="header">
       <div className="container header__inner">
-        <div className="brand" aria-label="ZOV">
+        <div className="brand" aria-label="SWA6Y5TAN">
           <button
             className="brand__mark"
             type="button"
             onClick={openHiddenAdmin}
-            aria-label="ZOV"
+            aria-label="SWA6Y5TAN"
           >
-            Z
+            S
           </button>
-          <span className="brand__name">ZOV</span>
+          <span className="brand__name">SWA6Y5TAN</span>
         </div>
 
         <button

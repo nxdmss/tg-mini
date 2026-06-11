@@ -21,7 +21,7 @@ export function ProductCard({
         {image ? (
           <img src={image} alt={product.name} loading="lazy" />
         ) : (
-          <div className="media-fallback">ZOV</div>
+          <div className="media-fallback">SWA6Y5TAN</div>
         )}
         {!product.inStock && <span className="tag-out">Нет в наличии</span>}
         <span className="card__overlay">
