@@ -27,7 +27,9 @@ export class ProductsService {
   constructor(private prisma: PrismaService) {}
 
   async findAll(query: QueryProductsDto = {}) {
-    const where: Prisma.ProductWhereInput = {};
+    const where: Prisma.ProductWhereInput = {
+      deletedAt: null,
+    };
 
     if (query.category) {
       where.category = {
@@ -88,8 +90,8 @@ export class ProductsService {
   }
 
   async findOne(id: string) {
-    const product = await this.prisma.product.findUnique({
-      where: { id },
+    const product = await this.prisma.product.findFirst({
+      where: { id, deletedAt: null },
       include: productInclude,
     });
 
@@ -180,12 +182,18 @@ export class ProductsService {
 
   async remove(id: string) {
     await this.ensureProductExists(id);
-    await this.prisma.product.delete({ where: { id } });
+    await this.prisma.product.update({
+      where: { id },
+      data: {
+        deletedAt: new Date(),
+        inStock: false,
+      },
+    });
     return { ok: true };
   }
 
   private async ensureProductExists(id: string) {
-    const product = await this.prisma.product.findUnique({ where: { id } });
+    const product = await this.prisma.product.findFirst({ where: { id, deletedAt: null } });
     if (!product) {
       throw new NotFoundException(`Product ${id} not found`);
     }
