@@ -51,6 +51,7 @@ model Product {
   orderItems  OrderItem[]
 
   createdAt   DateTime @default(now())
+  deletedAt   DateTime?
 }
 
 model ProductImage {
