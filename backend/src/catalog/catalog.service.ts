@@ -8,8 +8,9 @@ export class CatalogService {
 
   async brands() {
     return this.prisma.brand.findMany({
+      where: { deletedAt: null },
       orderBy: { name: 'asc' },
-      include: { _count: { select: { products: true } } },
+      include: { _count: { select: { products: { where: { deletedAt: null } } } } },
     });
   }
 
@@ -17,7 +18,7 @@ export class CatalogService {
     try {
       return await this.prisma.brand.create({
         data: { name: name.trim() },
-        include: { _count: { select: { products: true } } },
+        include: { _count: { select: { products: { where: { deletedAt: null } } } } },
       });
     } catch (error) {
       this.handleCreateError(error, 'Brand');
@@ -27,7 +28,7 @@ export class CatalogService {
   async deleteBrand(id: string) {
     const brand = await this.prisma.brand.findUnique({
       where: { id },
-      include: { _count: { select: { products: true } } },
+      include: { _count: { select: { products: { where: { deletedAt: null } } } } },
     });
 
     if (!brand) {
@@ -38,14 +39,21 @@ export class CatalogService {
       throw new BadRequestException('Brand has products and cannot be deleted');
     }
 
-    await this.prisma.brand.delete({ where: { id } });
+    await this.prisma.brand.update({
+      where: { id },
+      data: {
+        deletedAt: new Date(),
+        name: `${brand.name}__deleted__${brand.id}`,
+      },
+    });
     return { ok: true };
   }
 
   async categories() {
     return this.prisma.category.findMany({
+      where: { deletedAt: null },
       orderBy: { name: 'asc' },
-      include: { _count: { select: { products: true } } },
+      include: { _count: { select: { products: { where: { deletedAt: null } } } } },
     });
   }
 
@@ -53,7 +61,7 @@ export class CatalogService {
     try {
       return await this.prisma.category.create({
         data: { name: name.trim() },
-        include: { _count: { select: { products: true } } },
+        include: { _count: { select: { products: { where: { deletedAt: null } } } } },
       });
     } catch (error) {
       this.handleCreateError(error, 'Category');
@@ -63,7 +71,7 @@ export class CatalogService {
   async deleteCategory(id: string) {
     const category = await this.prisma.category.findUnique({
       where: { id },
-      include: { _count: { select: { products: true } } },
+      include: { _count: { select: { products: { where: { deletedAt: null } } } } },
     });
 
     if (!category) {
@@ -74,7 +82,13 @@ export class CatalogService {
       throw new BadRequestException('Category has products and cannot be deleted');
     }
 
-    await this.prisma.category.delete({ where: { id } });
+    await this.prisma.category.update({
+      where: { id },
+      data: {
+        deletedAt: new Date(),
+        name: `${category.name}__deleted__${category.id}`,
+      },
+    });
     return { ok: true };
   }
 

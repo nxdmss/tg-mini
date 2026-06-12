@@ -103,6 +103,8 @@ export class ProductsService {
   }
 
   async create(data: CreateProductDto, imageFiles: any[] = []) {
+    await this.ensureActiveCatalogRefs(data.brandId, data.categoryId);
+
     const savedImageUrls = [
       ...(data.images ?? []),
       ...(await this.uploadImages(imageFiles)),
@@ -143,6 +145,7 @@ export class ProductsService {
 
   async update(id: string, data: UpdateProductDto, imageFiles: any[] = []) {
     await this.ensureProductExists(id);
+    await this.ensureActiveCatalogRefs(data.brandId, data.categoryId);
 
     const uploadedUrls = await this.uploadImages(imageFiles);
     const imageUrls =
@@ -196,6 +199,28 @@ export class ProductsService {
     const product = await this.prisma.product.findFirst({ where: { id, deletedAt: null } });
     if (!product) {
       throw new NotFoundException(`Product ${id} not found`);
+    }
+  }
+
+  private async ensureActiveCatalogRefs(brandId?: string, categoryId?: string) {
+    if (brandId) {
+      const brand = await this.prisma.brand.findFirst({
+        where: { id: brandId, deletedAt: null },
+      });
+
+      if (!brand) {
+        throw new BadRequestException('Brand not found');
+      }
+    }
+
+    if (categoryId) {
+      const category = await this.prisma.category.findFirst({
+        where: { id: categoryId, deletedAt: null },
+      });
+
+      if (!category) {
+        throw new BadRequestException('Category not found');
+      }
     }
   }
 

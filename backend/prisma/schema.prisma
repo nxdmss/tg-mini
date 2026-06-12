@@ -24,6 +24,8 @@ model Brand {
   name  String @unique
 
   products Product[]
+
+  deletedAt DateTime?
 }
 
 model Category {
@@ -31,6 +33,8 @@ model Category {
   name  String @unique
 
   products Product[]
+
+  deletedAt DateTime?
 }
 
 model Product {
