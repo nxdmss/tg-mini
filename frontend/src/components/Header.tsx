@@ -28,17 +28,14 @@ export function Header({ onCartClick }: { onCartClick: () => void }) {
   return (
     <header className="header">
       <div className="container header__inner">
-        <div className="brand" aria-label="SWA6Y5TAN">
-          <button
-            className="brand__mark"
-            type="button"
-            onClick={openHiddenAdmin}
-            aria-label="SWA6Y5TAN"
-          >
-            S
-          </button>
-          <span className="brand__name">SWA6Y5TAN</span>
-        </div>
+        <button
+          className="brand__logo"
+          type="button"
+          onClick={openHiddenAdmin}
+          aria-label="SWA6Y5TAN"
+        >
+          <img src="/logo.png" alt="SWA6Y5TAN" />
+        </button>
 
         <button
           className="header-cart"
