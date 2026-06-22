@@ -647,7 +647,6 @@ img {
 }
 
 .detail {
-  position: relative;
   inset: auto 0 0;
   max-height: calc(100vh - 22px);
   overflow: auto;
