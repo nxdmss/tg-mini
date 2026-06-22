@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Product } from "../types";
 import { formatPrice } from "../utils";
 import { useCart } from "../cart";
@@ -11,6 +11,7 @@ export function ProductDetail({
   onClose: () => void;
 }) {
   const { add } = useCart();
+  const trackRef = useRef<HTMLDivElement>(null);
   const [activeImage, setActiveImage] = useState(0);
   const [size, setSize] = useState<string | null>(
     product.sizes.length === 1 ? product.sizes[0].size : null,
@@ -24,7 +25,34 @@ export function ProductDetail({
     };
   }, []);
 
-  const image = product.images[activeImage]?.url ?? product.images[0]?.url;
+  useEffect(() => {
+    setActiveImage(0);
+    setSize(product.sizes.length === 1 ? product.sizes[0].size : null);
+    setAdded(false);
+    trackRef.current?.scrollTo({ left: 0 });
+  }, [product.id, product.sizes]);
+
+  const images = product.images;
+  const previewImage = images[activeImage]?.url ?? images[0]?.url;
+
+  function scrollToImage(index: number) {
+    const track = trackRef.current;
+    if (!track) return;
+
+    const nextIndex = Math.max(0, Math.min(index, images.length - 1));
+    track.scrollTo({ left: nextIndex * track.clientWidth, behavior: "smooth" });
+    setActiveImage(nextIndex);
+  }
+
+  function handleGalleryScroll() {
+    const track = trackRef.current;
+    if (!track || track.clientWidth === 0 || images.length === 0) return;
+
+    const index = Math.round(track.scrollLeft / track.clientWidth);
+    if (index !== activeImage) {
+      setActiveImage(index);
+    }
+  }
 
   function handleAdd() {
     if (!size) return;
@@ -32,7 +60,7 @@ export function ProductDetail({
       productId: product.id,
       name: product.name,
       price: product.price,
-      image: product.images[0]?.url,
+      image: previewImage,
       size,
       quantity: 1,
     });
@@ -49,18 +77,60 @@ export function ProductDetail({
         </button>
         <div className="detail__body">
           <div>
-            <div className="detail__media">
-              {image && <img src={image} alt={product.name} />}
+            <div className="detail__gallery">
+              <div
+                className="detail__track"
+                ref={trackRef}
+                onScroll={handleGalleryScroll}
+              >
+                {images.length > 0 ? (
+                  images.map((img, i) => (
+                    <div className="detail__slide" key={img.id}>
+                      <img
+                        src={img.url}
+                        alt={i === 0 ? product.name : `${product.name} — фото ${i + 1}`}
+                      />
+                    </div>
+                  ))
+                ) : (
+                  <div className="detail__slide">
+                    <div className="media-fallback">SWA6Y5TAN</div>
+                  </div>
+                )}
+              </div>
+
+              {images.length > 1 && (
+                <>
+                  <div className="detail__dots" aria-hidden={images.length <= 1}>
+                    {images.map((img, i) => (
+                      <button
+                        key={img.id}
+                        type="button"
+                        className={`detail__dot ${
+                          i === activeImage ? "detail__dot--active" : ""
+                        }`}
+                        onClick={() => scrollToImage(i)}
+                        aria-label={`Фото ${i + 1} из ${images.length}`}
+                      />
+                    ))}
+                  </div>
+                  <div className="detail__counter">
+                    {activeImage + 1} / {images.length}
+                  </div>
+                </>
+              )}
             </div>
-            {product.images.length > 1 && (
+
+            {images.length > 1 && (
               <div className="detail__thumbs">
-                {product.images.map((img, i) => (
+                {images.map((img, i) => (
                   <button
                     key={img.id}
+                    type="button"
                     className={`detail__thumb ${
                       i === activeImage ? "detail__thumb--active" : ""
                     }`}
-                    onClick={() => setActiveImage(i)}
+                    onClick={() => scrollToImage(i)}
                   >
                     <img src={img.url} alt="" />
                   </button>
@@ -85,6 +155,7 @@ export function ProductDetail({
                 {product.sizes.map((s) => (
                   <button
                     key={s.id}
+                    type="button"
                     className={`size ${size === s.size ? "size--active" : ""}`}
                     onClick={() => setSize(s.size)}
                   >

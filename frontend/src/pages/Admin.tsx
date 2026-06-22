@@ -550,11 +550,18 @@ export default function Admin() {
               type="file"
               accept="image/*"
               multiple
-              onChange={(e) =>
-                setForm({ ...form, files: Array.from(e.target.files ?? []) })
-              }
+              onChange={(e) => {
+                const picked = Array.from(e.target.files ?? []);
+                if (picked.length === 0) return;
+                setForm({ ...form, files: [...form.files, ...picked] });
+                e.target.value = "";
+              }}
             />
-            <span>{selectedFiles || "Выбрать фото для Cloudinary"}</span>
+            <span>
+              {selectedFiles || "Добавить фото (можно несколько)"}
+              {form.existingImages.length > 0 &&
+                ` · сохранено: ${form.existingImages.length}`}
+            </span>
           </label>
 
           {message && <div className="notice notice--ok">{message}</div>}
