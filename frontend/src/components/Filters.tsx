@@ -4,11 +4,10 @@ import type { Category, ProductsQuery } from "../types";
 type Props = {
   categories: Category[];
   query: ProductsQuery;
-  count: number;
   onChange: (q: ProductsQuery) => void;
 };
 
-export function Filters({ categories, query, count, onChange }: Props) {
+export function Filters({ categories, query, onChange }: Props) {
   const [sortOpen, setSortOpen] = useState(false);
   const sort = query.sort ?? "newest";
   const sortLabel =
@@ -89,12 +88,6 @@ export function Filters({ categories, query, count, onChange }: Props) {
           >
             В наличии
           </button>
-        </div>
-        <div className="toolbar__row">
-          <span className="count">
-            <strong>{count}</strong> {count === 1 ? "товар" : count > 1 && count < 5 ? "товара" : "товаров"}
-          </span>
-          <span className="count">Сортировка: {sortLabel}</span>
         </div>
       </div>
     </div>

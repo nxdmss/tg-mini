@@ -78,7 +78,6 @@ export default function App() {
       <Filters
         categories={categories}
         query={query}
-        count={products.length}
         onChange={(nextQuery) => setQuery(nextQuery)}
       />
 
