@@ -13,9 +13,7 @@ import { UpdateProductDto } from './update-product.dto';
 
 const productInclude = {
   images: {
-    orderBy: {
-      url: 'asc',
-    },
+    orderBy: [{ sortOrder: 'asc' }, { url: 'asc' }],
   },
   sizes: true,
   brand: true,
@@ -105,10 +103,8 @@ export class ProductsService {
   async create(data: CreateProductDto, imageFiles: any[] = []) {
     await this.ensureActiveCatalogRefs(data.brandId, data.categoryId);
 
-    const savedImageUrls = [
-      ...(data.images ?? []),
-      ...(await this.uploadImages(imageFiles)),
-    ];
+    const uploadedUrls = await this.uploadImages(imageFiles);
+    const savedImageUrls = this.mergeImageUrls(data.images ?? [], uploadedUrls, data.imagesOrder);
 
     const product = await this.prisma.product.create({
       data: {
@@ -127,8 +123,9 @@ export class ProductsService {
           },
         },
         images: {
-          create: savedImageUrls.map((url) => ({
+          create: savedImageUrls.map((url, index) => ({
             url,
+            sortOrder: index,
           })),
         },
         sizes: {
@@ -150,7 +147,7 @@ export class ProductsService {
     const uploadedUrls = await this.uploadImages(imageFiles);
     const imageUrls =
       data.images !== undefined || uploadedUrls.length > 0
-        ? [...(data.images ?? []), ...uploadedUrls]
+        ? this.mergeImageUrls(data.images ?? [], uploadedUrls, data.imagesOrder)
         : undefined;
 
     const product = await this.prisma.product.update({
@@ -166,7 +163,10 @@ export class ProductsService {
           imageUrls !== undefined
             ? {
                 deleteMany: {},
-                create: imageUrls.map((url) => ({ url })),
+                create: imageUrls.map((url, index) => ({
+                  url,
+                  sortOrder: index,
+                })),
               }
             : undefined,
         sizes:
@@ -246,6 +246,47 @@ export class ProductsService {
         };
       }),
     };
+  }
+
+  private mergeImageUrls(existingUrls: string[], uploadedUrls: string[], imagesOrder?: string) {
+    if (!imagesOrder) {
+      return [...existingUrls, ...uploadedUrls];
+    }
+
+    let order: Array<'url' | 'file'>;
+    try {
+      order = JSON.parse(imagesOrder);
+    } catch {
+      return [...existingUrls, ...uploadedUrls];
+    }
+
+    if (!Array.isArray(order)) {
+      return [...existingUrls, ...uploadedUrls];
+    }
+
+    let urlIndex = 0;
+    let fileIndex = 0;
+    const merged: string[] = [];
+
+    for (const slot of order) {
+      if (slot === 'url') {
+        const url = existingUrls[urlIndex++];
+        if (url) merged.push(url);
+      } else if (slot === 'file') {
+        const url = uploadedUrls[fileIndex++];
+        if (url) merged.push(url);
+      }
+    }
+
+    while (urlIndex < existingUrls.length) {
+      merged.push(existingUrls[urlIndex++]);
+    }
+
+    while (fileIndex < uploadedUrls.length) {
+      merged.push(uploadedUrls[fileIndex++]);
+    }
+
+    return merged;
   }
 
   private async uploadImages(imageFiles: any[] = []) {

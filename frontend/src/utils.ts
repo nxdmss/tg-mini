@@ -5,3 +5,7 @@ export function formatPrice(value: number): string {
     maximumFractionDigits: 0,
   }).format(value);
 }
+
+export function getProductPreviewImage(product: { images: Array<{ url: string }> }) {
+  return product.images[0]?.url;
+}

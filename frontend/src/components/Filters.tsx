@@ -40,7 +40,28 @@ export function Filters({ categories, query, onChange }: Props) {
               onClick={() => setSortOpen((open) => !open)}
               aria-label={`Сортировка: ${sortLabel}`}
             >
-              ⇅
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path
+                  d="M12 6v12"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                />
+                <path
+                  d="M8 10l4-4 4 4"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M8 14l4 4 4-4"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
             </button>
             {sortOpen && (
               <div className="sort-menu">

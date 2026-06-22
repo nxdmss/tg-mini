@@ -141,9 +141,12 @@ export type ProductFormPayload = {
   categoryId: string;
   inStock: boolean;
   sizes: string[];
-  existingImages?: string[];
-  files?: File[];
+  imageItems: ProductImageItem[];
 };
+
+export type ProductImageItem =
+  | { key: string; type: "url"; url: string }
+  | { key: string; type: "file"; file: File };
 
 function productFormData(payload: ProductFormPayload) {
   const form = new FormData();
@@ -154,8 +157,22 @@ function productFormData(payload: ProductFormPayload) {
   form.append("categoryId", payload.categoryId);
   form.append("inStock", String(payload.inStock));
   payload.sizes.forEach((size) => form.append("sizes", size));
-  payload.existingImages?.forEach((url) => form.append("images", url));
-  payload.files?.forEach((file) => form.append("images", file));
+
+  const order: Array<"url" | "file"> = [];
+  for (const item of payload.imageItems) {
+    if (item.type === "url") {
+      form.append("images", item.url);
+      order.push("url");
+    } else {
+      form.append("images", item.file);
+      order.push("file");
+    }
+  }
+
+  if (order.length > 0) {
+    form.append("imagesOrder", JSON.stringify(order));
+  }
+
   return form;
 }
 

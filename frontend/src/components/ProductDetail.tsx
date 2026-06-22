@@ -73,7 +73,14 @@ export function ProductDetail({
       <div className="overlay" onClick={onClose} />
       <div className="sheet detail">
         <button className="detail__close" onClick={onClose} aria-label="Закрыть">
-          ✕
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path
+              d="M7 7l10 10M17 7L7 17"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+            />
+          </svg>
         </button>
         <div className="detail__body">
           <div>

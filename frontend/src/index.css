@@ -146,15 +146,23 @@ img {
 .detail__close {
   width: 38px;
   height: 38px;
+  padding: 0;
   border-radius: 50%;
-  display: grid;
-  place-items: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   position: relative;
   background: transparent;
   border: 1px solid var(--line-strong);
   color: var(--text-secondary);
-  font-size: 15px;
-  font-weight: 400;
+  line-height: 0;
+}
+
+.cart-btn svg,
+.detail__close svg,
+.sort-btn svg {
+  display: block;
+  flex-shrink: 0;
 }
 
 .cart-btn__badge {
@@ -228,7 +236,7 @@ img {
 
 .toolbar__top {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 42px;
+  grid-template-columns: minmax(0, 1fr) 48px;
   gap: 10px;
   align-items: center;
   margin-bottom: 10px;
@@ -272,16 +280,17 @@ img {
 }
 
 .sort-btn {
-  width: 38px;
-  height: 38px;
-  border-radius: 12px;
-  display: grid;
-  place-items: center;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  border-radius: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   background: transparent;
   border: 1px solid var(--line-strong);
   color: var(--text-secondary);
-  font-size: 15px;
-  font-weight: 400;
+  line-height: 0;
 }
 
 .sort-menu {
@@ -638,6 +647,7 @@ img {
 }
 
 .detail {
+  position: relative;
   inset: auto 0 0;
   max-height: calc(100vh - 22px);
   overflow: auto;
@@ -655,8 +665,10 @@ img {
   position: absolute;
   top: 14px;
   right: 14px;
-  z-index: 2;
-  font-size: 17px;
+  z-index: 3;
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid var(--line);
+  color: var(--text);
 }
 
 .detail__body {
@@ -1217,8 +1229,47 @@ textarea.field {
 .admin-images {
   margin: 2px 0 14px;
   display: flex;
-  gap: 8px;
+  gap: 12px;
   overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.admin-image-wrap {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 84px;
+}
+
+.admin-image__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.admin-image__actions .chip {
+  min-height: 30px;
+  padding: 0 10px;
+  font-size: 11px;
+}
+
+.admin-image {
+  position: relative;
+}
+
+.admin-image__badge {
+  position: absolute;
+  left: 6px;
+  top: 6px;
+  padding: 4px 7px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid var(--line);
+  color: var(--text);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
 }
 
 .admin-image,

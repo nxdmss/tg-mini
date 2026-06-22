@@ -47,6 +47,10 @@ export class CreateProductDto {
   images?: string[];
 
   @IsOptional()
+  @IsString()
+  imagesOrder?: string;
+
+  @IsOptional()
   @Transform(({ value }) => toStringArray(value))
   @IsArray()
   sizes?: string[];

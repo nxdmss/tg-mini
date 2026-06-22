@@ -16,10 +16,11 @@ import {
   updateOrderStatus,
   updateProduct,
   type ProductFormPayload,
+  type ProductImageItem,
 } from "../api";
 import type { AdminOrder, AuthUser, Brand, Category, OrderStatus, Product } from "../types";
 import { getTelegramLaunchInfo } from "../telegram";
-import { formatPrice } from "../utils";
+import { formatPrice, getProductPreviewImage } from "../utils";
 
 type FormState = {
   id?: string;
@@ -30,8 +31,7 @@ type FormState = {
   categoryId: string;
   inStock: boolean;
   sizes: string;
-  existingImages: string[];
-  files: File[];
+  imageItems: ProductImageItem[];
 };
 
 type AdminTab = "products" | "catalog" | "orders";
@@ -45,10 +45,22 @@ const emptyForm: FormState = {
   categoryId: "",
   inStock: true,
   sizes: "XS, S, M, L, XL",
-  existingImages: [],
-  files: [],
+  imageItems: [],
 };
 
+function newFileKey(file: File) {
+  return `file:${file.name}:${file.size}:${file.lastModified}:${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function moveImageToPreview(items: ProductImageItem[], key: string) {
+  const index = items.findIndex((item) => item.key === key);
+  if (index <= 0) return items;
+
+  const next = [...items];
+  const [picked] = next.splice(index, 1);
+  next.unshift(picked);
+  return next;
+}
 function sizesFromInput(value: string) {
   return value
     .split(",")
@@ -178,8 +190,11 @@ export default function Admin() {
       categoryId: product.category.id,
       inStock: product.inStock,
       sizes: product.sizes.map((size) => size.size).join(", "),
-      existingImages: product.images.map((image) => image.url),
-      files: [],
+      imageItems: product.images.map((image) => ({
+        key: image.id,
+        type: "url" as const,
+        url: image.url,
+      })),
     });
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
@@ -193,8 +208,7 @@ export default function Admin() {
       categoryId: form.categoryId,
       inStock: form.inStock,
       sizes: sizesFromInput(form.sizes),
-      existingImages: form.existingImages,
-      files: form.files,
+      imageItems: form.imageItems,
     };
   }
 
@@ -350,8 +364,12 @@ export default function Admin() {
   }
 
   const selectedFiles = useMemo(
-    () => form.files.map((file) => file.name).join(", "),
-    [form.files],
+    () =>
+      form.imageItems
+        .filter((item) => item.type === "file")
+        .map((item) => item.file.name)
+        .join(", "),
+    [form.imageItems],
   );
   const telegramInfo = getTelegramLaunchInfo();
   const activeOrders = orders.filter(
@@ -525,22 +543,46 @@ export default function Admin() {
             />
           </label>
 
-          {form.existingImages.length > 0 && (
+          {form.imageItems.length > 0 && (
             <div className="admin-images">
-              {form.existingImages.map((url) => (
-                <button
-                  key={url}
-                  className="admin-image"
-                  onClick={() =>
-                    setForm({
-                      ...form,
-                      existingImages: form.existingImages.filter((image) => image !== url),
-                    })
-                  }
-                  title="Убрать изображение"
-                >
-                  <img src={url} alt="" />
-                </button>
+              {form.imageItems.map((item, index) => (
+                <div className="admin-image-wrap" key={item.key}>
+                  <div className="admin-image">
+                    <img
+                      src={item.type === "url" ? item.url : URL.createObjectURL(item.file)}
+                      alt=""
+                    />
+                    {index === 0 && <span className="admin-image__badge">Превью</span>}
+                  </div>
+                  <div className="admin-image__actions">
+                    {index !== 0 && (
+                      <button
+                        type="button"
+                        className="chip"
+                        onClick={() =>
+                          setForm({
+                            ...form,
+                            imageItems: moveImageToPreview(form.imageItems, item.key),
+                          })
+                        }
+                      >
+                        На превью
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      className="chip"
+                      onClick={() =>
+                        setForm({
+                          ...form,
+                          imageItems: form.imageItems.filter((image) => image.key !== item.key),
+                        })
+                      }
+                    >
+                      Убрать
+                    </button>
+                  </div>
+                </div>
               ))}
             </div>
           )}
@@ -553,14 +595,23 @@ export default function Admin() {
               onChange={(e) => {
                 const picked = Array.from(e.target.files ?? []);
                 if (picked.length === 0) return;
-                setForm({ ...form, files: [...form.files, ...picked] });
+                setForm({
+                  ...form,
+                  imageItems: [
+                    ...form.imageItems,
+                    ...picked.map((file) => ({
+                      key: newFileKey(file),
+                      type: "file" as const,
+                      file,
+                    })),
+                  ],
+                });
                 e.target.value = "";
               }}
             />
             <span>
               {selectedFiles || "Добавить фото (можно несколько)"}
-              {form.existingImages.length > 0 &&
-                ` · сохранено: ${form.existingImages.length}`}
+              {form.imageItems.length > 0 && ` · всего: ${form.imageItems.length}`}
             </span>
           </label>
 
@@ -584,8 +635,8 @@ export default function Admin() {
             {products.map((product) => (
               <article className="admin-product" key={product.id}>
                 <div className="admin-product__media">
-                  {product.images[0]?.url ? (
-                    <img src={product.images[0].url} alt={product.name} />
+                  {getProductPreviewImage(product) ? (
+                    <img src={getProductPreviewImage(product)} alt={product.name} />
                   ) : (
                     <div className="media-fallback">SWA6Y5TAN</div>
                   )}

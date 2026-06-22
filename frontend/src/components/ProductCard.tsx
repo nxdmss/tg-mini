@@ -1,5 +1,5 @@
 import type { Product } from "../types";
-import { formatPrice } from "../utils";
+import { formatPrice, getProductPreviewImage } from "../utils";
 
 export function ProductCard({
   product,
@@ -10,7 +10,7 @@ export function ProductCard({
   onClick: () => void;
   index?: number;
 }) {
-  const image = product.images[0]?.url;
+  const image = getProductPreviewImage(product);
   return (
     <button
       className="card"
