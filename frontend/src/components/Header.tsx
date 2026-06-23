@@ -43,7 +43,6 @@ export function Header({ onCartClick }: { onCartClick: () => void }) {
           aria-label="Корзина"
         >
           Корзина
-
           {count > 0 && (
             <span className="header-cart__badge">
               {count}

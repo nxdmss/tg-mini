@@ -73,13 +73,15 @@ export default function App() {
 
   return (
     <div className="app">
-      <Header onCartClick={() => setCartOpen(true)} />
+      <div className="store-top">
+        <Header onCartClick={() => setCartOpen(true)} />
 
-      <Filters
-        categories={categories}
-        query={query}
-        onChange={(nextQuery) => setQuery(nextQuery)}
-      />
+        <Filters
+          categories={categories}
+          query={query}
+          onChange={(nextQuery) => setQuery(nextQuery)}
+        />
+      </div>
 
       <main className="container">
         {loading ? (
