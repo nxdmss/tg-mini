@@ -292,7 +292,7 @@ img {
 .search-strip::after {
   content: "";
   display: block;
-  height: 2px;
+  height: 1px;
   background: #111;
   flex-shrink: 0;
 }
@@ -308,6 +308,7 @@ img {
   font-size: 13px;
   font-weight: 500;
   line-height: 1.2;
+  text-align: center;
   outline: none;
   box-shadow: none;
 }
