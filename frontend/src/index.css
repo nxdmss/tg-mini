@@ -47,50 +47,15 @@ body,
 #root {
   min-height: 100%;
   margin: 0;
-  background: transparent;
+  background: #ffffff;
 }
 
 body {
   position: relative;
-  isolation: isolate;
   color: var(--text);
   font-weight: 400;
   font-style: normal;
   -webkit-font-smoothing: antialiased;
-}
-
-body::before {
-  content: "";
-  position: fixed;
-  top: -12%;
-  left: -2%;
-  right: -2%;
-  bottom: -10%;
-  z-index: -2;
-  background-color: #ffffff;
-  background-image: url("/back3.png");
-  background-repeat: no-repeat;
-  background-position: 60% 14%;
-  background-size: cover;
-  filter: grayscale(1) brightness(2.88) contrast(0.84) saturate(0);
-  pointer-events: none;
-}
-
-body::after {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  background:
-    linear-gradient(
-      145deg,
-      rgba(255, 255, 255, 0.95) 0%,
-      rgba(255, 255, 255, 0.88) 38%,
-      rgba(254, 255, 255, 0.9) 72%,
-      rgba(255, 255, 255, 0.94) 100%
-    );
-  mix-blend-mode: soft-light;
 }
 
 button,
@@ -129,7 +94,7 @@ img {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: transparent;
+  background: #ffffff;
 }
 
 .container {
