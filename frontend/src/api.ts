@@ -1,4 +1,5 @@
 import axios from "axios";
+import { compressImageFiles } from "./imageCompress";
 import { getTelegramInitData, getTelegramLaunchInfo } from "./telegram";
 import type {
   AdminOrder,
@@ -212,9 +213,41 @@ function productFormData(payload: ProductFormPayload) {
   return form;
 }
 
-export async function createProduct(payload: ProductFormPayload): Promise<Product> {
+async function prepareProductPayload(payload: ProductFormPayload) {
+  const fileItems = payload.imageItems.filter(
+    (item): item is Extract<ProductImageItem, { type: "file" }> => item.type === "file",
+  );
+
+  if (fileItems.length === 0) {
+    return payload;
+  }
+
+  const compressed = await compressImageFiles(fileItems.map((item) => item.file));
+  const compressedByKey = new Map<string, File>();
+
+  fileItems.forEach((item, index) => {
+    compressedByKey.set(item.key, compressed[index]);
+  });
+
+  return {
+    ...payload,
+    imageItems: payload.imageItems.map((item) =>
+      item.type === "file"
+        ? { ...item, file: compressedByKey.get(item.key) ?? item.file }
+        : item,
+    ),
+  };
+}
+
+export async function createProduct(
+  payload: ProductFormPayload,
+  onProgress?: (stage: "compress" | "upload") => void,
+): Promise<Product> {
+  onProgress?.("compress");
+  const prepared = await prepareProductPayload(payload);
+  onProgress?.("upload");
   const res = await withRetry(() =>
-    api.post<Product>("/products", productFormData(payload), {
+    api.post<Product>("/products", productFormData(prepared), {
       headers: authHeaders(),
       timeout: 120000,
     }),
@@ -222,9 +255,16 @@ export async function createProduct(payload: ProductFormPayload): Promise<Produc
   return res.data;
 }
 
-export async function updateProduct(id: string, payload: ProductFormPayload): Promise<Product> {
+export async function updateProduct(
+  id: string,
+  payload: ProductFormPayload,
+  onProgress?: (stage: "compress" | "upload") => void,
+): Promise<Product> {
+  onProgress?.("compress");
+  const prepared = await prepareProductPayload(payload);
+  onProgress?.("upload");
   const res = await withRetry(() =>
-    api.patch<Product>(`/products/${id}`, productFormData(payload), {
+    api.patch<Product>(`/products/${id}`, productFormData(prepared), {
       headers: authHeaders(),
       timeout: 120000,
     }),

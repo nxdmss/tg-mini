@@ -20,6 +20,7 @@ import {
 } from "../api";
 import type { AdminOrder, AuthUser, Brand, Category, OrderStatus, Product } from "../types";
 import { getTelegramLaunchInfo } from "../telegram";
+import { compressImageFiles } from "../imageCompress";
 import { formatPrice, getProductPreviewImage } from "../utils";
 
 type FormState = {
@@ -107,6 +108,8 @@ export default function Admin() {
   const [categoryName, setCategoryName] = useState("");
   const [booting, setBooting] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [saveStage, setSaveStage] = useState<"compress" | "upload" | null>(null);
+  const [compressingImages, setCompressingImages] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -223,11 +226,13 @@ export default function Admin() {
     setMessage(null);
 
     try {
+      const progress = (stage: "compress" | "upload") => setSaveStage(stage);
+
       if (form.id) {
-        await updateProduct(form.id, toPayload());
+        await updateProduct(form.id, toPayload(), progress);
         setMessage("Товар обновлен.");
       } else {
-        await createProduct(toPayload());
+        await createProduct(toPayload(), progress);
         setMessage("Товар создан.");
       }
 
@@ -237,6 +242,7 @@ export default function Admin() {
       setError(getApiErrorMessage(saveError));
     } finally {
       setSaving(false);
+      setSaveStage(null);
     }
   }
 
@@ -595,22 +601,39 @@ export default function Admin() {
               onChange={(e) => {
                 const picked = Array.from(e.target.files ?? []);
                 if (picked.length === 0) return;
-                setForm({
-                  ...form,
-                  imageItems: [
-                    ...form.imageItems,
-                    ...picked.map((file) => ({
-                      key: newFileKey(file),
-                      type: "file" as const,
-                      file,
-                    })),
-                  ],
-                });
+
+                void (async () => {
+                  setCompressingImages(true);
+                  setError(null);
+
+                  try {
+                    const compressed = await compressImageFiles(picked);
+                    setForm((current) => ({
+                      ...current,
+                      imageItems: [
+                        ...current.imageItems,
+                        ...compressed.map((file) => ({
+                          key: newFileKey(file),
+                          type: "file" as const,
+                          file,
+                        })),
+                      ],
+                    }));
+                  } catch {
+                    setError("Не удалось обработать фото. Попробуйте другие файлы.");
+                  } finally {
+                    setCompressingImages(false);
+                  }
+                })();
+
                 e.target.value = "";
               }}
+              disabled={compressingImages}
             />
             <span>
-              {selectedFiles || "Добавить фото (можно несколько)"}
+              {compressingImages
+                ? "Сжимаем фото..."
+                : selectedFiles || "Добавить фото (можно несколько)"}
               {form.imageItems.length > 0 && ` · всего: ${form.imageItems.length}`}
             </span>
           </label>
@@ -618,8 +641,20 @@ export default function Admin() {
           {message && <div className="notice notice--ok">{message}</div>}
           {error && <div className="notice notice--error">{error}</div>}
 
-          <button className="btn" onClick={submit} disabled={saving || !canSubmit}>
-            {saving ? "Сохраняем..." : isEditing ? "Сохранить изменения" : "Создать товар"}
+          <button
+            className="btn"
+            onClick={submit}
+            disabled={saving || compressingImages || !canSubmit}
+          >
+            {saving
+              ? saveStage === "compress"
+                ? "Сжимаем фото..."
+                : saveStage === "upload"
+                  ? "Загружаем на сервер..."
+                  : "Сохраняем..."
+              : isEditing
+                ? "Сохранить изменения"
+                : "Создать товар"}
           </button>
         </div>
 

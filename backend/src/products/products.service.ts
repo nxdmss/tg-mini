@@ -301,6 +301,8 @@ export class ProductsService {
             {
               folder: process.env.CLOUDINARY_FOLDER || 'zov/products',
               resource_type: 'image',
+              quality: 'auto:good',
+              fetch_format: 'auto',
             },
             (error, result?: UploadApiResponse) => {
               if (error || !result) {
