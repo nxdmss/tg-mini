@@ -663,10 +663,14 @@ export default function Admin() {
                     </div>
                   )}
                   <div className="admin-product__actions">
-                    <button className="chip" onClick={() => editProduct(product)}>
+                    <button className="chip" onClick={() => editProduct(product)} disabled={saving}>
                       Изменить
                     </button>
-                    <button className="chip" onClick={() => void removeProduct(product)}>
+                    <button
+                      className="chip"
+                      onClick={() => void removeProduct(product)}
+                      disabled={saving}
+                    >
                       Удалить
                     </button>
                   </div>

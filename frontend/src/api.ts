@@ -17,9 +17,41 @@ const baseURL =
 
 export const api = axios.create({ baseURL, timeout: 45000 });
 
+api.interceptors.request.use((config) => {
+  if (config.data instanceof FormData && config.headers) {
+    delete config.headers["Content-Type"];
+  }
+  return config;
+});
+
 function authHeaders() {
   const initData = getTelegramInitData();
   return initData ? { "x-telegram-init-data": initData } : {};
+}
+
+function isRetryableError(error: unknown) {
+  if (!axios.isAxiosError(error)) return false;
+  if (!error.response || error.code === "ECONNABORTED") return true;
+  const status = error.response.status;
+  return status === 502 || status === 503 || status === 504 || status === 429;
+}
+
+async function withRetry<T>(fn: () => Promise<T>, retries = 2) {
+  let lastError: unknown;
+
+  for (let attempt = 0; attempt <= retries; attempt += 1) {
+    try {
+      return await fn();
+    } catch (error) {
+      lastError = error;
+      if (attempt === retries || !isRetryableError(error)) {
+        throw error;
+      }
+      await new Promise((resolve) => setTimeout(resolve, 1400 * (attempt + 1)));
+    }
+  }
+
+  throw lastError;
 }
 
 // Полностью отключаем спасательный круг в виде моков для живых запросов
@@ -118,14 +150,18 @@ export function getApiErrorMessage(error: unknown) {
   }
 
   if (!error.response) {
-    return "Сервер не ответил. Подождите 30 секунд и попробуйте ещё раз: backend на Render может просыпаться после простоя.";
+    return "Сервер не ответил. Подождите немного и попробуйте ещё раз — backend на Render может просыпаться после простоя.";
+  }
+
+  if (status === 400 && /cloudinary/i.test(String(backendError))) {
+    return "Не удалось загрузить фото. Проверьте настройки Cloudinary на backend.";
   }
 
   if (status && backendError) {
     return `Ошибка сервера (${status}): ${backendError}`;
   }
 
-  return "Не удалось оформить заказ. Попробуйте ещё раз.";
+  return "Не удалось выполнить запрос. Попробуйте ещё раз.";
 }
 
 export async function getMe(): Promise<AuthUser> {
@@ -177,21 +213,39 @@ function productFormData(payload: ProductFormPayload) {
 }
 
 export async function createProduct(payload: ProductFormPayload): Promise<Product> {
-  const res = await api.post<Product>("/products", productFormData(payload), {
-    headers: authHeaders(),
-  });
+  const res = await withRetry(() =>
+    api.post<Product>("/products", productFormData(payload), {
+      headers: authHeaders(),
+      timeout: 120000,
+    }),
+  );
   return res.data;
 }
 
 export async function updateProduct(id: string, payload: ProductFormPayload): Promise<Product> {
-  const res = await api.patch<Product>(`/products/${id}`, productFormData(payload), {
-    headers: authHeaders(),
-  });
+  const res = await withRetry(() =>
+    api.patch<Product>(`/products/${id}`, productFormData(payload), {
+      headers: authHeaders(),
+      timeout: 120000,
+    }),
+  );
   return res.data;
 }
 
 export async function deleteProduct(id: string): Promise<void> {
-  await api.delete(`/products/${id}`, { headers: authHeaders() });
+  try {
+    await withRetry(() =>
+      api.delete(`/products/${id}`, {
+        headers: authHeaders(),
+        timeout: 60000,
+      }),
+    );
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response?.status === 404) {
+      return;
+    }
+    throw error;
+  }
 }
 
 export async function getAdminOrders(): Promise<AdminOrder[]> {
