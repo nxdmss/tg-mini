@@ -7,7 +7,7 @@ import { ProductCard } from "./components/ProductCard";
 import { ProductDetail } from "./components/ProductDetail";
 import { CartDrawer } from "./components/CartDrawer";
 import { Filters } from "./components/Filters";
-import { getStartParam } from "./telegram";
+import { consumeStartParam } from "./telegram";
 
 export default function App() {
   const { id: productIdFromUrl } = useParams();
@@ -86,9 +86,10 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    const startParam = getStartParam();
+    const startParam = consumeStartParam();
+    if (!startParam) return;
 
-    if (!productIdFromUrl && startParam) {
+    if (!productIdFromUrl || productIdFromUrl !== startParam) {
       navigate(`/product/${startParam}`, { replace: true });
     }
   }, [productIdFromUrl, navigate]);

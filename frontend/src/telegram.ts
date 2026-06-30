@@ -81,4 +81,17 @@ export function getStartParam(): string | undefined {
   }
 }
 
+let startParamConsumed = false;
+
+/** Returns start_param once per Mini App session (Telegram keeps it after navigation). */
+export function consumeStartParam(): string | undefined {
+  if (startParamConsumed) return undefined;
+
+  const param = getStartParam();
+  if (!param) return undefined;
+
+  startParamConsumed = true;
+  return param;
+}
+
 export const tg = WebApp;
