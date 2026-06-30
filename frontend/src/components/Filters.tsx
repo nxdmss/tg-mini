@@ -9,9 +9,15 @@ type Props = {
 
 export function Filters({ categories, query, onChange }: Props) {
   const [sortOpen, setSortOpen] = useState(false);
-  const sort = query.sort ?? "newest";
+  const sort = query.sort ?? "name_asc";
   const sortLabel =
-    sort === "price_asc" ? "Дешевле" : sort === "price_desc" ? "Дороже" : "Новые";
+    sort === "price_asc"
+      ? "Дешевле"
+      : sort === "price_desc"
+        ? "Дороже"
+        : sort === "newest"
+          ? "Новые"
+          : "По названию";
 
   function setSort(nextSort: ProductsQuery["sort"]) {
     onChange({ ...query, sort: nextSort });
@@ -88,6 +94,13 @@ export function Filters({ categories, query, onChange }: Props) {
             </button>
             {sortOpen && (
               <div className="sort-menu">
+                <button
+                  type="button"
+                  className={sort === "name_asc" ? "sort-menu__item sort-menu__item--active" : "sort-menu__item"}
+                  onClick={() => setSort("name_asc")}
+                >
+                  По названию
+                </button>
                 <button
                   type="button"
                   className={sort === "newest" ? "sort-menu__item sort-menu__item--active" : "sort-menu__item"}

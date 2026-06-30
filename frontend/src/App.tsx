@@ -14,7 +14,7 @@ export default function App() {
   const navigate = useNavigate();
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [query, setQuery] = useState<ProductsQuery>({ sort: "newest" });
+  const [query, setQuery] = useState<ProductsQuery>({ sort: "name_asc" });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [fetchedProduct, setFetchedProduct] = useState<Product | null>(null);

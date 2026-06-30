@@ -69,10 +69,12 @@ export class ProductsService {
     }
 
     let orderBy: Prisma.ProductOrderByWithRelationInput = {
-      createdAt: 'desc',
+      name: 'asc',
     };
 
-    if (query.sort === 'price_asc') {
+    if (query.sort === 'newest') {
+      orderBy = { createdAt: 'desc' };
+    } else if (query.sort === 'price_asc') {
       orderBy = { price: 'asc' };
     } else if (query.sort === 'price_desc') {
       orderBy = { price: 'desc' };

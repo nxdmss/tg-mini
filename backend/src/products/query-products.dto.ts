@@ -15,8 +15,8 @@ export class QueryProductsDto {
   search?: string;
 
   @IsOptional()
-  @IsIn(['newest', 'price_asc', 'price_desc'])
-  sort?: 'newest' | 'price_asc' | 'price_desc';
+  @IsIn(['name_asc', 'newest', 'price_asc', 'price_desc'])
+  sort?: 'name_asc' | 'newest' | 'price_asc' | 'price_desc';
 
   @IsOptional()
   @Transform(({ value }) => value === 'true' || value === true)

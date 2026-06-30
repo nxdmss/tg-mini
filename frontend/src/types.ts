@@ -66,6 +66,6 @@ export type ProductsQuery = {
   category?: string;
   brand?: string;
   search?: string;
-  sort?: 'newest' | 'price_asc' | 'price_desc';
+  sort?: 'name_asc' | 'newest' | 'price_asc' | 'price_desc';
   inStock?: boolean;
 };
