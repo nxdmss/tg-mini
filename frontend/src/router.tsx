@@ -7,6 +7,7 @@ export default function Router() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<App />} />
+        <Route path="/product/:id" element={<App />} />
         <Route path="/admin" element={<Admin />} />
       </Routes>
     </BrowserRouter>

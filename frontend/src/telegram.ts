@@ -71,4 +71,14 @@ export function getUserName(): string | undefined {
   return [user.first_name, user.last_name].filter(Boolean).join(" ") || user.username;
 }
 
+/** Deep-link payload from `?startapp=` (Direct Link) or bot start parameter. */
+export function getStartParam(): string | undefined {
+  try {
+    const param = getWebApp().initDataUnsafe?.start_param;
+    return param?.trim() || undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 export const tg = WebApp;

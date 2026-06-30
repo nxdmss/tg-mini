@@ -21,7 +21,7 @@ import {
 import type { AdminOrder, AuthUser, Brand, Category, OrderStatus, Product } from "../types";
 import { getTelegramLaunchInfo } from "../telegram";
 import { compressImageFiles } from "../imageCompress";
-import { formatPrice, getProductPreviewImage } from "../utils";
+import { formatPrice, getProductDeepLink, getProductPreviewImage } from "../utils";
 
 type FormState = {
   id?: string;
@@ -262,6 +262,19 @@ export default function Admin() {
       setError(getApiErrorMessage(deleteError));
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function copyProductLink(product: Product) {
+    const link = getProductDeepLink(product.id);
+
+    try {
+      await navigator.clipboard.writeText(link);
+      setMessage(`Ссылка скопирована: ${product.name}`);
+      setError(null);
+    } catch {
+      setMessage(link);
+      setError(null);
     }
   }
 
@@ -685,6 +698,9 @@ export default function Admin() {
                     {product.inStock ? "В наличии" : "Скрыт из наличия"} ·{" "}
                     {product.sizes.map((size) => size.size).join(", ") || "без размеров"}
                   </span>
+                  <span className="admin-product__meta admin-product__meta--mono">
+                    ID: {product.id}
+                  </span>
                   {(product.sizes.length === 0 || hasLegacyUpload(product)) && (
                     <div className="admin-badges">
                       {product.sizes.length === 0 && (
@@ -698,6 +714,13 @@ export default function Admin() {
                     </div>
                   )}
                   <div className="admin-product__actions">
+                    <button
+                      className="chip"
+                      onClick={() => void copyProductLink(product)}
+                      disabled={saving}
+                    >
+                      Ссылка
+                    </button>
                     <button className="chip" onClick={() => editProduct(product)} disabled={saving}>
                       Изменить
                     </button>

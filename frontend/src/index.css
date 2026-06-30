@@ -1663,6 +1663,13 @@ textarea.field {
   gap: 8px;
 }
 
+.admin-product__meta--mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 11px;
+  opacity: 0.72;
+  word-break: break-all;
+}
+
 .admin-orders {
   display: flex;
   flex-direction: column;
