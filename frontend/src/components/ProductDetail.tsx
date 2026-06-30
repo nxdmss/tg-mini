@@ -6,7 +6,7 @@ import { useCart } from "../cart";
 type DragState = {
   startY: number;
   startX: number;
-  axis: "x" | "y" | null;
+  mode: "idle" | "dismiss" | "gallery";
 };
 
 export function ProductDetail({
@@ -19,7 +19,7 @@ export function ProductDetail({
   const { add } = useCart();
   const trackRef = useRef<HTMLDivElement>(null);
   const sheetRef = useRef<HTMLDivElement>(null);
-  const dragRef = useRef<DragState>({ startY: 0, startX: 0, axis: null });
+  const dragRef = useRef<DragState>({ startY: 0, startX: 0, mode: "idle" });
   const [activeImage, setActiveImage] = useState(0);
   const [size, setSize] = useState<string | null>(
     product.sizes.length === 1 ? product.sizes[0].size : null,
@@ -80,7 +80,7 @@ export function ProductDetail({
     dragRef.current = {
       startY: touch.clientY,
       startX: touch.clientX,
-      axis: null,
+      mode: "idle",
     };
     setIsDragging(true);
   }
@@ -91,26 +91,49 @@ export function ProductDetail({
     const touch = event.touches[0];
     const deltaY = touch.clientY - dragRef.current.startY;
     const deltaX = touch.clientX - dragRef.current.startX;
+    const scrollTop = sheetRef.current?.scrollTop ?? 0;
 
-    if (!dragRef.current.axis) {
+    if (dragRef.current.mode === "gallery") return;
+
+    if (dragRef.current.mode === "idle") {
       if (Math.abs(deltaY) < 8 && Math.abs(deltaX) < 8) return;
-      dragRef.current.axis = Math.abs(deltaY) > Math.abs(deltaX) ? "y" : "x";
+
+      if (Math.abs(deltaX) > Math.abs(deltaY)) {
+        dragRef.current.mode = "gallery";
+        setIsDragging(false);
+        setDragY(0);
+        return;
+      }
+
+      if (deltaY > 0 && scrollTop <= 0) {
+        dragRef.current.mode = "dismiss";
+      } else {
+        setIsDragging(false);
+        return;
+      }
     }
 
-    if (dragRef.current.axis === "y" && deltaY > 0) {
+    if (dragRef.current.mode === "dismiss") {
+      if (scrollTop > 0) {
+        dragRef.current.mode = "idle";
+        setDragY(0);
+        setIsDragging(false);
+        return;
+      }
+
       event.preventDefault();
-      setDragY(deltaY);
+      setDragY(Math.max(0, deltaY));
     }
   }
 
   function handleSheetTouchEnd() {
-    if (dragRef.current.axis === "y" && dragY > 110) {
+    if (dragRef.current.mode === "dismiss" && dragY > 110) {
       onClose();
     }
 
     setDragY(0);
     setIsDragging(false);
-    dragRef.current.axis = null;
+    dragRef.current.mode = "idle";
   }
 
   function handleAdd() {
