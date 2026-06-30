@@ -12,14 +12,9 @@ export function getProductPreviewImage(product: { images: Array<{ url: string }>
 
 /** Telegram Direct Link: opens Mini App straight on the product. */
 export function getProductDeepLink(productId: string): string {
-  const bot = import.meta.env.VITE_BOT_USERNAME?.replace(/^@/, "").trim();
-  const app = import.meta.env.VITE_MINI_APP_SHORT_NAME?.trim();
+  const bot =
+    import.meta.env.VITE_BOT_USERNAME?.replace(/^@/, "").trim() || "swa6ybot";
+  const app = import.meta.env.VITE_MINI_APP_SHORT_NAME?.trim() || "swa6";
 
-  if (bot && app) {
-    return `https://t.me/${bot}/${app}?startapp=${encodeURIComponent(productId)}`;
-  }
-
-  const origin =
-    typeof window !== "undefined" ? window.location.origin.replace(/\/$/, "") : "";
-  return `${origin}/product/${productId}`;
+  return `https://t.me/${bot}/${app}?startapp=${encodeURIComponent(productId)}`;
 }
