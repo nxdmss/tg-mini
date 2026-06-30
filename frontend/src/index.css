@@ -616,7 +616,14 @@ img {
   padding: 0 2px;
 }
 
-.card__brand,
+.card__brand {
+  color: var(--text-muted);
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
 .detail__brand {
   color: var(--text-muted);
   font-size: 11px;
@@ -627,7 +634,7 @@ img {
 
 .card__name {
   color: var(--text);
-  font-size: 15px;
+  font-size: 16px;
   line-height: 1.24;
   font-weight: 720;
   display: -webkit-box;
@@ -660,8 +667,12 @@ img {
 
 @media (max-width: 699px) {
   .card__name {
-    font-size: 14px;
+    font-size: 15px;
     line-height: 1.22;
+  }
+
+  .card__brand {
+    font-size: 9px;
   }
 
   .card__footer {
