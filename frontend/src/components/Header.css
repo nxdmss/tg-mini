@@ -1,0 +1,177 @@
+.header__inner--store {
+  min-width: 0;
+  gap: 16px;
+}
+
+.header__actions {
+  margin-left: auto;
+  min-width: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+
+  gap: 8px;
+
+  flex-wrap: nowrap;
+}
+
+.header-action {
+  height: 38px;
+  min-height: 38px;
+
+  padding: 0 14px;
+
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 7px;
+
+  flex: 0 0 auto;
+
+  background: var(--btn-glass-bg);
+
+  backdrop-filter: var(--btn-glass-blur);
+  -webkit-backdrop-filter: var(--btn-glass-blur);
+
+  color: var(--text);
+
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1;
+
+  letter-spacing: 0.02em;
+
+  text-decoration: none;
+
+  white-space: nowrap;
+
+  transition:
+    border-color 0.16s ease,
+    background 0.16s ease,
+    opacity 0.16s ease;
+}
+
+.header-action:hover {
+  border-color: var(--text);
+  color: var(--text);
+}
+
+.header-cart {
+  width: auto;
+  min-width: 0;
+  min-height: 38px;
+
+  padding: 0 14px;
+
+  border-radius: 999px;
+
+  position: static;
+
+  background: var(--btn-glass-bg);
+
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.header-action__badge {
+  min-width: 19px;
+  height: 19px;
+
+  padding: 0 5px;
+
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  background: var(--btn-glass-bg-strong);
+
+  color: var(--text);
+
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.brand__logo {
+  flex: 0 0 auto;
+  cursor: default;
+
+
+  min-width: 0;
+
+  padding: 4px 0 0;
+
+  display: inline-flex;
+  align-items: center;
+
+  background: transparent;
+}
+
+.brand__logo img {
+  display: block;
+
+  width: auto;
+  height: 64px;
+
+  max-width: 100%;
+}
+
+@media (max-width: 520px) {
+  .header__inner--store {
+    gap: 8px;
+  }
+
+  .header__actions {
+    gap: 6px;
+  }
+
+  .header-action,
+  .header-cart {
+    height: 36px;
+    min-height: 36px;
+
+    padding-left: 11px;
+    padding-right: 11px;
+
+    font-size: 12px;
+  }
+
+  .header-action__badge {
+    min-width: 18px;
+    height: 18px;
+
+    padding: 0 4px;
+
+    font-size: 9px;
+  }
+
+  .brand__logo img {
+    height: 58px;
+  }
+}
+
+@media (max-width: 360px) {
+  .header-action,
+  .header-cart {
+    padding-left: 9px;
+    padding-right: 9px;
+
+    font-size: 11px;
+  }
+
+  .header__actions {
+    gap: 5px;
+  }
+
+  .brand__logo img {
+    height: 54px;
+  }
+}

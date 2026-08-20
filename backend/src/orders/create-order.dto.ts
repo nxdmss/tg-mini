@@ -1,7 +1,9 @@
 import { Type } from 'class-transformer';
+
 import {
   ArrayMinSize,
   IsArray,
+  IsEmail,
   IsInt,
   IsNotEmpty,
   IsOptional,
@@ -14,6 +16,7 @@ import {
 
 export class OrderItemDto {
   @IsString()
+  @IsNotEmpty()
   productId: string;
 
   @Type(() => Number)
@@ -22,25 +25,37 @@ export class OrderItemDto {
   quantity: number;
 
   @IsString()
+  @IsNotEmpty()
   size: string;
 }
 
 export class CreateOrderDto {
   @IsString()
   @IsNotEmpty()
-  name?: string;
+  name: string;
+
+  @IsEmail(
+    {},
+    {
+      message: 'Введите корректный email',
+    },
+  )
+  email: string;
 
   @IsString()
   @Matches(/^\+7\d{10}$/, {
     message: 'phone must be in +7XXXXXXXXXX format',
   })
-  phone?: string;
+  phone: string;
 
   @IsOptional()
   @IsString()
   deliveryMethod?: string;
 
-  @ValidateIf((order: CreateOrderDto) => order.deliveryMethod === 'Доставка')
+  @ValidateIf(
+    (order: CreateOrderDto) =>
+      order.deliveryMethod === 'Доставка',
+  )
   @IsString()
   @IsNotEmpty()
   address?: string;
@@ -51,7 +66,9 @@ export class CreateOrderDto {
 
   @IsArray()
   @ArrayMinSize(1)
-  @ValidateNested({ each: true })
+  @ValidateNested({
+    each: true,
+  })
   @Type(() => OrderItemDto)
   items: OrderItemDto[];
 }

@@ -1,24 +1,51 @@
 import { useRef } from "react";
+
 import { useNavigate } from "react-router-dom";
+
 import { useCart } from "../cart";
+
 import { tg } from "../telegram";
 
-export function Header({ onCartClick }: { onCartClick: () => void }) {
+import { isTelegram } from "../platform";
+
+import "./Header.css";
+
+export function Header({
+  onCartClick,
+}: {
+  onCartClick: () => void;
+}) {
   const { count } = useCart();
+
   const navigate = useNavigate();
+
   const lastLogoTap = useRef(0);
 
-  function openHiddenAdmin() {
+  const telegramMode = isTelegram();
+
+  function handleLogoClick() {
+    if (!telegramMode) {
+      return;
+    }
+
     const now = Date.now();
 
-    if (now - lastLogoTap.current < 450) {
+    if (
+      now - lastLogoTap.current <
+      450
+    ) {
       try {
-        tg.HapticFeedback?.impactOccurred?.("light");
+        tg.HapticFeedback?.impactOccurred?.(
+          "light",
+        );
       } catch {
         // Not running inside Telegram.
       }
+
       navigate("/admin");
+
       lastLogoTap.current = 0;
+
       return;
     }
 
@@ -27,28 +54,37 @@ export function Header({ onCartClick }: { onCartClick: () => void }) {
 
   return (
     <header className="header">
-      <div className="container header__inner">
+      <div className="container header__inner header__inner--store">
         <button
           className="brand__logo"
           type="button"
-          onClick={openHiddenAdmin}
+          onClick={handleLogoClick}
           aria-label="SWA6Y5TAN"
         >
-          <img src="/logo.png" alt="SWA6Y5TAN" />
+          <img
+            src="/logo.png"
+            alt="SWA6Y5TAN"
+          />
         </button>
 
-        <button
-          className="header-cart"
-          onClick={onCartClick}
-          aria-label="Корзина"
-        >
-          Корзина
-          {count > 0 && (
-            <span className="header-cart__badge">
-              {count}
+        <div className="header__actions">
+          <button
+            type="button"
+            className="header-action header-cart"
+            onClick={onCartClick}
+            aria-label="Корзина"
+          >
+            <span>
+              Корзина
             </span>
-          )}
-        </button>
+
+            {count > 0 && (
+              <span className="header-action__badge">
+                {count}
+              </span>
+            )}
+          </button>
+        </div>
       </div>
     </header>
   );

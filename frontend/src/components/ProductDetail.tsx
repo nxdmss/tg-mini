@@ -1,361 +1,405 @@
-import { useEffect, useRef, useState, type TouchEvent } from "react";
-import type { Product } from "../types";
-import { formatPrice } from "../utils";
-import { useCart } from "../cart";
+import {
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 
-type DragState = {
-  startY: number;
-  startX: number;
-  mode: "idle" | "dismiss" | "gallery";
+import type { Product } from "../types";
+
+import { useCart } from "../cart";
+import { formatPrice } from "../utils";
+
+import "./ProductDetail.css";
+
+type ProductDetailProps = {
+  product: Product;
+  onBack: () => void;
+  onCartClick: () => void;
 };
 
 export function ProductDetail({
   product,
-  onClose,
-}: {
-  product: Product;
-  onClose: () => void;
-}) {
-  const { add } = useCart();
-  const trackRef = useRef<HTMLDivElement>(null);
-  const sheetRef = useRef<HTMLDivElement>(null);
-  const dragRef = useRef<DragState>({ startY: 0, startX: 0, mode: "idle" });
-  const [activeImage, setActiveImage] = useState(0);
-  const [size, setSize] = useState<string | null>(
-    product.sizes.length === 1 ? product.sizes[0].size : null,
+  onBack,
+  onCartClick,
+}: ProductDetailProps) {
+  const {
+    add,
+    count,
+  } = useCart();
+
+  const [
+    imageIndex,
+    setImageIndex,
+  ] = useState(0);
+
+  const firstAvailableSize =
+    useMemo(
+      () =>
+        product.sizes.find(
+          (size) =>
+            size.stock > 0,
+        )?.size ?? "",
+      [product.sizes],
+    );
+
+  const [
+    selectedSize,
+    setSelectedSize,
+  ] = useState(
+    firstAvailableSize,
   );
-  const [added, setAdded] = useState(false);
-  const [dragY, setDragY] = useState(0);
-  const [isDragging, setIsDragging] = useState(false);
-  const [lightboxOpen, setLightboxOpen] = useState(false);
-  const [lightboxIndex, setLightboxIndex] = useState(0);
+
+  const [
+    added,
+    setAdded,
+  ] =
+    useState(false);
+
+  const images =
+    product.images ?? [];
+
+  const currentImage =
+    images[imageIndex]?.url ??
+    images[0]?.url ??
+    "";
+
+  const selectedSizeData =
+    product.sizes.find(
+      (size) =>
+        size.size ===
+        selectedSize,
+    );
+
+  const canAdd =
+    Boolean(
+      selectedSizeData &&
+        selectedSizeData.stock >
+          0,
+    );
 
   useEffect(() => {
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, []);
+    setImageIndex(0);
 
-  useEffect(() => {
-    setActiveImage(0);
-    setSize(product.sizes.length === 1 ? product.sizes[0].size : null);
+    setSelectedSize(
+      product.sizes.find(
+        (size) =>
+          size.stock > 0,
+      )?.size ?? "",
+    );
+
     setAdded(false);
-    setDragY(0);
-    setLightboxOpen(false);
-    trackRef.current?.scrollTo({ left: 0 });
-  }, [product.id, product.sizes]);
+  }, [
+    product.id,
+    product.sizes,
+  ]);
 
-  const images = product.images;
-  const previewImage = images[activeImage]?.url ?? images[0]?.url;
+  useEffect(() => {
+    function handleKeyDown(
+      event: KeyboardEvent,
+    ) {
+      if (
+        event.key ===
+        "Escape"
+      ) {
+        onBack();
+      }
 
-  function scrollToImage(index: number) {
-    const track = trackRef.current;
-    if (!track) return;
+      if (
+        event.key ===
+          "ArrowLeft" &&
+        images.length > 1
+      ) {
+        previousImage();
+      }
 
-    const nextIndex = Math.max(0, Math.min(index, images.length - 1));
-    track.scrollTo({ left: nextIndex * track.clientWidth, behavior: "smooth" });
-    setActiveImage(nextIndex);
-  }
-
-  function handleGalleryScroll() {
-    const track = trackRef.current;
-    if (!track || track.clientWidth === 0 || images.length === 0) return;
-
-    const index = Math.round(track.scrollLeft / track.clientWidth);
-    if (index !== activeImage) {
-      setActiveImage(index);
+      if (
+        event.key ===
+          "ArrowRight" &&
+        images.length > 1
+      ) {
+        nextImage();
+      }
     }
-  }
 
-  function openLightbox(index: number) {
-    setLightboxIndex(index);
-    setLightboxOpen(true);
-  }
+    window.addEventListener(
+      "keydown",
+      handleKeyDown,
+    );
 
-  function handleSheetTouchStart(event: TouchEvent) {
-    if (lightboxOpen) return;
-
-    const touch = event.touches[0];
-    dragRef.current = {
-      startY: touch.clientY,
-      startX: touch.clientX,
-      mode: "idle",
+    return () => {
+      window.removeEventListener(
+        "keydown",
+        handleKeyDown,
+      );
     };
-    setIsDragging(true);
-  }
+  });
 
-  function handleSheetTouchMove(event: TouchEvent) {
-    if (lightboxOpen || !isDragging) return;
-
-    const touch = event.touches[0];
-    const deltaY = touch.clientY - dragRef.current.startY;
-    const deltaX = touch.clientX - dragRef.current.startX;
-    const scrollTop = sheetRef.current?.scrollTop ?? 0;
-
-    if (dragRef.current.mode === "gallery") return;
-
-    if (dragRef.current.mode === "idle") {
-      if (Math.abs(deltaY) < 8 && Math.abs(deltaX) < 8) return;
-
-      if (Math.abs(deltaX) > Math.abs(deltaY)) {
-        dragRef.current.mode = "gallery";
-        setIsDragging(false);
-        setDragY(0);
-        return;
-      }
-
-      if (deltaY > 0 && scrollTop <= 0) {
-        dragRef.current.mode = "dismiss";
-      } else {
-        setIsDragging(false);
-        return;
-      }
+  function previousImage() {
+    if (
+      images.length <= 1
+    ) {
+      return;
     }
 
-    if (dragRef.current.mode === "dismiss") {
-      if (scrollTop > 0) {
-        dragRef.current.mode = "idle";
-        setDragY(0);
-        setIsDragging(false);
-        return;
-      }
-
-      event.preventDefault();
-      setDragY(Math.max(0, deltaY));
-    }
+    setImageIndex(
+      (current) =>
+        current === 0
+          ? images.length - 1
+          : current - 1,
+    );
   }
 
-  function handleSheetTouchEnd() {
-    if (dragRef.current.mode === "dismiss" && dragY > 110) {
-      onClose();
+  function nextImage() {
+    if (
+      images.length <= 1
+    ) {
+      return;
     }
 
-    setDragY(0);
-    setIsDragging(false);
-    dragRef.current.mode = "idle";
+    setImageIndex(
+      (current) =>
+        current ===
+        images.length - 1
+          ? 0
+          : current + 1,
+    );
   }
 
-  function handleAdd() {
-    if (!size) return;
+  function addToCart() {
+    if (
+      !selectedSizeData ||
+      selectedSizeData.stock <=
+        0
+    ) {
+      return;
+    }
+
     add({
-      productId: product.id,
-      name: product.name,
-      price: product.price,
-      image: previewImage,
-      size,
-      quantity: 1,
-    });
-    setAdded(true);
-    setTimeout(onClose, 600);
-  }
+      productId:
+        product.id,
 
-  const sheetStyle = {
-    transform: dragY > 0 ? `translateY(${dragY}px)` : undefined,
-    transition: isDragging ? "none" : undefined,
-  };
+      name:
+        product.name,
+
+      price:
+        product.price,
+
+      image:
+        images[0]?.url,
+
+      size:
+        selectedSizeData.size,
+
+      quantity:
+        1,
+
+      maxStock:
+        selectedSizeData.stock,
+    });
+
+    setAdded(true);
+
+    window.setTimeout(
+      () => {
+        setAdded(false);
+      },
+      1200,
+    );
+  }
 
   return (
-    <>
-      <div
-        className="overlay"
-        onClick={onClose}
-        style={{ opacity: dragY > 0 ? Math.max(0.12, 1 - dragY / 260) : undefined }}
-      />
-      <div
-        ref={sheetRef}
-        className="sheet detail"
-        style={sheetStyle}
-        onTouchStart={handleSheetTouchStart}
-        onTouchMove={handleSheetTouchMove}
-        onTouchEnd={handleSheetTouchEnd}
-        onTouchCancel={handleSheetTouchEnd}
-      >
-        <div className="detail__handle" aria-hidden="true" />
-        <button className="detail__close" onClick={onClose} aria-label="Закрыть">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path
-              d="M7 7l10 10M17 7L7 17"
-              stroke="currentColor"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-            />
-          </svg>
+    <main className="product-page">
+      <header className="product-page__header">
+        <button
+          type="button"
+          className="product-page__back"
+          onClick={onBack}
+          aria-label="Назад"
+        >
+          ‹
         </button>
-        <div className="detail__body">
-          <div>
-            <div className="detail__gallery">
-              <div
-                className="detail__track"
-                ref={trackRef}
-                onScroll={handleGalleryScroll}
-              >
-                {images.length > 0 ? (
-                  images.map((img, i) => (
-                    <div className="detail__slide" key={img.id}>
-                      <button
-                        type="button"
-                        className="detail__photo-btn"
-                        onClick={() => openLightbox(i)}
-                        aria-label={`Открыть фото ${i + 1} на весь экран`}
-                      >
-                        <img
-                          src={img.url}
-                          alt={i === 0 ? product.name : `${product.name} — фото ${i + 1}`}
-                        />
-                      </button>
-                    </div>
-                  ))
-                ) : (
-                  <div className="detail__slide">
-                    <div className="media-fallback">SWA6Y5TAN</div>
-                  </div>
-                )}
-              </div>
 
-              {images.length > 1 && (
-                <>
-                  <div className="detail__dots" aria-hidden={images.length <= 1}>
-                    {images.map((img, i) => (
-                      <button
-                        key={img.id}
-                        type="button"
-                        className={`detail__dot ${
-                          i === activeImage ? "detail__dot--active" : ""
-                        }`}
-                        onClick={() => scrollToImage(i)}
-                        aria-label={`Фото ${i + 1} из ${images.length}`}
-                      />
-                    ))}
-                  </div>
-                  <div className="detail__counter">
-                    {activeImage + 1} / {images.length}
-                  </div>
-                </>
+        <button
+          type="button"
+          className="product-page__cart"
+          onClick={
+            onCartClick
+          }
+        >
+          КОРЗИНА
+
+          {count > 0 && (
+            <span>
+              {count}
+            </span>
+          )}
+        </button>
+      </header>
+
+      <div className="product-page__content">
+        <section className="product-page__gallery">
+          {images.length >
+            1 && (
+            <button
+              type="button"
+              className="product-page__arrow product-page__arrow--left"
+              onClick={
+                previousImage
+              }
+              aria-label="Предыдущее изображение"
+            >
+              ‹
+            </button>
+          )}
+
+          <div className="product-page__image-box">
+            {currentImage ? (
+              <img
+                className="product-page__image"
+                src={
+                  currentImage
+                }
+                alt={
+                  product.name
+                }
+              />
+            ) : (
+              <div className="product-page__image-empty">
+                SWA6Y5TAN
+              </div>
+            )}
+          </div>
+
+          {images.length >
+            1 && (
+            <button
+              type="button"
+              className="product-page__arrow product-page__arrow--right"
+              onClick={
+                nextImage
+              }
+              aria-label="Следующее изображение"
+            >
+              ›
+            </button>
+          )}
+
+          {images.length >
+            1 && (
+            <div className="product-page__dots">
+              {images.map(
+                (
+                  image,
+                  index,
+                ) => (
+                  <button
+                    type="button"
+                    key={
+                      image.id ??
+                      index
+                    }
+                    className={
+                      index ===
+                      imageIndex
+                        ? "product-page__dot product-page__dot--active"
+                        : "product-page__dot"
+                    }
+                    onClick={() =>
+                      setImageIndex(
+                        index,
+                      )
+                    }
+                    aria-label={`Фото ${
+                      index + 1
+                    }`}
+                  />
+                ),
               )}
             </div>
+          )}
+        </section>
 
-            {images.length > 1 && (
-              <div className="detail__thumbs">
-                {images.map((img, i) => (
-                  <button
-                    key={img.id}
-                    type="button"
-                    className={`detail__thumb ${
-                      i === activeImage ? "detail__thumb--active" : ""
-                    }`}
-                    onClick={() => scrollToImage(i)}
-                  >
-                    <img src={img.url} alt="" />
-                  </button>
-                ))}
-              </div>
+        <section className="product-page__info">
+          <h1 className="product-page__name">
+            {product.name}
+          </h1>
+
+          <div className="product-page__price">
+            {formatPrice(
+              product.price,
             )}
           </div>
 
-          <div className="detail__info">
-            <div>
-              <div className="detail__brand">{product.brand.name}</div>
-              <h2 className="detail__name">{product.name}</h2>
-            </div>
-            <div className="detail__price">{formatPrice(product.price)}</div>
-            {product.description && (
-              <p className="detail__desc">{product.description}</p>
-            )}
+          {product.description && (
+            <p className="product-page__description">
+              {
+                product.description
+              }
+            </p>
+          )}
 
-            <div>
-              <div className="label">Размер</div>
-              <div className="sizes">
-                {product.sizes.map((s) => (
-                  <button
-                    key={s.id}
-                    type="button"
-                    className={`size ${size === s.size ? "size--active" : ""}`}
-                    onClick={() => setSize(s.size)}
-                  >
-                    {s.size}
-                  </button>
-                ))}
-              </div>
+          <div className="product-page__sizes">
+            <div className="product-page__sizes-title">
+              ВЫБЕРИТЕ РАЗМЕР
             </div>
 
-            <button
-              className="btn"
-              disabled={!product.inStock || !size || added}
-              onClick={handleAdd}
-            >
-              {added
-                ? "Добавлено ✓"
-                : !product.inStock
-                  ? "Нет в наличии"
-                  : !size
-                    ? "Выберите размер"
-                    : "Добавить в корзину"}
-            </button>
+            <div className="product-page__sizes-list">
+              {product.sizes.map(
+                (item) => {
+                  const soldOut =
+                    item.stock <=
+                    0;
+
+                  const active =
+                    item.size ===
+                    selectedSize;
+
+                  return (
+                    <button
+                      key={
+                        item.id
+                      }
+                      type="button"
+                      disabled={
+                        soldOut
+                      }
+                      className={
+                        active
+                          ? "product-page__size product-page__size--active"
+                          : "product-page__size"
+                      }
+                      onClick={() =>
+                        setSelectedSize(
+                          item.size,
+                        )
+                      }
+                    >
+                      {
+                        item.size
+                      }
+                    </button>
+                  );
+                },
+              )}
+            </div>
           </div>
-        </div>
-      </div>
 
-      {lightboxOpen && images.length > 0 && (
-        <div
-          className="lightbox"
-          onClick={() => setLightboxOpen(false)}
-          role="dialog"
-          aria-modal="true"
-          aria-label="Фото товара"
-        >
           <button
             type="button"
-            className="lightbox__close"
-            onClick={() => setLightboxOpen(false)}
-            aria-label="Закрыть"
+            className="product-page__add"
+            disabled={!canAdd}
+            onClick={
+              addToCart
+            }
           >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path
-                d="M7 7l10 10M17 7L7 17"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-              />
-            </svg>
+            {added
+              ? "ДОБАВЛЕНО"
+              : canAdd
+                ? "ДОБАВИТЬ В КОРЗИНУ"
+                : "НЕТ В НАЛИЧИИ"}
           </button>
-          {images.length > 1 && (
-            <>
-              <button
-                type="button"
-                className="lightbox__nav lightbox__nav--prev"
-                onClick={(event) => {
-                  event.stopPropagation();
-                  setLightboxIndex((index) => (index - 1 + images.length) % images.length);
-                }}
-                aria-label="Предыдущее фото"
-              >
-                ‹
-              </button>
-              <button
-                type="button"
-                className="lightbox__nav lightbox__nav--next"
-                onClick={(event) => {
-                  event.stopPropagation();
-                  setLightboxIndex((index) => (index + 1) % images.length);
-                }}
-                aria-label="Следующее фото"
-              >
-                ›
-              </button>
-              <div className="lightbox__counter">
-                {lightboxIndex + 1} / {images.length}
-              </div>
-            </>
-          )}
-          <img
-            className="lightbox__image"
-            src={images[lightboxIndex]?.url}
-            alt={product.name}
-            onClick={(event) => event.stopPropagation()}
-          />
-        </div>
-      )}
-    </>
+        </section>
+      </div>
+    </main>
   );
 }

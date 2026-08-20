@@ -1,4 +1,5 @@
 import WebApp from "@twa-dev/sdk";
+import { isTelegram } from "./platform";
 
 export type TgUser = {
   id: number;
@@ -10,7 +11,13 @@ export type TgUser = {
 let initialized = false;
 
 function getRawWebApp() {
-  return (window as unknown as { Telegram?: { WebApp?: typeof WebApp } }).Telegram?.WebApp;
+  return (
+    window as unknown as {
+      Telegram?: {
+        WebApp?: typeof WebApp;
+      };
+    }
+  ).Telegram?.WebApp;
 }
 
 function getWebApp() {
@@ -18,17 +25,31 @@ function getWebApp() {
 }
 
 export function initTelegram() {
-  if (initialized) return;
+  if (initialized) {
+    return;
+  }
+
   initialized = true;
+
+  if (!isTelegram()) {
+    return;
+  }
+
   try {
-    getWebApp().ready();
-    getWebApp().expand();
-  } catch {
-    // Not running inside Telegram (e.g. local browser) — ignore.
+    const webApp = getWebApp();
+
+    webApp.ready();
+    webApp.expand();
+  } catch (error) {
+    console.error("Telegram WebApp init error:", error);
   }
 }
 
 export function getTelegramUser(): TgUser | null {
+  if (!isTelegram()) {
+    return null;
+  }
+
   try {
     return getWebApp().initDataUnsafe?.user ?? null;
   } catch {
@@ -36,13 +57,21 @@ export function getTelegramUser(): TgUser | null {
   }
 }
 
-export function getTelegramId(): string {
+export function getTelegramId(): string | null {
   const user = getTelegramUser();
-  if (user?.id) return String(user.id);
-  return "web-guest";
+
+  if (!user?.id) {
+    return null;
+  }
+
+  return String(user.id);
 }
 
 export function getTelegramInitData(): string {
+  if (!isTelegram()) {
+    return "";
+  }
+
   try {
     return getWebApp().initData ?? "";
   } catch {
@@ -51,11 +80,24 @@ export function getTelegramInitData(): string {
 }
 
 export function getTelegramLaunchInfo() {
+  if (!isTelegram()) {
+    return {
+      isTelegram: false,
+      hasTelegramObject: false,
+      hasInitData: false,
+      initDataLength: 0,
+      userId: undefined,
+      platform: "web",
+      version: undefined,
+    };
+  }
+
   const webApp = getWebApp();
   const initData = getTelegramInitData();
   const user = getTelegramUser();
 
   return {
+    isTelegram: true,
     hasTelegramObject: Boolean(getRawWebApp()),
     hasInitData: initData.length > 0,
     initDataLength: initData.length,
@@ -67,14 +109,27 @@ export function getTelegramLaunchInfo() {
 
 export function getUserName(): string | undefined {
   const user = getTelegramUser();
-  if (!user) return undefined;
-  return [user.first_name, user.last_name].filter(Boolean).join(" ") || user.username;
+
+  if (!user) {
+    return undefined;
+  }
+
+  const fullName = [user.first_name, user.last_name]
+    .filter(Boolean)
+    .join(" ")
+    .trim();
+
+  return fullName || user.username || undefined;
 }
 
-/** Deep-link payload from `?startapp=` (Direct Link) or bot start parameter. */
 export function getStartParam(): string | undefined {
+  if (!isTelegram()) {
+    return undefined;
+  }
+
   try {
     const param = getWebApp().initDataUnsafe?.start_param;
+
     return param?.trim() || undefined;
   } catch {
     return undefined;
@@ -83,14 +138,19 @@ export function getStartParam(): string | undefined {
 
 let startParamConsumed = false;
 
-/** Returns start_param once per Mini App session (Telegram keeps it after navigation). */
 export function consumeStartParam(): string | undefined {
-  if (startParamConsumed) return undefined;
+  if (startParamConsumed) {
+    return undefined;
+  }
 
   const param = getStartParam();
-  if (!param) return undefined;
+
+  if (!param) {
+    return undefined;
+  }
 
   startParamConsumed = true;
+
   return param;
 }
 

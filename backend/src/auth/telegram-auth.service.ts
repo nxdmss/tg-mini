@@ -1,7 +1,17 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { createHmac, timingSafeEqual } from 'crypto';
+import {
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
+
+import {
+  createHmac,
+  timingSafeEqual,
+} from 'crypto';
+
 import { Role } from '@prisma/client';
+
 import { PrismaService } from '../prisma/prisma.service';
+
 import { TelegramRequestUser } from './telegram-user';
 
 type RawTelegramUser = {
@@ -13,99 +23,271 @@ type RawTelegramUser = {
 
 @Injectable()
 export class TelegramAuthService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+  ) {}
 
-  async getRequestUser(req: { headers?: Record<string, string | string[] | undefined> }) {
-    const initData = this.getInitData(req);
+  async getRequestUser(req: {
+    headers?: Record<
+      string,
+      string | string[] | undefined
+    >;
+  }) {
+    const initData =
+      this.getInitData(req);
 
-    if (!initData && process.env.TELEGRAM_AUTH_DISABLED === 'true') {
+    if (
+      !initData &&
+      process.env.TELEGRAM_AUTH_DISABLED ===
+        'true'
+    ) {
       return null;
     }
+
     if (!initData) {
-      throw new UnauthorizedException('Telegram initData is required');
+      throw new UnauthorizedException(
+        'Telegram initData is required',
+      );
     }
 
-    const rawUser = this.validateInitData(initData);
-    const telegramId = String(rawUser.id);
-    const adminIds = this.adminTelegramIds();
-    const dbUser = await this.prisma.user.findUnique({ where: { telegramId } });
-    const role = adminIds.has(telegramId) ? Role.ADMIN : (dbUser?.role ?? Role.USER);
+    const rawUser =
+      this.validateInitData(initData);
+
+    const telegramId =
+      String(rawUser.id);
+
+    const adminIds =
+      this.adminTelegramIds();
+
+    let dbUser =
+      await this.prisma.user.findUnique({
+        where: {
+          telegramId,
+        },
+      });
+
+    if (!dbUser) {
+      const name = [
+        rawUser.first_name,
+        rawUser.last_name,
+      ]
+        .filter(Boolean)
+        .join(' ')
+        .trim();
+
+      dbUser =
+        await this.prisma.user.create({
+          data: {
+            telegramId,
+            name: name || null,
+            role: adminIds.has(telegramId)
+              ? Role.ADMIN
+              : Role.USER,
+          },
+        });
+    }
+
+    const role =
+      adminIds.has(telegramId)
+        ? Role.ADMIN
+        : dbUser.role;
 
     return {
+      id: dbUser.id,
+
       telegramId,
-      firstName: rawUser.first_name,
-      lastName: rawUser.last_name,
-      username: rawUser.username,
+
+      firstName:
+        rawUser.first_name,
+
+      lastName:
+        rawUser.last_name,
+
+      username:
+        rawUser.username,
+
+      name:
+        dbUser.name,
+
+      email:
+        dbUser.email,
+
+      phone:
+        dbUser.phone,
+
       role,
-    } satisfies TelegramRequestUser;
+    } satisfies TelegramRequestUser &
+      Record<string, unknown>;
   }
 
-isAdmin(user: TelegramRequestUser | null) {
-  if (!user) return false;
+  isAdmin(
+    user:
+      | TelegramRequestUser
+      | null,
+  ) {
+    if (!user) {
+      return false;
+    }
 
-  const adminIds = new Set(
-    (process.env.ADMIN_TELEGRAM_IDS ?? '')
-      .split(',')
-      .map((id) => id.trim())
-      .filter(Boolean),
-  );
+    const adminIds =
+      this.adminTelegramIds();
 
-  return adminIds.has(user.telegramId);
-}
+    return adminIds.has(
+      user.telegramId,
+    );
+  }
 
-  private getInitData(req: { headers?: Record<string, string | string[] | undefined> }) {
+  private getInitData(req: {
+    headers?: Record<
+      string,
+      string | string[] | undefined
+    >;
+  }) {
     const value =
-      req.headers?.['x-telegram-init-data'] ??
-      req.headers?.['X-Telegram-Init-Data'];
-    return Array.isArray(value) ? value[0] : value;
+      req.headers?.[
+        'x-telegram-init-data'
+      ] ??
+      req.headers?.[
+        'X-Telegram-Init-Data'
+      ];
+
+    return Array.isArray(value)
+      ? value[0]
+      : value;
   }
 
-  private validateInitData(initData: string): RawTelegramUser {
-    const botToken = process.env.TELEGRAM_BOT_TOKEN;
+  private validateInitData(
+    initData: string,
+  ): RawTelegramUser {
+    const botToken =
+      process.env.TELEGRAM_BOT_TOKEN;
+
     if (!botToken) {
-      throw new UnauthorizedException('TELEGRAM_BOT_TOKEN is not configured');
+      throw new UnauthorizedException(
+        'TELEGRAM_BOT_TOKEN is not configured',
+      );
     }
 
-    const params = new URLSearchParams(initData);
-    const hash = params.get('hash');
-    const userJson = params.get('user');
-    const authDate = Number(params.get('auth_date'));
+    const params =
+      new URLSearchParams(
+        initData,
+      );
 
-    if (!hash || !userJson || !authDate) {
-      throw new UnauthorizedException('Invalid Telegram initData');
+    const hash =
+      params.get('hash');
+
+    const userJson =
+      params.get('user');
+
+    const authDate =
+      Number(
+        params.get(
+          'auth_date',
+        ),
+      );
+
+    if (
+      !hash ||
+      !userJson ||
+      !authDate
+    ) {
+      throw new UnauthorizedException(
+        'Invalid Telegram initData',
+      );
     }
 
-    const maxAgeSeconds = Number(process.env.TELEGRAM_AUTH_MAX_AGE_SECONDS ?? 86400);
-    if (Date.now() / 1000 - authDate > maxAgeSeconds) {
-      throw new UnauthorizedException('Telegram initData expired');
+    const maxAgeSeconds =
+      Number(
+        process.env
+          .TELEGRAM_AUTH_MAX_AGE_SECONDS ??
+          86400,
+      );
+
+    if (
+      Date.now() / 1000 -
+        authDate >
+      maxAgeSeconds
+    ) {
+      throw new UnauthorizedException(
+        'Telegram initData expired',
+      );
     }
 
     params.delete('hash');
-    const dataCheckString = [...params.entries()]
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([key, value]) => `${key}=${value}`)
+
+    const dataCheckString = [
+      ...params.entries(),
+    ]
+      .sort(
+        ([a], [b]) =>
+          a.localeCompare(b),
+      )
+      .map(
+        ([key, value]) =>
+          `${key}=${value}`,
+      )
       .join('\n');
 
-    const secret = createHmac('sha256', 'WebAppData').update(botToken).digest();
-    const calculated = createHmac('sha256', secret).update(dataCheckString).digest('hex');
+    const secret =
+      createHmac(
+        'sha256',
+        'WebAppData',
+      )
+        .update(botToken)
+        .digest();
 
-    const hashBuffer = Buffer.from(hash, 'hex');
-    const calculatedBuffer = Buffer.from(calculated, 'hex');
+    const calculated =
+      createHmac(
+        'sha256',
+        secret,
+      )
+        .update(
+          dataCheckString,
+        )
+        .digest('hex');
+
+    const hashBuffer =
+      Buffer.from(
+        hash,
+        'hex',
+      );
+
+    const calculatedBuffer =
+      Buffer.from(
+        calculated,
+        'hex',
+      );
+
     if (
-      hashBuffer.length !== calculatedBuffer.length ||
-      !timingSafeEqual(hashBuffer, calculatedBuffer)
+      hashBuffer.length !==
+        calculatedBuffer.length ||
+      !timingSafeEqual(
+        hashBuffer,
+        calculatedBuffer,
+      )
     ) {
-      throw new UnauthorizedException('Telegram initData hash mismatch');
+      throw new UnauthorizedException(
+        'Telegram initData hash mismatch',
+      );
     }
 
-    return JSON.parse(userJson) as RawTelegramUser;
+    return JSON.parse(
+      userJson,
+    ) as RawTelegramUser;
   }
 
   private adminTelegramIds() {
     return new Set(
-      (process.env.ADMIN_TELEGRAM_IDS ?? '')
+      (
+        process.env
+          .ADMIN_TELEGRAM_IDS ??
+        ''
+      )
         .split(',')
-        .map((id) => id.trim())
+        .map(
+          (id) =>
+            id.trim(),
+        )
         .filter(Boolean),
     );
   }

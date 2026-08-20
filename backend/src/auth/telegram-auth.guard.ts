@@ -1,13 +1,60 @@
-import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import {
+  CanActivate,
+  ExecutionContext,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
+
 import { TelegramAuthService } from './telegram-auth.service';
 
-@Injectable()
-export class TelegramAuthGuard implements CanActivate {
-  constructor(private auth: TelegramAuthService) {}
+import { WebAuthService } from './web-auth.service';
 
-  async canActivate(context: ExecutionContext) {
-    const request = context.switchToHttp().getRequest();
-    request.user = await this.auth.getRequestUser(request);
+@Injectable()
+export class TelegramAuthGuard
+  implements CanActivate
+{
+  constructor(
+    private readonly telegramAuth: TelegramAuthService,
+    private readonly webAuth: WebAuthService,
+  ) {}
+
+  async canActivate(
+    context: ExecutionContext,
+  ) {
+    const request =
+      context.switchToHttp().getRequest();
+
+    const authorization =
+      request.headers?.authorization;
+
+    if (
+      typeof authorization === 'string' &&
+      authorization.startsWith('Bearer ')
+    ) {
+      const token =
+        authorization
+          .slice('Bearer '.length)
+          .trim();
+
+      if (!token) {
+        throw new UnauthorizedException(
+          'Authorization token is missing',
+        );
+      }
+
+      request.user =
+        await this.webAuth.getUserFromToken(
+          token,
+        );
+
+      return true;
+    }
+
+    request.user =
+      await this.telegramAuth.getRequestUser(
+        request,
+      );
+
     return true;
   }
 }

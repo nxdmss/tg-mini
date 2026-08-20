@@ -1,11 +1,14 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+
 import { useCart } from "../cart";
 import { formatPrice } from "../utils";
 import { createOrder, getApiErrorMessage } from "../api";
 import { getUserName, tg } from "../telegram";
 
 type Step = "cart" | "checkout" | "done";
+
 const DELIVERY = "Доставка";
+const PICKUP = "Самовывоз";
 const PHONE_PREFIX = "+7";
 
 function phoneDigits(value: string) {
@@ -14,6 +17,7 @@ function phoneDigits(value: string) {
 
 function normalizeRussianPhone(value: string) {
   const digits = phoneDigits(value);
+
   const withoutCountry = digits.startsWith("7")
     ? digits.slice(1)
     : digits.startsWith("8")
@@ -25,14 +29,18 @@ function normalizeRussianPhone(value: string) {
 
 export function CartDrawer({ onClose }: { onClose: () => void }) {
   const { items, total, setQuantity, remove, clear } = useCart();
+
   const [step, setStep] = useState<Step>("cart");
+
   const [name, setName] = useState(getUserName() ?? "");
   const [phone, setPhone] = useState(PHONE_PREFIX);
   const [deliveryMethod, setDeliveryMethod] = useState(DELIVERY);
   const [address, setAddress] = useState("");
   const [comment, setComment] = useState("");
+
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
   const isDelivery = deliveryMethod === DELIVERY;
   const isPhoneValid = /^\+7\d{10}$/.test(phone);
   const isAddressValid = !isDelivery || address.trim().length >= 6;
@@ -40,10 +48,13 @@ export function CartDrawer({ onClose }: { onClose: () => void }) {
 
   useEffect(() => {
     document.body.style.overflow = "hidden";
+
     return () => {
       document.body.style.overflow = "";
     };
   }, []);
+
+  const subtotal = useMemo(() => total, [total]);
 
   async function submit() {
     if (!canSubmit) {
@@ -57,6 +68,7 @@ export function CartDrawer({ onClose }: { onClose: () => void }) {
 
     setSubmitting(true);
     setError(null);
+
     try {
       await createOrder({
         name: name || undefined,
@@ -70,8 +82,10 @@ export function CartDrawer({ onClose }: { onClose: () => void }) {
           size: i.size,
         })),
       });
+
       clear();
       setStep("done");
+
       try {
         tg.HapticFeedback?.notificationOccurred?.("success");
       } catch {
@@ -84,149 +98,255 @@ export function CartDrawer({ onClose }: { onClose: () => void }) {
     }
   }
 
+  function backAction() {
+    if (step === "checkout") {
+      setStep("cart");
+      return;
+    }
+
+    onClose();
+  }
+
   return (
     <>
       <div className="overlay" onClick={onClose} />
-      <div className="sheet drawer">
-        <div className="drawer__header">
-          <span className="drawer__title">
-            {step === "checkout" ? "Оформление" : step === "done" ? "Готово" : "Корзина"}
-          </span>
-          <button className="cart-btn" onClick={onClose} aria-label="Закрыть">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path
-                d="M7 7l10 10M17 7L7 17"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-              />
-            </svg>
+
+      <div className="drawer checkout-modal">
+        <div className="checkout-modal__header">
+          <button
+            className="checkout-icon-btn"
+            onClick={backAction}
+            aria-label={step === "checkout" ? "Назад" : "Закрыть"}
+            type="button"
+          >
+            ←
+          </button>
+
+          <button
+            className="checkout-icon-btn"
+            onClick={onClose}
+            aria-label="Закрыть"
+            type="button"
+          >
+            ✕
           </button>
         </div>
 
         {step === "done" ? (
-          <div className="success">
-            <div className="success__icon">✓</div>
-            <h3 style={{ margin: 0, fontWeight: 700, letterSpacing: "-0.02em" }}>
-              Заказ оформлен
-            </h3>
-            <p style={{ margin: 0, color: "var(--text-secondary)" }}>
-              Заявка отправлена. Мы напишем для подтверждения заказа и оплаты.
-            </p>
-            <button className="btn" onClick={onClose} style={{ marginTop: 8 }}>
-              Продолжить покупки
+          <div className="checkout-done">
+            <div className="checkout-done__title">ЗАКАЗ ОФОРМЛЕН</div>
+
+            <div className="checkout-done__text">
+              Мы получили ваш заказ.
+              <br />
+              Скоро свяжемся для подтверждения.
+            </div>
+
+            <button className="checkout-submit-btn" onClick={onClose} type="button">
+              ЗАКРЫТЬ
             </button>
           </div>
         ) : items.length === 0 ? (
-          <div className="state">Корзина пуста</div>
-        ) : (
-          <>
-            <div className="drawer__items">
+          <div className="checkout-empty">
+            <div className="checkout-empty__title">КОРЗИНА ПУСТА</div>
+          </div>
+        ) : step === "cart" ? (
+          <div className="checkout-cart-view">
+            <div className="checkout-section-title">КОРЗИНА</div>
+
+            <div className="checkout-cart-list">
               {items.map((i) => (
-                <div className="line" key={`${i.productId}-${i.size}`}>
-                  <div className="line__media">
+                <div className="checkout-cart-item" key={`${i.productId}-${i.size}`}>
+                  <div className="checkout-cart-item__image">
                     {i.image && <img src={i.image} alt={i.name} />}
                   </div>
-                  <div className="line__body">
-                    <span className="line__name">{i.name}</span>
-                    <span className="line__meta">
+
+                  <div className="checkout-cart-item__body">
+                    <div className="checkout-cart-item__name">{i.name}</div>
+
+                    <div className="checkout-cart-item__meta">
                       Размер {i.size} · {formatPrice(i.price)}
-                    </span>
-                    <div className="line__row">
-                      <div className="stepper">
+                    </div>
+
+                    <div className="checkout-cart-item__bottom">
+                      <div className="checkout-qty">
                         <button
-                          onClick={() =>
-                            setQuantity(i.productId, i.size, i.quantity - 1)
-                          }
-                          aria-label="Меньше"
+                          type="button"
+                          onClick={() => setQuantity(i.productId, i.size, i.quantity - 1)}
                         >
                           −
                         </button>
+
                         <span>{i.quantity}</span>
+
                         <button
-                          onClick={() =>
-                            setQuantity(i.productId, i.size, i.quantity + 1)
-                          }
-                          aria-label="Больше"
+                          type="button"
+                          onClick={() => setQuantity(i.productId, i.size, i.quantity + 1)}
                         >
                           +
                         </button>
                       </div>
+
                       <button
-                        className="link-remove"
+                        className="checkout-text-btn"
+                        type="button"
                         onClick={() => remove(i.productId, i.size)}
                       >
-                        Удалить
+                        УДАЛИТЬ
                       </button>
                     </div>
+                  </div>
+
+                  <div className="checkout-cart-item__price">
+                    {formatPrice(i.price * i.quantity)}
                   </div>
                 </div>
               ))}
             </div>
 
-            <div className="drawer__footer">
-              {step === "checkout" && (
-                <>
+            <div className="checkout-cart-total">
+              <span>ИТОГО</span>
+              <span>{formatPrice(total)}</span>
+            </div>
+
+            <button
+              className="checkout-submit-btn"
+              type="button"
+              onClick={() => setStep("checkout")}
+            >
+              ПЕРЕЙТИ К ОФОРМЛЕНИЮ
+            </button>
+          </div>
+        ) : (
+          <div className="checkout-layout">
+            <div className="checkout-left">
+              <div className="checkout-block">
+                <div className="checkout-section-title">КОНТАКТНАЯ ИНФОРМАЦИЯ</div>
+
+                <label className="checkout-label">
+                  ИМЯ
                   <input
-                    className="field"
-                    placeholder="Ваше имя"
+                    className="checkout-input"
+                    placeholder="ВАШЕ ИМЯ"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                   />
+                </label>
+
+                <label className="checkout-label">
+                  ТЕЛЕФОН
                   <input
-                    className="field"
-                    placeholder="Телефон для связи"
+                    className="checkout-input"
+                    placeholder="+7XXXXXXXXXX"
                     inputMode="tel"
                     value={phone}
                     onChange={(e) => setPhone(normalizeRussianPhone(e.target.value))}
                   />
-                  <select
-                    className="field"
-                    value={deliveryMethod}
-                    onChange={(e) => setDeliveryMethod(e.target.value)}
+                </label>
+              </div>
+
+              <div className="checkout-block">
+                <div className="checkout-section-title">ПОЛУЧЕНИЕ</div>
+
+                <div className="checkout-delivery-switch">
+                  <button
+                    type="button"
+                    className={
+                      deliveryMethod === DELIVERY
+                        ? "checkout-switch-btn checkout-switch-btn--active"
+                        : "checkout-switch-btn"
+                    }
+                    onClick={() => setDeliveryMethod(DELIVERY)}
                   >
-                    <option value={DELIVERY}>Доставка</option>
-                    <option value="Самовывоз">Самовывоз</option>
-                  </select>
-                  {isDelivery && (
+                    ДОСТАВКА
+                  </button>
+
+                  <button
+                    type="button"
+                    className={
+                      deliveryMethod === PICKUP
+                        ? "checkout-switch-btn checkout-switch-btn--active"
+                        : "checkout-switch-btn"
+                    }
+                    onClick={() => setDeliveryMethod(PICKUP)}
+                  >
+                    САМОВЫВОЗ
+                  </button>
+                </div>
+
+                {isDelivery && (
+                  <label className="checkout-label">
+                    АДРЕС
                     <input
-                      className="field"
-                      placeholder="Адрес доставки"
+                      className="checkout-input"
+                      placeholder="ВВЕДИТЕ АДРЕС"
                       value={address}
                       onChange={(e) => setAddress(e.target.value)}
                     />
-                  )}
-                  <input
-                    className="field"
-                    placeholder="Комментарий к заказу (необязательно)"
+                  </label>
+                )}
+
+                <label className="checkout-label">
+                  КОММЕНТАРИЙ
+                  <textarea
+                    className="checkout-input checkout-input--textarea"
+                    placeholder="НЕОБЯЗАТЕЛЬНО"
                     value={comment}
                     onChange={(e) => setComment(e.target.value)}
                   />
-                </>
-              )}
-              <div className="summary-row">
-                <span>Итого</span>
-                <span>{formatPrice(total)}</span>
+                </label>
               </div>
-              {error && (
-                <span style={{ color: "#ff3b30", fontSize: 13 }}>{error}</span>
-              )}
-              {step === "cart" ? (
-                <button className="btn" onClick={() => setStep("checkout")}>
-                  Оформить заказ
-                </button>
-              ) : (
-                <>
-                  <button className="btn btn--ghost" onClick={() => setStep("cart")}>
-                    Назад к корзине
-                  </button>
-                  <button className="btn" onClick={submit} disabled={submitting || !canSubmit}>
-                    {submitting ? "Отправляем..." : "Подтвердить заказ"}
-                  </button>
-                </>
-              )}
             </div>
-          </>
+
+            <div className="checkout-right">
+              <div className="checkout-section-title">ИТОГ ЗАКАЗА</div>
+
+              <div className="checkout-summary-list">
+                {items.map((i) => (
+                  <div className="checkout-summary-item" key={`${i.productId}-${i.size}`}>
+                    <div className="checkout-summary-item__main">
+                      <div className="checkout-summary-item__name">{i.name}</div>
+                      <div className="checkout-summary-item__meta">
+                        Размер {i.size} · {i.quantity} шт.
+                      </div>
+                    </div>
+
+                    <div className="checkout-summary-item__price">
+                      {formatPrice(i.price * i.quantity)}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="checkout-totals">
+                <div className="checkout-totals__row">
+                  <span>SUBTOTAL</span>
+                  <span>{formatPrice(subtotal)}</span>
+                </div>
+
+                <div className="checkout-totals__row">
+                  <span>TAXES</span>
+                  <span>0 ₽</span>
+                </div>
+
+                <div className="checkout-totals__row checkout-totals__row--total">
+                  <span>TOTAL</span>
+                  <span>{formatPrice(total)}</span>
+                </div>
+              </div>
+
+              {error && <div className="checkout-error">{error}</div>}
+
+              <button
+                className="checkout-submit-btn"
+                type="button"
+                onClick={submit}
+                disabled={submitting || !canSubmit}
+              >
+                {submitting ? "ОТПРАВЛЯЕМ..." : "ПОДТВЕРДИТЬ ЗАКАЗ"}
+              </button>
+            </div>
+          </div>
         )}
       </div>
     </>
