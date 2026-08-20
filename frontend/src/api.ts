@@ -1,14 +1,11 @@
 import axios from "axios";
-
 import {
   compressImageFiles,
 } from "./imageCompress";
-
 import {
   getTelegramInitData,
   getTelegramLaunchInfo,
 } from "./telegram";
-
 import type {
   AdminOrder,
   AuthUser,
@@ -19,27 +16,22 @@ import type {
   Product,
   ProductsQuery,
 } from "./types";
-
 const baseURL =
   import.meta.env.VITE_API_URL
     ?.replace(/\/$/, "") ||
   "http://localhost:3000";
-
 export const api =
   axios.create({
     baseURL,
     timeout: 45000,
   });
-
 const ACCESS_TOKEN_KEY =
   "swa6y5tan_access_token";
-
 export function getAccessToken() {
   return localStorage.getItem(
     ACCESS_TOKEN_KEY,
   );
 }
-
 export function setAccessToken(
   token: string,
 ) {
@@ -48,19 +40,16 @@ export function setAccessToken(
     token,
   );
 }
-
 export function clearAccessToken() {
   localStorage.removeItem(
     ACCESS_TOKEN_KEY,
   );
 }
-
 export function isWebLoggedIn() {
   return Boolean(
     getAccessToken(),
   );
 }
-
 api.interceptors.request.use(
   (config) => {
     if (
@@ -72,35 +61,28 @@ api.interceptors.request.use(
         "Content-Type"
       ];
     }
-
     return config;
   },
 );
-
 function authHeaders() {
   const initData =
     getTelegramInitData();
-
   if (initData) {
     return {
       "x-telegram-init-data":
         initData,
     };
   }
-
   const accessToken =
     getAccessToken();
-
   if (accessToken) {
     return {
       Authorization:
         `Bearer ${accessToken}`,
     };
   }
-
   return {};
 }
-
 function isRetryableError(
   error: unknown,
 ) {
@@ -111,7 +93,6 @@ function isRetryableError(
   ) {
     return false;
   }
-
   if (
     !error.response ||
     error.code ===
@@ -119,10 +100,8 @@ function isRetryableError(
   ) {
     return true;
   }
-
   const status =
     error.response.status;
-
   return (
     status === 502 ||
     status === 503 ||
@@ -130,13 +109,11 @@ function isRetryableError(
     status === 429
   );
 }
-
 async function withRetry<T>(
   fn: () => Promise<T>,
   retries = 2,
 ) {
   let lastError: unknown;
-
   for (
     let attempt = 0;
     attempt <= retries;
@@ -146,7 +123,6 @@ async function withRetry<T>(
       return await fn();
     } catch (error) {
       lastError = error;
-
       if (
         attempt === retries ||
         !isRetryableError(
@@ -155,7 +131,6 @@ async function withRetry<T>(
       ) {
         throw error;
       }
-
       await new Promise(
         (resolve) =>
           setTimeout(
@@ -166,10 +141,8 @@ async function withRetry<T>(
       );
     }
   }
-
   throw lastError;
 }
-
 export type WebUser = {
   id: string;
   telegramId?: string | null;
@@ -178,23 +151,19 @@ export type WebUser = {
   phone?: string | null;
   role: string;
 };
-
 export type WebAuthResponse = {
   accessToken: string;
   user: WebUser;
 };
-
 export type RegisterPayload = {
   email: string;
   password: string;
   name?: string;
 };
-
 export type LoginPayload = {
   email: string;
   password: string;
 };
-
 export async function register(
   payload: RegisterPayload,
 ): Promise<WebAuthResponse> {
@@ -203,14 +172,11 @@ export async function register(
       "/auth/register",
       payload,
     );
-
   setAccessToken(
     res.data.accessToken,
   );
-
   return res.data;
 }
-
 export async function login(
   payload: LoginPayload,
 ): Promise<WebAuthResponse> {
@@ -219,18 +185,14 @@ export async function login(
       "/auth/login",
       payload,
     );
-
   setAccessToken(
     res.data.accessToken,
   );
-
   return res.data;
 }
-
 export function logout() {
   clearAccessToken();
 }
-
 export async function getProducts(
   query: ProductsQuery = {},
 ): Promise<Product[]> {
@@ -238,27 +200,22 @@ export async function getProducts(
     string,
     string
   > = {};
-
   if (query.category) {
     params.category =
       query.category;
   }
-
   if (query.brand) {
     params.brand =
       query.brand;
   }
-
   if (query.search) {
     params.search =
       query.search;
   }
-
   if (query.sort) {
     params.sort =
       query.sort;
   }
-
   if (
     query.inStock !==
     undefined
@@ -268,7 +225,6 @@ export async function getProducts(
         query.inStock,
       );
   }
-
   const res =
     await api.get<Product[]>(
       "/products",
@@ -276,10 +232,8 @@ export async function getProducts(
         params,
       },
     );
-
   return res.data;
 }
-
 export async function getProduct(
   id: string,
 ): Promise<Product> {
@@ -287,10 +241,8 @@ export async function getProduct(
     await api.get<Product>(
       `/products/${id}`,
     );
-
   return res.data;
 }
-
 export async function getCategories(): Promise<
   Category[]
 > {
@@ -298,10 +250,8 @@ export async function getCategories(): Promise<
     await api.get<Category[]>(
       "/categories",
     );
-
   return res.data;
 }
-
 export async function getBrands(): Promise<
   Brand[]
 > {
@@ -309,10 +259,8 @@ export async function getBrands(): Promise<
     await api.get<Brand[]>(
       "/brands",
     );
-
   return res.data;
 }
-
 export async function createBrand(
   name: string,
 ): Promise<Brand> {
@@ -327,10 +275,8 @@ export async function createBrand(
           authHeaders(),
       },
     );
-
   return res.data;
 }
-
 export async function createCategory(
   name: string,
 ): Promise<Category> {
@@ -345,10 +291,8 @@ export async function createCategory(
           authHeaders(),
       },
     );
-
   return res.data;
 }
-
 export async function deleteBrand(
   id: string,
 ): Promise<void> {
@@ -360,7 +304,6 @@ export async function deleteBrand(
     },
   );
 }
-
 export async function deleteCategory(
   id: string,
 ): Promise<void> {
@@ -372,21 +315,18 @@ export async function deleteCategory(
     },
   );
 }
-
 export type CreateOrderPayload = {
   name?: string;
   phone?: string;
   deliveryMethod?: string;
   address?: string;
   comment?: string;
-
   items: {
     productId: string;
     quantity: number;
     size?: string;
   }[];
 };
-
 export async function createOrder(
   payload: CreateOrderPayload,
 ): Promise<Order> {
@@ -399,10 +339,8 @@ export async function createOrder(
           authHeaders(),
       },
     );
-
   return res.data;
 }
-
 export function getApiErrorMessage(
   error: unknown,
 ) {
@@ -413,30 +351,24 @@ export function getApiErrorMessage(
   ) {
     return "Не удалось выполнить запрос. Попробуйте ещё раз.";
   }
-
   const status =
     error.response?.status;
-
   const message =
     error.response?.data
       ?.message;
-
   const normalizedMessage =
     Array.isArray(message)
       ? message.join(" ")
       : String(
           message ?? "",
         );
-
   const backendError =
     normalizedMessage ||
     error.response?.data
       ?.error;
-
   if (status === 401) {
     const launchInfo =
       getTelegramLaunchInfo();
-
     if (
       launchInfo
         .isTelegram &&
@@ -445,10 +377,8 @@ export function getApiErrorMessage(
     ) {
       return "Telegram не передал данные входа.";
     }
-
     return "Неверные данные входа или сессия истекла.";
   }
-
   if (
     status === 409
   ) {
@@ -457,7 +387,6 @@ export function getApiErrorMessage(
       "Такой пользователь уже существует."
     );
   }
-
   if (
     status === 400 &&
     normalizedMessage.includes(
@@ -466,7 +395,6 @@ export function getApiErrorMessage(
   ) {
     return "Введите телефон в правильном формате.";
   }
-
   if (
     status === 400 &&
     normalizedMessage.includes(
@@ -475,7 +403,6 @@ export function getApiErrorMessage(
   ) {
     return "Для доставки нужен адрес.";
   }
-
   if (
     status === 400 &&
     normalizedMessage.includes(
@@ -484,7 +411,6 @@ export function getApiErrorMessage(
   ) {
     return "Этот размер уже недоступен.";
   }
-
   if (
     status === 400 &&
     normalizedMessage.includes(
@@ -493,11 +419,9 @@ export function getApiErrorMessage(
   ) {
     return "Товар закончился.";
   }
-
   if (!error.response) {
     return "Сервер не ответил. Проверьте подключение.";
   }
-
   if (
     status === 400 &&
     /cloudinary/i.test(
@@ -508,17 +432,14 @@ export function getApiErrorMessage(
   ) {
     return "Не удалось загрузить фото.";
   }
-
   if (
     status &&
     backendError
   ) {
     return `Ошибка сервера (${status}): ${backendError}`;
   }
-
   return "Не удалось выполнить запрос. Попробуйте ещё раз.";
 }
-
 export async function getMe(): Promise<AuthUser> {
   const res =
     await api.get<AuthUser>(
@@ -528,10 +449,8 @@ export async function getMe(): Promise<AuthUser> {
           authHeaders(),
       },
     );
-
   return res.data;
 }
-
 export type ProductFormPayload = {
   name: string;
   price: number;
@@ -543,7 +462,6 @@ export type ProductFormPayload = {
   imageItems:
     ProductImageItem[];
 };
-
 export type ProductImageItem =
   | {
       key: string;
@@ -555,48 +473,40 @@ export type ProductImageItem =
       type: "file";
       file: File;
     };
-
 function productFormData(
   payload: ProductFormPayload,
 ) {
   const form =
     new FormData();
-
   form.append(
     "name",
     payload.name,
   );
-
   form.append(
     "price",
     String(
       payload.price,
     ),
   );
-
   form.append(
     "description",
     payload.description ??
       "",
   );
-
   form.append(
     "brandId",
     payload.brandId,
   );
-
   form.append(
     "categoryId",
     payload.categoryId,
   );
-
   form.append(
     "inStock",
     String(
       payload.inStock,
     ),
   );
-
   payload.sizes.forEach(
     (size) =>
       form.append(
@@ -604,11 +514,9 @@ function productFormData(
         size,
       ),
   );
-
   const order: Array<
     "url" | "file"
   > = [];
-
   for (
     const item of
     payload.imageItems
@@ -620,18 +528,15 @@ function productFormData(
         "images",
         item.url,
       );
-
       order.push("url");
     } else {
       form.append(
         "images",
         item.file,
       );
-
       order.push("file");
     }
   }
-
   if (
     order.length > 0
   ) {
@@ -642,10 +547,8 @@ function productFormData(
       ),
     );
   }
-
   return form;
 }
-
 async function prepareProductPayload(
   payload: ProductFormPayload,
 ) {
@@ -662,14 +565,12 @@ async function prepareProductPayload(
         item.type ===
         "file",
     );
-
   if (
     fileItems.length ===
     0
   ) {
     return payload;
   }
-
   const compressed =
     await compressImageFiles(
       fileItems.map(
@@ -677,13 +578,11 @@ async function prepareProductPayload(
           item.file,
       ),
     );
-
   const compressedByKey =
     new Map<
       string,
       File
     >();
-
   fileItems.forEach(
     (item, index) => {
       compressedByKey.set(
@@ -692,10 +591,8 @@ async function prepareProductPayload(
       );
     },
   );
-
   return {
     ...payload,
-
     imageItems:
       payload.imageItems.map(
         (item) =>
@@ -703,7 +600,6 @@ async function prepareProductPayload(
           "file"
             ? {
                 ...item,
-
                 file:
                   compressedByKey.get(
                     item.key,
@@ -714,7 +610,6 @@ async function prepareProductPayload(
       ),
   };
 }
-
 export async function createProduct(
   payload: ProductFormPayload,
   onProgress?: (
@@ -726,16 +621,13 @@ export async function createProduct(
   onProgress?.(
     "compress",
   );
-
   const prepared =
     await prepareProductPayload(
       payload,
     );
-
   onProgress?.(
     "upload",
   );
-
   const res =
     await withRetry(() =>
       api.post<Product>(
@@ -746,16 +638,13 @@ export async function createProduct(
         {
           headers:
             authHeaders(),
-
           timeout:
             120000,
         },
       ),
     );
-
   return res.data;
 }
-
 export async function updateProduct(
   id: string,
   payload: ProductFormPayload,
@@ -768,16 +657,13 @@ export async function updateProduct(
   onProgress?.(
     "compress",
   );
-
   const prepared =
     await prepareProductPayload(
       payload,
     );
-
   onProgress?.(
     "upload",
   );
-
   const res =
     await withRetry(() =>
       api.patch<Product>(
@@ -788,12 +674,32 @@ export async function updateProduct(
         {
           headers:
             authHeaders(),
-
           timeout:
             120000,
         },
       ),
     );
+  return res.data;
+}
+export type ProductStockPayload = {
+  inStock: boolean;
+  sizes: {
+    size: string;
+    stock: number;
+  }[];
+};
+
+export async function updateProductStock(
+  id: string,
+  payload: ProductStockPayload,
+): Promise<Product> {
+  const res = await api.patch<Product>(
+    `/products/${id}/stock`,
+    payload,
+    {
+      headers: authHeaders(),
+    },
+  );
 
   return res.data;
 }
@@ -808,7 +714,6 @@ export async function deleteProduct(
         {
           headers:
             authHeaders(),
-
           timeout:
             60000,
         },
@@ -824,11 +729,9 @@ export async function deleteProduct(
     ) {
       return;
     }
-
     throw error;
   }
 }
-
 export async function getAdminOrders(): Promise<
   AdminOrder[]
 > {
@@ -842,10 +745,8 @@ export async function getAdminOrders(): Promise<
           authHeaders(),
       },
     );
-
   return res.data;
 }
-
 export async function updateOrderStatus(
   id: string,
   status: OrderStatus,
@@ -861,6 +762,5 @@ export async function updateOrderStatus(
           authHeaders(),
       },
     );
-
   return res.data;
 }

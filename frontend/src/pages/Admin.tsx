@@ -15,6 +15,7 @@ import {
   getProducts,
   updateOrderStatus,
   updateProduct,
+  updateProductStock,
   type ProductFormPayload,
   type ProductImageItem,
 } from "../api";
@@ -22,7 +23,6 @@ import type { AdminOrder, AuthUser, Brand, Category, OrderStatus, Product } from
 import { getTelegramLaunchInfo } from "../telegram";
 import { compressImageFiles } from "../imageCompress";
 import { formatPrice, getProductDeepLink, getProductPreviewImage } from "../utils";
-
 type FormState = {
   id?: string;
   name: string;
@@ -32,12 +32,11 @@ type FormState = {
   categoryId: string;
   inStock: boolean;
   sizes: string;
+  stockBySize: Record<string, string>;
   imageItems: ProductImageItem[];
 };
-
 type AdminTab = "products" | "catalog" | "orders";
 type OrderView = "active" | "archive";
-
 const emptyForm: FormState = {
   name: "",
   price: "",
@@ -46,17 +45,21 @@ const emptyForm: FormState = {
   categoryId: "",
   inStock: true,
   sizes: "XS, S, M, L, XL",
+  stockBySize: {
+    XS: "0",
+    S: "0",
+    M: "0",
+    L: "0",
+    XL: "0",
+  },
   imageItems: [],
 };
-
 function newFileKey(file: File) {
   return `file:${file.name}:${file.size}:${file.lastModified}:${Math.random().toString(36).slice(2, 8)}`;
 }
-
 function moveImageToPreview(items: ProductImageItem[], key: string) {
   const index = items.findIndex((item) => item.key === key);
   if (index <= 0) return items;
-
   const next = [...items];
   const [picked] = next.splice(index, 1);
   next.unshift(picked);
@@ -68,25 +71,19 @@ function sizesFromInput(value: string) {
     .map((size) => size.trim())
     .filter(Boolean);
 }
-
 function hasLegacyUpload(product: Product) {
   return product.images.some((image) => image.url.includes("/uploads/"));
 }
-
 function shortOrderNumber(id: string) {
   let hash = 0;
-
   for (let i = 0; i < id.length; i += 1) {
     hash = (hash * 31 + id.charCodeAt(i)) % 100000;
   }
-
   return String(hash).padStart(5, "0");
 }
-
 function orderTotal(order: AdminOrder) {
   return order.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
 }
-
 const orderStatusLabel: Record<OrderStatus, string> = {
   PENDING: "Новый",
   PAID: "В работе",
@@ -94,7 +91,6 @@ const orderStatusLabel: Record<OrderStatus, string> = {
   DONE: "Готово",
   CANCELLED: "Отменен",
 };
-
 export default function Admin() {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [brands, setBrands] = useState<Brand[]>([]);
@@ -112,7 +108,6 @@ export default function Admin() {
   const [compressingImages, setCompressingImages] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-
   const isEditing = Boolean(form.id);
   const canSubmit =
     form.name.trim().length > 1 &&
@@ -120,11 +115,9 @@ export default function Admin() {
     Boolean(form.brandId) &&
     Boolean(form.categoryId) &&
     sizesFromInput(form.sizes).length > 0;
-
   async function boot() {
     setBooting(true);
     setError(null);
-
     try {
       const [me, brandsData, categoriesData, productsData, ordersData] = await Promise.all([
         getMe(),
@@ -133,7 +126,6 @@ export default function Admin() {
         getProducts(),
         getAdminOrders(),
       ]);
-
       setUser(me);
       setBrands(brandsData);
       setCategories(categoriesData);
@@ -150,29 +142,24 @@ export default function Admin() {
       setBooting(false);
     }
   }
-
   useEffect(() => {
-    // Data fetching on mount is intentional for this protected admin screen.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+// Data fetching on mount is intentional for this protected admin screen.
+// eslint-disable-next-line react-hooks/set-state-in-effect
     void boot();
   }, []);
-
   async function refreshProducts() {
     const data = await getProducts();
     setProducts(data);
   }
-
   async function refreshCatalog() {
     const [brandsData, categoriesData] = await Promise.all([getBrands(), getCategories()]);
     setBrands(brandsData);
     setCategories(categoriesData);
   }
-
   async function refreshOrders() {
     const data = await getAdminOrders();
     setOrders(data);
   }
-
   function resetForm() {
     setForm({
       ...emptyForm,
@@ -180,7 +167,6 @@ export default function Admin() {
       categoryId: categories[0]?.id || "",
     });
   }
-
   function editProduct(product: Product) {
     setMessage(null);
     setError(null);
@@ -193,6 +179,9 @@ export default function Admin() {
       categoryId: product.category.id,
       inStock: product.inStock,
       sizes: product.sizes.map((size) => size.size).join(", "),
+      stockBySize: Object.fromEntries(
+        product.sizes.map((item) => [item.size, String(item.stock)]),
+      ),
       imageItems: product.images.map((image) => ({
         key: image.id,
         type: "url" as const,
@@ -201,7 +190,6 @@ export default function Admin() {
     });
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
-
   function toPayload(): ProductFormPayload {
     return {
       name: form.name.trim(),
@@ -214,28 +202,40 @@ export default function Admin() {
       imageItems: form.imageItems,
     };
   }
-
   async function submit() {
     if (!canSubmit) {
       setError("Заполните название, цену, бренд, категорию и хотя бы один размер.");
       return;
     }
-
     setSaving(true);
     setError(null);
     setMessage(null);
-
     try {
       const progress = (stage: "compress" | "upload") => setSaveStage(stage);
+      const stocks = sizesFromInput(form.sizes).map((size) => {
+        const value = Number(form.stockBySize[size] ?? 0);
+
+        return {
+          size,
+          stock: Number.isFinite(value) ? Math.max(0, Math.floor(value)) : 0,
+        };
+      });
 
       if (form.id) {
         await updateProduct(form.id, toPayload(), progress);
-        setMessage("Товар обновлен.");
+        await updateProductStock(form.id, {
+          inStock: form.inStock,
+          sizes: stocks,
+        });
+        setMessage("Товар и остатки обновлены.");
       } else {
-        await createProduct(toPayload(), progress);
+        const created = await createProduct(toPayload(), progress);
+        await updateProductStock(created.id, {
+          inStock: form.inStock,
+          sizes: stocks,
+        });
         setMessage("Товар создан.");
       }
-
       await refreshProducts();
       resetForm();
     } catch (saveError) {
@@ -245,14 +245,11 @@ export default function Admin() {
       setSaveStage(null);
     }
   }
-
   async function removeProduct(product: Product) {
     if (!window.confirm(`Удалить "${product.name}"?`)) return;
-
     setSaving(true);
     setError(null);
     setMessage(null);
-
     try {
       await deleteProduct(product.id);
       await refreshProducts();
@@ -264,10 +261,8 @@ export default function Admin() {
       setSaving(false);
     }
   }
-
   async function copyProductLink(product: Product) {
     const link = getProductDeepLink(product.id);
-
     try {
       await navigator.clipboard.writeText(link);
       setMessage(`Ссылка скопирована: ${product.name}`);
@@ -277,15 +272,12 @@ export default function Admin() {
       setError(null);
     }
   }
-
   async function submitBrand() {
     const name = brandName.trim();
     if (!name) return;
-
     setSaving(true);
     setError(null);
     setMessage(null);
-
     try {
       await createBrand(name);
       setBrandName("");
@@ -297,15 +289,12 @@ export default function Admin() {
       setSaving(false);
     }
   }
-
   async function submitCategory() {
     const name = categoryName.trim();
     if (!name) return;
-
     setSaving(true);
     setError(null);
     setMessage(null);
-
     try {
       await createCategory(name);
       setCategoryName("");
@@ -317,19 +306,15 @@ export default function Admin() {
       setSaving(false);
     }
   }
-
   async function removeBrand(brand: Brand) {
     if ((brand._count?.products ?? 0) > 0) {
       setError("Сначала перенесите или удалите товары этого бренда.");
       return;
     }
-
     if (!window.confirm(`Удалить бренд "${brand.name}"?`)) return;
-
     setSaving(true);
     setError(null);
     setMessage(null);
-
     try {
       await deleteBrand(brand.id);
       await refreshCatalog();
@@ -340,19 +325,15 @@ export default function Admin() {
       setSaving(false);
     }
   }
-
   async function removeCategory(category: Category) {
     if ((category._count?.products ?? 0) > 0) {
       setError("Сначала перенесите или удалите товары этой категории.");
       return;
     }
-
     if (!window.confirm(`Удалить категорию "${category.name}"?`)) return;
-
     setSaving(true);
     setError(null);
     setMessage(null);
-
     try {
       await deleteCategory(category.id);
       await refreshCatalog();
@@ -363,12 +344,10 @@ export default function Admin() {
       setSaving(false);
     }
   }
-
   async function setOrderStatus(order: AdminOrder, status: OrderStatus) {
     setSaving(true);
     setError(null);
     setMessage(null);
-
     try {
       const updatedOrder = await updateOrderStatus(order.id, status);
       setOrders((current) =>
@@ -381,7 +360,6 @@ export default function Admin() {
       setSaving(false);
     }
   }
-
   const selectedFiles = useMemo(
     () =>
       form.imageItems
@@ -398,7 +376,6 @@ export default function Admin() {
     (order) => order.status === "DONE" || order.status === "CANCELLED",
   );
   const visibleOrders = orderView === "active" ? activeOrders : archivedOrders;
-
   if (booting) {
     return (
       <main className="admin-page container">
@@ -406,7 +383,6 @@ export default function Admin() {
       </main>
     );
   }
-
   if (error && !user) {
     return (
       <main className="admin-page container">
@@ -425,7 +401,6 @@ export default function Admin() {
       </main>
     );
   }
-
   if (user?.role !== "ADMIN") {
     return (
       <main className="admin-page container">
@@ -436,7 +411,6 @@ export default function Admin() {
       </main>
     );
   }
-
   return (
     <main className="admin-page container">
       <div className="admin-hero">
@@ -449,7 +423,6 @@ export default function Admin() {
           На витрину
         </Link>
       </div>
-
       <div className="admin-tabs">
         <button
           className={`chip ${activeTab === "products" ? "chip--active" : ""}`}
@@ -470,7 +443,6 @@ export default function Admin() {
           Заказы
         </button>
       </div>
-
       {activeTab === "products" && (
       <section className="admin-grid">
         <div className="admin-panel">
@@ -482,7 +454,6 @@ export default function Admin() {
               </button>
             )}
           </div>
-
           <label className="admin-field">
             Название
             <input
@@ -491,7 +462,6 @@ export default function Admin() {
               onChange={(e) => setForm({ ...form, name: e.target.value })}
             />
           </label>
-
           <div className="admin-two">
             <label className="admin-field">
               Цена
@@ -512,7 +482,6 @@ export default function Admin() {
               В наличии
             </label>
           </div>
-
           <label className="admin-field">
             Описание
             <textarea
@@ -521,7 +490,6 @@ export default function Admin() {
               onChange={(e) => setForm({ ...form, description: e.target.value })}
             />
           </label>
-
           <div className="admin-two">
             <label className="admin-field">
               Бренд
@@ -552,7 +520,6 @@ export default function Admin() {
               </select>
             </label>
           </div>
-
           <label className="admin-field">
             Размеры через запятую
             <input
@@ -561,7 +528,35 @@ export default function Admin() {
               onChange={(e) => setForm({ ...form, sizes: e.target.value })}
             />
           </label>
-
+          {sizesFromInput(form.sizes).length > 0 && (
+            <div className="admin-field">
+              <span>Остатки по размерам</span>
+              <div className="admin-two">
+                {sizesFromInput(form.sizes).map((size) => (
+                  <label className="admin-field" key={size}>
+                    {size}
+                    <input
+                      className="field"
+                      type="number"
+                      min="0"
+                      step="1"
+                      inputMode="numeric"
+                      value={form.stockBySize[size] ?? "0"}
+                      onChange={(e) =>
+                        setForm((current) => ({
+                          ...current,
+                          stockBySize: {
+                            ...current.stockBySize,
+                            [size]: e.target.value,
+                          },
+                        }))
+                      }
+                    />
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
           {form.imageItems.length > 0 && (
             <div className="admin-images">
               {form.imageItems.map((item, index) => (
@@ -605,7 +600,6 @@ export default function Admin() {
               ))}
             </div>
           )}
-
           <label className="admin-upload">
             <input
               type="file"
@@ -614,11 +608,9 @@ export default function Admin() {
               onChange={(e) => {
                 const picked = Array.from(e.target.files ?? []);
                 if (picked.length === 0) return;
-
                 void (async () => {
                   setCompressingImages(true);
                   setError(null);
-
                   try {
                     const compressed = await compressImageFiles(picked);
                     setForm((current) => ({
@@ -638,7 +630,6 @@ export default function Admin() {
                     setCompressingImages(false);
                   }
                 })();
-
                 e.target.value = "";
               }}
               disabled={compressingImages}
@@ -650,10 +641,8 @@ export default function Admin() {
               {form.imageItems.length > 0 && ` · всего: ${form.imageItems.length}`}
             </span>
           </label>
-
           {message && <div className="notice notice--ok">{message}</div>}
           {error && <div className="notice notice--error">{error}</div>}
-
           <button
             className="btn"
             onClick={submit}
@@ -670,7 +659,6 @@ export default function Admin() {
                 : "Создать товар"}
           </button>
         </div>
-
         <div className="admin-panel">
           <div className="admin-panel__head">
             <h2>Товары</h2>
@@ -678,7 +666,6 @@ export default function Admin() {
               <strong>{products.length}</strong> всего
             </span>
           </div>
-
           <div className="admin-list">
             {products.map((product) => (
               <article className="admin-product" key={product.id}>
@@ -696,7 +683,11 @@ export default function Admin() {
                   </span>
                   <span className="admin-product__meta">
                     {product.inStock ? "В наличии" : "Скрыт из наличия"} ·{" "}
-                    {product.sizes.map((size) => size.size).join(", ") || "без размеров"}
+                    {product.sizes.length > 0
+                      ? product.sizes
+                          .map((item) => `${item.size}: ${item.stock}`)
+                          .join(" · ")
+                      : "без размеров"}
                   </span>
                   <span className="admin-product__meta admin-product__meta--mono">
                     ID: {product.id}
@@ -739,7 +730,6 @@ export default function Admin() {
         </div>
       </section>
       )}
-
       {activeTab === "catalog" && (
         <section className="admin-grid">
           <div className="admin-panel">
@@ -757,7 +747,6 @@ export default function Admin() {
             <button className="btn" onClick={submitBrand} disabled={saving || !brandName.trim()}>
               Добавить бренд
             </button>
-
             <div className="admin-list admin-list--compact">
               {brands.map((brand) => (
                 <div className="admin-row" key={brand.id}>
@@ -776,7 +765,6 @@ export default function Admin() {
               ))}
             </div>
           </div>
-
           <div className="admin-panel">
             <div className="admin-panel__head">
               <h2>Новая категория</h2>
@@ -796,7 +784,6 @@ export default function Admin() {
             >
               Добавить категорию
             </button>
-
             <div className="admin-list admin-list--compact">
               {categories.map((category) => (
                 <div className="admin-row" key={category.id}>
@@ -815,7 +802,6 @@ export default function Admin() {
               ))}
             </div>
           </div>
-
           {(message || error) && (
             <div className="admin-panel">
               {message && <div className="notice notice--ok">{message}</div>}
@@ -824,7 +810,6 @@ export default function Admin() {
           )}
         </section>
       )}
-
       {activeTab === "orders" && (
         <section className="admin-panel">
           <div className="admin-panel__head">
@@ -838,7 +823,6 @@ export default function Admin() {
               </button>
             </div>
           </div>
-
           <div className="admin-tabs admin-tabs--inner">
             <button
               className={`chip ${orderView === "active" ? "chip--active" : ""}`}
@@ -853,10 +837,8 @@ export default function Admin() {
               Архив {archivedOrders.length}
             </button>
           </div>
-
           {message && <div className="notice notice--ok">{message}</div>}
           {error && <div className="notice notice--error">{error}</div>}
-
           <div className="admin-orders">
             {visibleOrders.length === 0 ? (
               <div className="state">
@@ -878,21 +860,21 @@ export default function Admin() {
                     </div>
                     <span className="admin-badge">{orderStatusLabel[order.status]}</span>
                   </div>
-
                   <div className="admin-order__details">
-                    <span>Имя: {order.customerName || order.user.name || "не указано"}</span>
-                    <span>Телефон: {order.phone || order.user.phone || "не указан"}</span>
-                    <span>
-                      Telegram:{" "}
-                      <a href={`tg://user?id=${order.user.telegramId}`}>
-                        {order.user.telegramId}
-                      </a>
-                    </span>
+                    <span>Имя: {order.customerName || order.user?.name || "не указано"}</span>
+                    <span>Телефон: {order.phone || order.user?.phone || "не указан"}</span>
+                    {order.user?.telegramId && (
+                      <span>
+                        Telegram:{" "}
+                        <a href={`tg://user?id=${order.user.telegramId}`}>
+                          {order.user.telegramId}
+                        </a>
+                      </span>
+                    )}
                     <span>Получение: {order.deliveryMethod || "не указано"}</span>
                     <span>Адрес: {order.address || "не указан"}</span>
                     <span>Комментарий: {order.comment || "нет"}</span>
                   </div>
-
                   <div className="admin-order__items">
                     {order.items.map((item) => (
                       <span key={item.id}>
@@ -901,12 +883,10 @@ export default function Admin() {
                       </span>
                     ))}
                   </div>
-
                   <div className="summary-row">
                     <span>Итого</span>
                     <span>{formatPrice(orderTotal(order))}</span>
                   </div>
-
                   <div className="admin-product__actions">
                     <button
                       className="chip"
