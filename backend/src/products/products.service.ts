@@ -10,6 +10,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateProductDto } from './create-product.dto';
 import { QueryProductsDto } from './query-products.dto';
 import { UpdateProductDto } from './update-product.dto';
+import { UpdateProductStockDto } from './update-product-stock.dto';
 
 const productInclude = {
   images: {

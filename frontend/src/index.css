@@ -1350,3 +1350,8 @@ button,
     opacity: 0.78;
   }
 }
+.card,
+.card__media,
+.card__media img {
+  background: #fff !important;
+}
