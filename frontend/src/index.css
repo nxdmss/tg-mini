@@ -1355,3 +1355,68 @@ button,
 .card__media img {
   background: #fff !important;
 }
+/* =========================================================
+   PRODUCT CARD — ТОВАР БЕЗ ФОНА
+   ========================================================= */
+
+.card {
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+/* Область изображения */
+.card__media {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 5;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+
+  overflow: visible !important;
+}
+
+/* Сам товар */
+.card__media img {
+  width: 100%;
+  height: 100%;
+
+  object-fit: contain !important;
+  object-position: center !important;
+
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+
+  display: block;
+}
+
+/* Убираем любые старые затемнения/эффекты */
+.card__media::before,
+.card__media::after {
+  display: none !important;
+  content: none !important;
+}
+
+/* Старый hover-слой */
+.card__overlay {
+  display: none !important;
+}
+
+/* Информация под товаром тоже без подложки */
+.card__body,
+.card__content,
+.card__info {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
