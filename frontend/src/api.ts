@@ -340,8 +340,10 @@ export async function deleteCategory(
 ========================================================= */
 
 export type CreateOrderPayload = {
-  name?: string;
-  phone?: string;
+  name: string;
+  email: string;
+  phone: string;
+
   deliveryMethod?: string;
   address?: string;
   comment?: string;
@@ -349,7 +351,7 @@ export type CreateOrderPayload = {
   items: {
     productId: string;
     quantity: number;
-    size?: string;
+    size: string;
   }[];
 };
 
