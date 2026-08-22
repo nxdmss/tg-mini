@@ -18,8 +18,14 @@ import { ProductCard } from "./components/ProductCard";
 import { ProductDetail } from "./components/ProductDetail";
 import { CartDrawer } from "./components/CartDrawer";
 import { Filters } from "./components/Filters";
+import { PrankProduct } from "./components/PrankProduct";
 
 import { consumeStartParam } from "./telegram";
+import {
+  isPrankProduct,
+  playPrankSound,
+  stopPrankSound,
+} from "./prank";
 
 export default function App() {
   const { id: productIdFromUrl } = useParams();
@@ -70,10 +76,6 @@ export default function App() {
     fetchedProduct,
   ]);
 
-  /* =======================================================
-     CATALOG
-     ======================================================= */
-
   useEffect(() => {
     if (productIdFromUrl) {
       return;
@@ -113,10 +115,6 @@ export default function App() {
     productIdFromUrl,
   ]);
 
-  /* =======================================================
-     CATEGORIES
-     ======================================================= */
-
   useEffect(() => {
     if (productIdFromUrl) {
       return;
@@ -145,10 +143,6 @@ export default function App() {
     };
   }, [productIdFromUrl]);
 
-  /* =======================================================
-     TELEGRAM START PARAM
-     ======================================================= */
-
   useEffect(() => {
     const startParam = consumeStartParam();
 
@@ -171,10 +165,6 @@ export default function App() {
     productIdFromUrl,
     navigate,
   ]);
-
-  /* =======================================================
-     SINGLE PRODUCT
-     ======================================================= */
 
   useEffect(() => {
     if (!productIdFromUrl) {
@@ -229,33 +219,42 @@ export default function App() {
   function openProduct(product: Product) {
     setProductLinkError(false);
 
+    if (isPrankProduct(product)) {
+      void playPrankSound();
+    } else {
+      stopPrankSound();
+    }
+
     navigate(
       `/product/${product.id}`,
     );
   }
 
   function closeProduct() {
+    stopPrankSound();
     setFetchedProduct(null);
     setProductLinkError(false);
 
     navigate("/");
   }
 
-  /* =======================================================
-     PRODUCT PAGE
-     ======================================================= */
-
   if (isProductPage) {
     return (
       <div className="app">
         {selectedProduct ? (
-          <ProductDetail
-            product={selectedProduct}
-            onBack={closeProduct}
-            onCartClick={() =>
-              setCartOpen(true)
-            }
-          />
+          isPrankProduct(selectedProduct) ? (
+            <PrankProduct
+              onBack={closeProduct}
+            />
+          ) : (
+            <ProductDetail
+              product={selectedProduct}
+              onBack={closeProduct}
+              onCartClick={() =>
+                setCartOpen(true)
+              }
+            />
+          )
         ) : productLinkError ? (
           <main className="product-route-state">
             <button
@@ -288,10 +287,6 @@ export default function App() {
       </div>
     );
   }
-
-  /* =======================================================
-     CATALOG PAGE
-     ======================================================= */
 
   return (
     <div className="app">
