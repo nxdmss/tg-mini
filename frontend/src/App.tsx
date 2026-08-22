@@ -21,10 +21,11 @@ import { Filters } from "./components/Filters";
 import { PrankProduct } from "./components/PrankProduct";
 
 import { consumeStartParam } from "./telegram";
+
 import {
   isPrankProduct,
-  playPrankSound,
-  stopPrankSound,
+  playPrankLaugh,
+  stopPrankAudio,
 } from "./prank";
 
 export default function App() {
@@ -216,27 +217,28 @@ export default function App() {
     products,
   ]);
 
-  function openProduct(product: Product) {
-    setProductLinkError(false);
+function openProduct(product: Product) {
+  setProductLinkError(false);
 
-    if (isPrankProduct(product)) {
-      void playPrankSound();
-    } else {
-      stopPrankSound();
-    }
-
-    navigate(
-      `/product/${product.id}`,
-    );
+  if (isPrankProduct(product)) {
+    void playPrankLaugh();
+  } else {
+    stopPrankAudio();
   }
 
-  function closeProduct() {
-    stopPrankSound();
-    setFetchedProduct(null);
-    setProductLinkError(false);
+  navigate(
+    `/product/${product.id}`,
+  );
+}
 
-    navigate("/");
-  }
+function closeProduct() {
+  stopPrankAudio();
+
+  setFetchedProduct(null);
+  setProductLinkError(false);
+
+  navigate("/");
+}
 
   if (isProductPage) {
     return (
