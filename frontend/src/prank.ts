@@ -3,8 +3,8 @@ import type { Product } from "./types";
 const PRANK_PRODUCT_ID =
   "cmt4woma6000bm4koxf35p5xg";
 
-export const PRANK_CAT_GIF_SRC =
-  "/prank/cat.gif";
+export const PRANK_CAT_VIDEO_SRC =
+  "/prank/cat.mp4";
 
 export const PRANK_LAUGH_AUDIO_SRC =
   "/prank/prank-laugh.mp3";
@@ -20,6 +20,14 @@ let laughAudio:
 
 let boomAudio:
   HTMLAudioElement | null = null;
+
+let preloadVideo:
+  HTMLVideoElement | null = null;
+
+let preloadBoom:
+  HTMLImageElement | null = null;
+
+let preloadStarted = false;
 
 export function isPrankProduct(
   product:
@@ -61,6 +69,42 @@ function getBoomAudio() {
   return boomAudio;
 }
 
+export function preloadPrankAssets() {
+  if (preloadStarted) {
+    return;
+  }
+
+  preloadStarted = true;
+
+  preloadVideo =
+    document.createElement(
+      "video",
+    );
+
+  preloadVideo.preload =
+    "auto";
+
+  preloadVideo.muted =
+    true;
+
+  preloadVideo.playsInline =
+    true;
+
+  preloadVideo.src =
+    PRANK_CAT_VIDEO_SRC;
+
+  preloadVideo.load();
+
+  preloadBoom =
+    new Image();
+
+  preloadBoom.src =
+    PRANK_BOOM_GIF_SRC;
+
+  getLaughAudio().load();
+  getBoomAudio().load();
+}
+
 export function isPrankLaughPlaying() {
   if (!laughAudio) {
     return false;
@@ -88,8 +132,7 @@ export async function playPrankLaugh() {
   try {
     await laugh.play();
   } catch {
-    // Некоторые браузеры могут
-    // блокировать autoplay.
+    // autoplay may be blocked
   }
 }
 

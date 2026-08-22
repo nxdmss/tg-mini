@@ -25,6 +25,7 @@ import { consumeStartParam } from "./telegram";
 import {
   isPrankProduct,
   playPrankLaugh,
+  preloadPrankAssets,
   stopPrankAudio,
 } from "./prank";
 
@@ -35,6 +36,9 @@ export default function App() {
 
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  useEffect(() => {
+  preloadPrankAssets();
+}, []);
 
   const [query, setQuery] = useState<ProductsQuery>({
     sort: "name_asc",
