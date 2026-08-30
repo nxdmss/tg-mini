@@ -249,7 +249,7 @@ export async function moveAdminProductToShop(
 ): Promise<Product> {
   const res =
     await api.patch<Product>(
-      `/products/${id}/shop`,
+      `/products/${id}`,
       { shopId },
       {
         headers:

@@ -739,6 +739,28 @@ export default function Admin() {
         shopId,
       );
 
+      const targetShop =
+        shops.find(
+          (shop) =>
+            shop.id === shopId,
+        );
+
+      setProducts(
+        (current) =>
+          current.map(
+            (item) =>
+              item.id ===
+              productId
+                ? {
+                    ...item,
+                    shop:
+                      targetShop ||
+                      item.shop,
+                  }
+                : item,
+          ),
+      );
+
       setMessage(
         "Товар перенесён.",
       );
@@ -751,7 +773,7 @@ export default function Admin() {
         });
       }
 
-      await loadAdminData();
+      void loadAdminData();
     } catch (error: any) {
       console.error(error);
 
