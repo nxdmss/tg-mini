@@ -1,21 +1,9 @@
-
-import { useEffect, useMemo, useState } from "react";
-
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { api } from "../api";
-
-import type {
-  AdminOrder,
-  Brand,
-  Category,
-  Product,
-} from "../types";
-
+import type { AdminOrder, Brand, Category, Product } from "../types";
 import "./Admin.css";
 
-type TabKey =
-  | "products"
-  | "catalog"
-  | "orders";
+type TabKey = "products" | "catalog" | "orders";
 
 type Shop = {
   id: string;
@@ -59,7 +47,7 @@ const ORDER_STATUSES: AdminOrder["status"][] = [
   "DONE",
 ];
 
-function parseMultilineValues(value: string) {
+function parseLines(value: string) {
   return value
     .split(/\r?\n/)
     .map((item) => item.trim())
@@ -70,10 +58,8 @@ function formatPrice(value: number) {
   return new Intl.NumberFormat("ru-RU").format(value) + " ₽";
 }
 
-function formatOrderDate(value?: string) {
-  if (!value) {
-    return "—";
-  }
+function formatDate(value?: string) {
+  if (!value) return "—";
 
   try {
     return new Date(value).toLocaleString("ru-RU");
@@ -83,56 +69,38 @@ function formatOrderDate(value?: string) {
 }
 
 export default function Admin() {
-  const [activeTab, setActiveTab] =
-    useState<TabKey>("products");
+  const [activeTab, setActiveTab] = useState<TabKey>("products");
 
-  const [loading, setLoading] =
-    useState(true);
-  const [saving, setSaving] =
-    useState(false);
-  const [message, setMessage] =
-    useState<string>("");
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState("");
 
-  const [products, setProducts] =
-    useState<ProductWithShop[]>([]);
-  const [brands, setBrands] =
-    useState<Brand[]>([]);
-  const [categories, setCategories] =
-    useState<Category[]>([]);
-  const [orders, setOrders] =
-    useState<AdminOrder[]>([]);
-  const [shops, setShops] =
-    useState<Shop[]>([]);
+  const [products, setProducts] = useState<ProductWithShop[]>([]);
+  const [brands, setBrands] = useState<Brand[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [orders, setOrders] = useState<AdminOrder[]>([]);
+  const [shops, setShops] = useState<Shop[]>([]);
 
-  const [productSearch, setProductSearch] =
-    useState("");
-  const [form, setForm] = useState<ProductFormState>(
-    PRODUCT_FORM_INITIAL,
-  );
+  const [productSearch, setProductSearch] = useState("");
 
-  const [newBrandName, setNewBrandName] =
-    useState("");
-  const [newCategoryName, setNewCategoryName] =
-    useState("");
+  const [newBrandName, setNewBrandName] = useState("");
+  const [newCategoryName, setNewCategoryName] = useState("");
+
+  const [form, setForm] = useState<ProductFormState>(PRODUCT_FORM_INITIAL);
 
   async function loadAdminData() {
     setLoading(true);
     setMessage("");
 
     try {
-      const [
-        productsRes,
-        brandsRes,
-        categoriesRes,
-        ordersRes,
-        shopsRes,
-      ] = await Promise.all([
-        api.get<ProductWithShop[]>("/products"),
-        api.get<Brand[]>("/brands"),
-        api.get<Category[]>("/categories"),
-        api.get<AdminOrder[]>("/orders/admin"),
-        api.get<Shop[]>("/shops"),
-      ]);
+      const [productsRes, brandsRes, categoriesRes, ordersRes, shopsRes] =
+        await Promise.all([
+          api.get<ProductWithShop[]>("/products"),
+          api.get<Brand[]>("/brands"),
+          api.get<Category[]>("/categories"),
+          api.get<AdminOrder[]>("/orders/admin"),
+          api.get<Shop[]>("/shops"),
+        ]);
 
       setProducts(productsRes.data);
       setBrands(brandsRes.data);
@@ -142,20 +110,12 @@ export default function Admin() {
 
       setForm((current) => ({
         ...current,
-        brandId:
-          current.brandId ||
-          brandsRes.data[0]?.id ||
-          "",
-        categoryId:
-          current.categoryId ||
-          categoriesRes.data[0]?.id ||
-          "",
+        brandId: current.brandId || brandsRes.data[0]?.id || "",
+        categoryId: current.categoryId || categoriesRes.data[0]?.id || "",
       }));
     } catch (error) {
       console.error(error);
-      setMessage(
-        "Не удалось загрузить админку. Обнови страницу.",
-      );
+      setMessage("Не удалось загрузить админку.");
     } finally {
       setLoading(false);
     }
@@ -173,7 +133,7 @@ export default function Admin() {
     }
 
     return products.filter((product) => {
-      const values = [
+      const text = [
         product.name,
         product.brand?.name,
         product.category?.name,
@@ -183,13 +143,11 @@ export default function Admin() {
         .join(" ")
         .toLowerCase();
 
-      return values.includes(search);
+      return text.includes(search);
     });
   }, [products, productSearch]);
 
-  function updateForm(
-    patch: Partial<ProductFormState>,
-  ) {
+  function updateForm(patch: Partial<ProductFormState>) {
     setForm((current) => ({
       ...current,
       ...patch,
@@ -205,37 +163,28 @@ export default function Admin() {
     setMessage("");
   }
 
-  function startEditProduct(
-    product: ProductWithShop,
-  ) {
+  function startEditProduct(product: ProductWithShop) {
     setActiveTab("products");
     setForm({
       id: product.id,
       name: product.name,
       price: String(product.price),
-      description:
-        product.description || "",
+      description: product.description || "",
       inStock: product.inStock,
       brandId: product.brand?.id || "",
-      categoryId:
-        product.category?.id || "",
-      sizesText: product.sizes
-        .map((item) => item.size)
-        .join("\n"),
-      imagesText: product.images
-        .map((item) => item.url)
-        .join("\n"),
+      categoryId: product.category?.id || "",
+      sizesText: product.sizes.map((item) => item.size).join("\n"),
+      imagesText: product.images.map((item) => item.url).join("\n"),
     });
     setMessage("");
+
     window.scrollTo({
       top: 0,
       behavior: "smooth",
     });
   }
 
-  async function handleSubmitProduct(
-    event: React.FormEvent,
-  ) {
+  async function handleSubmitProduct(event: FormEvent) {
     event.preventDefault();
     setSaving(true);
     setMessage("");
@@ -244,17 +193,12 @@ export default function Admin() {
       const payload = {
         name: form.name.trim(),
         price: Number(form.price),
-        description:
-          form.description.trim() || undefined,
+        description: form.description.trim() || undefined,
         inStock: form.inStock,
         brandId: form.brandId,
         categoryId: form.categoryId,
-        sizes: parseMultilineValues(
-          form.sizesText,
-        ),
-        images: parseMultilineValues(
-          form.imagesText,
-        ),
+        sizes: parseLines(form.sizesText),
+        images: parseLines(form.imagesText),
       };
 
       if (!payload.name) {
@@ -274,10 +218,7 @@ export default function Admin() {
       }
 
       if (form.id) {
-        await api.patch(
-          `/products/${form.id}`,
-          payload,
-        );
+        await api.patch(`/products/${form.id}`, payload);
         setMessage("Товар обновлён.");
       } else {
         await api.post("/products", payload);
@@ -298,16 +239,10 @@ export default function Admin() {
     }
   }
 
-  async function handleDeleteProduct(
-    productId: string,
-  ) {
-    const ok = window.confirm(
-      "Удалить этот товар?",
-    );
+  async function handleDeleteProduct(productId: string) {
+    const ok = window.confirm("Удалить товар?");
 
-    if (!ok) {
-      return;
-    }
+    if (!ok) return;
 
     setMessage("");
 
@@ -317,18 +252,13 @@ export default function Admin() {
       await loadAdminData();
     } catch (error) {
       console.error(error);
-      setMessage(
-        "Не удалось удалить товар.",
-      );
+      setMessage("Не удалось удалить товар.");
     }
   }
 
   async function handleCreateBrand() {
     const name = newBrandName.trim();
-
-    if (!name) {
-      return;
-    }
+    if (!name) return;
 
     setMessage("");
 
@@ -339,46 +269,13 @@ export default function Admin() {
       await loadAdminData();
     } catch (error) {
       console.error(error);
-      setMessage(
-        "Не удалось добавить бренд.",
-      );
+      setMessage("Не удалось добавить бренд.");
     }
   }
 
-  async function handleCreateCategory() {
-    const name = newCategoryName.trim();
-
-    if (!name) {
-      return;
-    }
-
-    setMessage("");
-
-    try {
-      await api.post("/categories", {
-        name,
-      });
-      setNewCategoryName("");
-      setMessage("Категория добавлена.");
-      await loadAdminData();
-    } catch (error) {
-      console.error(error);
-      setMessage(
-        "Не удалось добавить категорию.",
-      );
-    }
-  }
-
-  async function handleDeleteBrand(
-    brandId: string,
-  ) {
-    const ok = window.confirm(
-      "Удалить бренд?",
-    );
-
-    if (!ok) {
-      return;
-    }
+  async function handleDeleteBrand(brandId: string) {
+    const ok = window.confirm("Удалить бренд?");
+    if (!ok) return;
 
     setMessage("");
 
@@ -388,36 +285,40 @@ export default function Admin() {
       await loadAdminData();
     } catch (error) {
       console.error(error);
-      setMessage(
-        "Не удалось удалить бренд.",
-      );
+      setMessage("Не удалось удалить бренд.");
     }
   }
 
-  async function handleDeleteCategory(
-    categoryId: string,
-  ) {
-    const ok = window.confirm(
-      "Удалить категорию?",
-    );
-
-    if (!ok) {
-      return;
-    }
+  async function handleCreateCategory() {
+    const name = newCategoryName.trim();
+    if (!name) return;
 
     setMessage("");
 
     try {
-      await api.delete(
-        `/categories/${categoryId}`,
-      );
+      await api.post("/categories", { name });
+      setNewCategoryName("");
+      setMessage("Категория добавлена.");
+      await loadAdminData();
+    } catch (error) {
+      console.error(error);
+      setMessage("Не удалось добавить категорию.");
+    }
+  }
+
+  async function handleDeleteCategory(categoryId: string) {
+    const ok = window.confirm("Удалить категорию?");
+    if (!ok) return;
+
+    setMessage("");
+
+    try {
+      await api.delete(`/categories/${categoryId}`);
       setMessage("Категория удалена.");
       await loadAdminData();
     } catch (error) {
       console.error(error);
-      setMessage(
-        "Не удалось удалить категорию.",
-      );
+      setMessage("Не удалось удалить категорию.");
     }
   }
 
@@ -428,748 +329,394 @@ export default function Admin() {
     setMessage("");
 
     try {
-      await api.patch(
-        `/orders/admin/${orderId}/status`,
-        { status },
-      );
+      await api.patch(`/orders/admin/${orderId}/status`, { status });
       setMessage("Статус заказа обновлён.");
       await loadAdminData();
     } catch (error) {
       console.error(error);
-      setMessage(
-        "Не удалось обновить статус заказа.",
-      );
+      setMessage("Не удалось обновить статус заказа.");
     }
   }
 
-  const currentShopName =
-    shops[0]?.name || "SWA6Y5TAN";
+  const currentShopName = shops[0]?.name || "SWA6Y5TAN";
 
   return (
     <div className="admin-page">
-      <div className="container admin-page__container">
-        <header className="admin-topbar">
-          <div className="admin-topbar__left">
-            <div className="admin-topbar__eyebrow">
-              ADMIN
-            </div>
-
-            <h1 className="admin-topbar__title">
-              SWA6Y5TAN PANEL
-            </h1>
-          </div>
-
-          <div className="admin-topbar__right">
-            <button
-              type="button"
-              className={`admin-tab ${
-                activeTab === "products"
-                  ? "is-active"
-                  : ""
-              }`}
-              onClick={() =>
-                setActiveTab("products")
-              }
-            >
-              Товары
-            </button>
-
-            <button
-              type="button"
-              className={`admin-tab ${
-                activeTab === "catalog"
-                  ? "is-active"
-                  : ""
-              }`}
-              onClick={() =>
-                setActiveTab("catalog")
-              }
-            >
-              Каталог
-            </button>
-
-            <button
-              type="button"
-              className={`admin-tab ${
-                activeTab === "orders"
-                  ? "is-active"
-                  : ""
-              }`}
-              onClick={() =>
-                setActiveTab("orders")
-              }
-            >
-              Заказы
-            </button>
-          </div>
+      <div className="container admin">
+        <header className="admin-header">
+          <div className="admin-header__eyebrow">ADMIN</div>
+          <h1 className="admin-header__title">SWA6Y5TAN</h1>
         </header>
 
-        {message && (
-          <div className="admin-toast">
-            {message}
-          </div>
-        )}
+        <div className="admin-tabs">
+          <button
+            type="button"
+            className={`admin-tabs__button ${activeTab === "products" ? "is-active" : ""}`}
+            onClick={() => setActiveTab("products")}
+          >
+            Товары
+          </button>
+
+          <button
+            type="button"
+            className={`admin-tabs__button ${activeTab === "catalog" ? "is-active" : ""}`}
+            onClick={() => setActiveTab("catalog")}
+          >
+            Каталог
+          </button>
+
+          <button
+            type="button"
+            className={`admin-tabs__button ${activeTab === "orders" ? "is-active" : ""}`}
+            onClick={() => setActiveTab("orders")}
+          >
+            Заказы
+          </button>
+        </div>
+
+        {message && <div className="admin-message">{message}</div>}
 
         {loading ? (
-          <div className="admin-loading">
-            ЗАГРУЗКА...
-          </div>
+          <div className="admin-box">ЗАГРУЗКА...</div>
         ) : (
           <>
             {activeTab === "products" && (
-              <section className="admin-layout">
-                <div className="admin-layout__main">
-                  <form
-                    className="admin-form"
-                    onSubmit={
-                      handleSubmitProduct
-                    }
-                  >
-                    <div className="admin-card">
-                      <div className="admin-card__number">
-                        1
-                      </div>
+              <div className="admin-stack">
+                <section className="admin-box">
+                  <div className="admin-box__head">
+                    <h2>{form.id ? "Изменить товар" : "Новый товар"}</h2>
+                    <span className="admin-pill">{currentShopName}</span>
+                  </div>
 
-                      <div className="admin-card__content">
-                        <div className="admin-card__header">
-                          <h2>
-                            ОСНОВА
-                          </h2>
+                  <form className="admin-form" onSubmit={handleSubmitProduct}>
+                    <label className="admin-field">
+                      <span>Название</span>
+                      <input
+                        value={form.name}
+                        onChange={(event) =>
+                          updateForm({ name: event.target.value })
+                        }
+                        placeholder="Например: Zip Hoodie"
+                      />
+                    </label>
 
-                          <div className="admin-badge">
-                            магазин:{" "}
-                            {currentShopName}
-                          </div>
-                        </div>
+                    <label className="admin-field">
+                      <span>Цена</span>
+                      <input
+                        inputMode="numeric"
+                        value={form.price}
+                        onChange={(event) =>
+                          updateForm({ price: event.target.value })
+                        }
+                        placeholder="5900"
+                      />
+                    </label>
 
-                        <div className="admin-grid admin-grid--2">
-                          <label className="field">
-                            <span className="field__label">
-                              Название товара
-                            </span>
+                    <label className="admin-field">
+                      <span>Описание</span>
+                      <textarea
+                        value={form.description}
+                        onChange={(event) =>
+                          updateForm({ description: event.target.value })
+                        }
+                        placeholder="Короткое описание"
+                      />
+                    </label>
 
-                            <input
-                              className="field__control"
-                              value={form.name}
-                              onChange={(event) =>
-                                updateForm({
-                                  name: event
-                                    .target.value,
-                                })
-                              }
-                              placeholder="Например: Oakley Zip Hoodie"
-                            />
-                          </label>
+                    <label className="admin-check">
+                      <input
+                        type="checkbox"
+                        checked={form.inStock}
+                        onChange={(event) =>
+                          updateForm({ inStock: event.target.checked })
+                        }
+                      />
+                      <span>В наличии</span>
+                    </label>
 
-                          <label className="field">
-                            <span className="field__label">
-                              Цена
-                            </span>
+                    <label className="admin-field">
+                      <span>Бренд</span>
+                      <select
+                        value={form.brandId}
+                        onChange={(event) =>
+                          updateForm({ brandId: event.target.value })
+                        }
+                      >
+                        <option value="">Выбери бренд</option>
+                        {brands.map((brand) => (
+                          <option key={brand.id} value={brand.id}>
+                            {brand.name}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
 
-                            <input
-                              className="field__control"
-                              inputMode="numeric"
-                              value={form.price}
-                              onChange={(event) =>
-                                updateForm({
-                                  price: event
-                                    .target.value,
-                                })
-                              }
-                              placeholder="5900"
-                            />
-                          </label>
-                        </div>
+                    <label className="admin-field">
+                      <span>Категория</span>
+                      <select
+                        value={form.categoryId}
+                        onChange={(event) =>
+                          updateForm({ categoryId: event.target.value })
+                        }
+                      >
+                        <option value="">Выбери категорию</option>
+                        {categories.map((category) => (
+                          <option key={category.id} value={category.id}>
+                            {category.name}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
 
-                        <label className="field">
-                          <span className="field__label">
-                            Описание
-                          </span>
+                    <label className="admin-field">
+                      <span>Размеры</span>
+                      <textarea
+                        value={form.sizesText}
+                        onChange={(event) =>
+                          updateForm({ sizesText: event.target.value })
+                        }
+                        placeholder={"S\nM\nL\nXL"}
+                      />
+                    </label>
 
-                          <textarea
-                            className="field__control field__control--textarea"
-                            value={form.description}
-                            onChange={(event) =>
-                              updateForm({
-                                description:
-                                  event.target
-                                    .value,
-                              })
-                            }
-                            placeholder="Коротко и по делу."
-                          />
-                        </label>
-
-                        <label className="toggle">
-                          <input
-                            type="checkbox"
-                            checked={form.inStock}
-                            onChange={(event) =>
-                              updateForm({
-                                inStock:
-                                  event.target
-                                    .checked,
-                              })
-                            }
-                          />
-
-                          <span className="toggle__ui" />
-
-                          <span className="toggle__text">
-                            В наличии
-                          </span>
-                        </label>
-                      </div>
-                    </div>
-
-                    <div className="admin-card">
-                      <div className="admin-card__number">
-                        2
-                      </div>
-
-                      <div className="admin-card__content">
-                        <div className="admin-card__header">
-                          <h2>
-                            КАТАЛОГ
-                          </h2>
-                        </div>
-
-                        <div className="admin-grid admin-grid--2">
-                          <label className="field">
-                            <span className="field__label">
-                              Бренд
-                            </span>
-
-                            <select
-                              className="field__control"
-                              value={form.brandId}
-                              onChange={(event) =>
-                                updateForm({
-                                  brandId:
-                                    event.target
-                                      .value,
-                                })
-                              }
-                            >
-                              <option value="">
-                                Выбери бренд
-                              </option>
-
-                              {brands.map(
-                                (brand) => (
-                                  <option
-                                    key={brand.id}
-                                    value={
-                                      brand.id
-                                    }
-                                  >
-                                    {brand.name}
-                                  </option>
-                                ),
-                              )}
-                            </select>
-                          </label>
-
-                          <label className="field">
-                            <span className="field__label">
-                              Категория
-                            </span>
-
-                            <select
-                              className="field__control"
-                              value={form.categoryId}
-                              onChange={(event) =>
-                                updateForm({
-                                  categoryId:
-                                    event.target
-                                      .value,
-                                })
-                              }
-                            >
-                              <option value="">
-                                Выбери категорию
-                              </option>
-
-                              {categories.map(
-                                (
-                                  category,
-                                ) => (
-                                  <option
-                                    key={
-                                      category.id
-                                    }
-                                    value={
-                                      category.id
-                                    }
-                                  >
-                                    {
-                                      category.name
-                                    }
-                                  </option>
-                                ),
-                              )}
-                            </select>
-                          </label>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="admin-card">
-                      <div className="admin-card__number">
-                        3
-                      </div>
-
-                      <div className="admin-card__content">
-                        <div className="admin-card__header">
-                          <h2>
-                            РАЗМЕРЫ
-                          </h2>
-
-                          <div className="admin-card__hint">
-                            один размер = одна строка
-                          </div>
-                        </div>
-
-                        <label className="field">
-                          <span className="field__label">
-                            Размеры
-                          </span>
-
-                          <textarea
-                            className="field__control field__control--textarea field__control--compact"
-                            value={form.sizesText}
-                            onChange={(event) =>
-                              updateForm({
-                                sizesText:
-                                  event.target
-                                    .value,
-                              })
-                            }
-                            placeholder={"S\nM\nL\nXL"}
-                          />
-                        </label>
-                      </div>
-                    </div>
-
-                    <div className="admin-card">
-                      <div className="admin-card__number">
-                        4
-                      </div>
-
-                      <div className="admin-card__content">
-                        <div className="admin-card__header">
-                          <h2>
-                            ФОТО
-                          </h2>
-
-                          <div className="admin-card__hint">
-                            одна ссылка = одна строка
-                          </div>
-                        </div>
-
-                        <label className="field">
-                          <span className="field__label">
-                            Ссылки на фото
-                          </span>
-
-                          <textarea
-                            className="field__control field__control--textarea"
-                            value={form.imagesText}
-                            onChange={(event) =>
-                              updateForm({
-                                imagesText:
-                                  event.target
-                                    .value,
-                              })
-                            }
-                            placeholder={"https://...\nhttps://..."}
-                          />
-                        </label>
-                      </div>
-                    </div>
+                    <label className="admin-field">
+                      <span>Фото (1 ссылка = 1 строка)</span>
+                      <textarea
+                        value={form.imagesText}
+                        onChange={(event) =>
+                          updateForm({ imagesText: event.target.value })
+                        }
+                        placeholder={"https://...\nhttps://..."}
+                      />
+                    </label>
 
                     <div className="admin-actions">
                       <button
                         type="submit"
-                        className="admin-button admin-button--primary"
+                        className="admin-btn admin-btn--primary"
                         disabled={saving}
                       >
                         {saving
                           ? "СОХРАНЯЮ..."
                           : form.id
-                            ? "ОБНОВИТЬ ТОВАР"
-                            : "СОЗДАТЬ ТОВАР"}
+                            ? "ОБНОВИТЬ"
+                            : "СОЗДАТЬ"}
                       </button>
 
                       <button
                         type="button"
-                        className="admin-button"
+                        className="admin-btn"
                         onClick={resetForm}
                       >
                         ОЧИСТИТЬ
                       </button>
                     </div>
                   </form>
-                </div>
+                </section>
 
-                <aside className="admin-layout__side">
-                  <div className="admin-panel">
-                    <div className="admin-panel__header">
-                      <h3>
-                        ТОВАРЫ
-                      </h3>
-
-                      <div className="admin-panel__meta">
-                        {filteredProducts.length}
-                      </div>
-                    </div>
-
-                    <input
-                      className="field__control admin-search"
-                      placeholder="Поиск по товарам"
-                      value={productSearch}
-                      onChange={(event) =>
-                        setProductSearch(
-                          event.target.value,
-                        )
-                      }
-                    />
-
-                    <div className="admin-products-list">
-                      {filteredProducts.map(
-                        (product) => (
-                          <article
-                            className="admin-product-card"
-                            key={product.id}
-                          >
-                            <div className="admin-product-card__media">
-                              {product.images[0] ? (
-                                <img
-                                  src={
-                                    product
-                                      .images[0]
-                                      .url
-                                  }
-                                  alt={
-                                    product.name
-                                  }
-                                />
-                              ) : (
-                                <div className="admin-product-card__placeholder">
-                                  NO PHOTO
-                                </div>
-                              )}
-                            </div>
-
-                            <div className="admin-product-card__body">
-                              <div className="admin-product-card__top">
-                                <h4>
-                                  {product.name}
-                                </h4>
-
-                                <div className="admin-badge">
-                                  {formatPrice(
-                                    product.price,
-                                  )}
-                                </div>
-                              </div>
-
-                              <div className="admin-product-card__meta">
-                                <span>
-                                  {
-                                    product
-                                      .brand
-                                      ?.name
-                                  }
-                                </span>
-
-                                <span>
-                                  {
-                                    product
-                                      .category
-                                      ?.name
-                                  }
-                                </span>
-
-                                <span>
-                                  {product.shop
-                                    ?.name ||
-                                    currentShopName}
-                                </span>
-                              </div>
-
-                              <div className="admin-product-card__actions">
-                                <button
-                                  type="button"
-                                  className="admin-mini-button"
-                                  onClick={() =>
-                                    startEditProduct(
-                                      product,
-                                    )
-                                  }
-                                >
-                                  ИЗМЕНИТЬ
-                                </button>
-
-                                <button
-                                  type="button"
-                                  className="admin-mini-button admin-mini-button--danger"
-                                  onClick={() =>
-                                    handleDeleteProduct(
-                                      product.id,
-                                    )
-                                  }
-                                >
-                                  УДАЛИТЬ
-                                </button>
-                              </div>
-                            </div>
-                          </article>
-                        ),
-                      )}
-                    </div>
+                <section className="admin-box">
+                  <div className="admin-box__head">
+                    <h2>Товары</h2>
+                    <span className="admin-pill">{filteredProducts.length}</span>
                   </div>
-                </aside>
-              </section>
+
+                  <input
+                    className="admin-search"
+                    placeholder="Поиск товара"
+                    value={productSearch}
+                    onChange={(event) => setProductSearch(event.target.value)}
+                  />
+
+                  <div className="admin-list">
+                    {filteredProducts.map((product) => (
+                      <article className="admin-item" key={product.id}>
+                        <div className="admin-item__media">
+                          {product.images[0] ? (
+                            <img src={product.images[0].url} alt={product.name} />
+                          ) : (
+                            <div className="admin-item__placeholder">NO PHOTO</div>
+                          )}
+                        </div>
+
+                        <div className="admin-item__body">
+                          <h3>{product.name}</h3>
+
+                          <div className="admin-item__meta">
+                            <span>{formatPrice(product.price)}</span>
+                            <span>{product.brand?.name || "—"}</span>
+                            <span>{product.category?.name || "—"}</span>
+                          </div>
+
+                          <div className="admin-item__buttons">
+                            <button
+                              type="button"
+                              className="admin-btn"
+                              onClick={() => startEditProduct(product)}
+                            >
+                              ИЗМЕНИТЬ
+                            </button>
+
+                            <button
+                              type="button"
+                              className="admin-btn admin-btn--danger"
+                              onClick={() => handleDeleteProduct(product.id)}
+                            >
+                              УДАЛИТЬ
+                            </button>
+                          </div>
+                        </div>
+                      </article>
+                    ))}
+
+                    {filteredProducts.length === 0 && (
+                      <div className="admin-empty">Товаров не найдено</div>
+                    )}
+                  </div>
+                </section>
+              </div>
             )}
 
             {activeTab === "catalog" && (
-              <section className="admin-layout admin-layout--catalog">
-                <div className="admin-panel">
-                  <div className="admin-panel__header">
-                    <h3>БРЕНДЫ</h3>
-                    <div className="admin-panel__meta">
-                      {brands.length}
-                    </div>
+              <div className="admin-stack">
+                <section className="admin-box">
+                  <div className="admin-box__head">
+                    <h2>Бренды</h2>
+                    <span className="admin-pill">{brands.length}</span>
                   </div>
 
-                  <div className="admin-inline-form">
+                  <div className="admin-inline">
                     <input
-                      className="field__control"
-                      placeholder="Новый бренд"
                       value={newBrandName}
-                      onChange={(event) =>
-                        setNewBrandName(
-                          event.target.value,
-                        )
-                      }
+                      onChange={(event) => setNewBrandName(event.target.value)}
+                      placeholder="Новый бренд"
                     />
-
                     <button
                       type="button"
-                      className="admin-button admin-button--primary"
-                      onClick={
-                        handleCreateBrand
-                      }
+                      className="admin-btn admin-btn--primary"
+                      onClick={handleCreateBrand}
                     >
                       ДОБАВИТЬ
                     </button>
                   </div>
 
-                  <div className="admin-chip-list">
+                  <div className="admin-tags">
                     {brands.map((brand) => (
-                      <div
-                        className="admin-chip"
-                        key={brand.id}
-                      >
-                        <span>
-                          {brand.name}
-                        </span>
-
+                      <div className="admin-tag" key={brand.id}>
+                        <span>{brand.name}</span>
                         <button
                           type="button"
-                          onClick={() =>
-                            handleDeleteBrand(
-                              brand.id,
-                            )
-                          }
+                          onClick={() => handleDeleteBrand(brand.id)}
                         >
                           ×
                         </button>
                       </div>
                     ))}
                   </div>
-                </div>
+                </section>
 
-                <div className="admin-panel">
-                  <div className="admin-panel__header">
-                    <h3>КАТЕГОРИИ</h3>
-                    <div className="admin-panel__meta">
-                      {categories.length}
-                    </div>
+                <section className="admin-box">
+                  <div className="admin-box__head">
+                    <h2>Категории</h2>
+                    <span className="admin-pill">{categories.length}</span>
                   </div>
 
-                  <div className="admin-inline-form">
+                  <div className="admin-inline">
                     <input
-                      className="field__control"
-                      placeholder="Новая категория"
                       value={newCategoryName}
-                      onChange={(event) =>
-                        setNewCategoryName(
-                          event.target.value,
-                        )
-                      }
+                      onChange={(event) => setNewCategoryName(event.target.value)}
+                      placeholder="Новая категория"
                     />
-
                     <button
                       type="button"
-                      className="admin-button admin-button--primary"
-                      onClick={
-                        handleCreateCategory
-                      }
+                      className="admin-btn admin-btn--primary"
+                      onClick={handleCreateCategory}
                     >
                       ДОБАВИТЬ
                     </button>
                   </div>
 
-                  <div className="admin-chip-list">
-                    {categories.map(
-                      (category) => (
-                        <div
-                          className="admin-chip"
-                          key={category.id}
+                  <div className="admin-tags">
+                    {categories.map((category) => (
+                      <div className="admin-tag" key={category.id}>
+                        <span>{category.name}</span>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteCategory(category.id)}
                         >
-                          <span>
-                            {category.name}
-                          </span>
-
-                          <button
-                            type="button"
-                            onClick={() =>
-                              handleDeleteCategory(
-                                category.id,
-                              )
-                            }
-                          >
-                            ×
-                          </button>
-                        </div>
-                      ),
-                    )}
+                          ×
+                        </button>
+                      </div>
+                    ))}
                   </div>
-                </div>
-              </section>
+                </section>
+              </div>
             )}
 
             {activeTab === "orders" && (
-              <section className="admin-orders">
+              <div className="admin-stack">
                 {orders.map((order) => (
-                  <article
-                    className="admin-order-card"
-                    key={order.id}
-                  >
-                    <div className="admin-order-card__top">
+                  <section className="admin-box" key={order.id}>
+                    <div className="admin-box__head admin-box__head--order">
                       <div>
-                        <div className="admin-order-card__title">
-                          Заказ #{order.id.slice(0, 8)}
-                        </div>
-
-                        <div className="admin-order-card__meta">
-                          {formatOrderDate(
-                            order.createdAt,
-                          )}
+                        <h2>Заказ #{order.id.slice(0, 8)}</h2>
+                        <div className="admin-order-date">
+                          {formatDate(order.createdAt)}
                         </div>
                       </div>
 
                       <select
-                        className="field__control admin-status-select"
+                        className="admin-order-select"
                         value={order.status}
                         onChange={(event) =>
                           void handleChangeOrderStatus(
                             order.id,
-                            event.target
-                              .value as AdminOrder["status"],
+                            event.target.value as AdminOrder["status"],
                           )
                         }
                       >
-                        {ORDER_STATUSES.map(
-                          (status) => (
-                            <option
-                              key={status}
-                              value={status}
-                            >
-                              {status}
-                            </option>
-                          ),
-                        )}
+                        {ORDER_STATUSES.map((status) => (
+                          <option key={status} value={status}>
+                            {status}
+                          </option>
+                        ))}
                       </select>
                     </div>
 
-                    <div className="admin-order-card__columns">
-                      <div className="admin-order-card__column">
-                        <div className="admin-order-label">
-                          Клиент
-                        </div>
-                        <div>
-                          {order.customerName ||
-                            order.user
-                              ?.name ||
-                            "—"}
-                        </div>
-                        <div>
-                          {order.phone ||
-                            order.user
-                              ?.phone ||
-                            "—"}
-                        </div>
+                    <div className="admin-order-grid">
+                      <div className="admin-order-block">
+                        <div className="admin-order-label">Клиент</div>
+                        <div>{order.customerName || order.user?.name || "—"}</div>
+                        <div>{order.phone || order.user?.phone || "—"}</div>
                       </div>
 
-                      <div className="admin-order-card__column">
-                        <div className="admin-order-label">
-                          Доставка
-                        </div>
-                        <div>
-                          {order.deliveryMethod ||
-                            "—"}
-                        </div>
-                        <div>
-                          {order.address ||
-                            "—"}
-                        </div>
+                      <div className="admin-order-block">
+                        <div className="admin-order-label">Доставка</div>
+                        <div>{order.deliveryMethod || "—"}</div>
+                        <div>{order.address || "—"}</div>
                       </div>
                     </div>
 
                     <div className="admin-order-items">
                       {order.items.map((item) => (
-                        <div
-                          className="admin-order-item"
-                          key={item.id}
-                        >
-                          <span>
-                            {item.product.name}
-                          </span>
-
-                          <span>
-                            {item.size}
-                          </span>
-
-                          <span>
-                            ×{item.quantity}
-                          </span>
-
-                          <span>
-                            {formatPrice(
-                              item.price,
-                            )}
-                          </span>
+                        <div className="admin-order-item" key={item.id}>
+                          <span>{item.product.name}</span>
+                          <span>{item.size}</span>
+                          <span>×{item.quantity}</span>
+                          <span>{formatPrice(item.price)}</span>
                         </div>
                       ))}
                     </div>
 
                     {order.comment && (
-                      <div className="admin-order-comment">
-                        {order.comment}
-                      </div>
+                      <div className="admin-order-comment">{order.comment}</div>
                     )}
-                  </article>
+                  </section>
                 ))}
 
                 {orders.length === 0 && (
-                  <div className="admin-loading">
-                    ЗАКАЗОВ ПОКА НЕТ
-                  </div>
+                  <div className="admin-box">ЗАКАЗОВ ПОКА НЕТ</div>
                 )}
-              </section>
+              </div>
             )}
           </>
         )}
