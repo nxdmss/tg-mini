@@ -452,8 +452,6 @@ export default function App() {
           onCartClick={() =>
             setCartOpen(true)
           }
-          brandName={shop?.name}
-          logoUrl={shop?.logoUrl}
           homePath={shopHomePath}
         />
 

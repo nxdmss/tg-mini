@@ -2,7 +2,6 @@ import {
   api,
   getAccessToken,
 } from "./api";
-import { compressImageFiles } from "./imageCompress";
 import { getTelegramInitData } from "./telegram";
 
 export type AdminShop = {
@@ -10,8 +9,6 @@ export type AdminShop = {
   name: string;
   slug: string;
   description?: string | null;
-  logoUrl?: string | null;
-  bannerUrl?: string | null;
   backgroundColor: string;
   textColor: string;
   accentColor: string;
@@ -29,7 +26,6 @@ export type ShopPayload = {
   textColor: string;
   accentColor: string;
   isActive: boolean;
-  logoFile?: File | null;
 };
 
 function adminAuthHeaders() {
@@ -52,55 +48,6 @@ function adminAuthHeaders() {
   return {};
 }
 
-async function shopFormData(
-  payload: ShopPayload,
-) {
-  const form = new FormData();
-
-  form.append("name", payload.name);
-  form.append("slug", payload.slug);
-  form.append(
-    "description",
-    payload.description ?? "",
-  );
-  form.append(
-    "backgroundColor",
-    payload.backgroundColor,
-  );
-  form.append(
-    "textColor",
-    payload.textColor,
-  );
-  form.append(
-    "accentColor",
-    payload.accentColor,
-  );
-  form.append(
-    "isActive",
-    String(payload.isActive),
-  );
-
-  const files = [
-    payload.logoFile,
-  ].filter((file): file is File => Boolean(file));
-
-  let compressed = files;
-
-  if (files.length > 0) {
-    compressed = await compressImageFiles(files);
-  }
-
-  let index = 0;
-
-  if (payload.logoFile) {
-    form.append("logo", compressed[index]);
-    index += 1;
-  }
-
-
-  return form;
-}
-
 export async function getAdminShops(): Promise<
   AdminShop[]
 > {
@@ -119,10 +66,9 @@ export async function createShop(
 ): Promise<AdminShop> {
   const res = await api.post<AdminShop>(
     "/shops",
-    await shopFormData(payload),
+    payload,
     {
       headers: adminAuthHeaders(),
-      timeout: 120000,
     },
   );
 
@@ -135,10 +81,9 @@ export async function updateShop(
 ): Promise<AdminShop> {
   const res = await api.patch<AdminShop>(
     `/shops/${id}`,
-    await shopFormData(payload),
+    payload,
     {
       headers: adminAuthHeaders(),
-      timeout: 120000,
     },
   );
 

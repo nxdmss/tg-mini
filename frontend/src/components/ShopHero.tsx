@@ -28,15 +28,6 @@ export function ShopHero({
   return (
     <section className="shop-identity">
       <div className="container shop-identity__inner">
-        {shop.logoUrl && (
-          <div className="shop-identity__logo">
-            <img
-              src={shop.logoUrl}
-              alt={shop.name}
-            />
-          </div>
-        )}
-
         <div className="shop-identity__copy">
           <div className="shop-identity__eyebrow">
             МАГАЗИН

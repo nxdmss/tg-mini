@@ -52,8 +52,6 @@ type ShopFormState = {
   name: string;
   slug: string;
   description: string;
-  logoUrl: string;
-  logoFile: File | null;
   backgroundColor: string;
   textColor: string;
   accentColor: string;
@@ -64,8 +62,6 @@ const SHOP_FORM_INITIAL: ShopFormState = {
   name: "",
   slug: "",
   description: "",
-  logoUrl: "",
-  logoFile: null,
   backgroundColor: "#ffffff",
   textColor: "#000000",
   accentColor: "#000000",
@@ -737,9 +733,6 @@ export default function Admin() {
       slug: shop.slug,
       description:
         shop.description || "",
-      logoUrl:
-        shop.logoUrl || "",
-      logoFile: null,
       backgroundColor:
         shop.backgroundColor ||
         "#ffffff",
@@ -795,8 +788,6 @@ export default function Admin() {
         slug,
         description:
           shopForm.description.trim(),
-        logoFile:
-          shopForm.logoFile,
         backgroundColor:
           shopForm.backgroundColor,
         textColor:
@@ -1539,51 +1530,6 @@ export default function Admin() {
                         placeholder="Коротко о магазине"
                       />
                     </label>
-
-                    <div className="admin-media-field">
-                      <div className="admin-media-field__label">
-                        Логотип
-                      </div>
-
-                      {(shopForm.logoFile ||
-                        shopForm.logoUrl) && (
-                        <div className="admin-media-preview admin-media-preview--logo">
-                          <img
-                            src={
-                              shopForm.logoFile
-                                ? URL.createObjectURL(
-                                    shopForm.logoFile,
-                                  )
-                                : shopForm.logoUrl
-                            }
-                            alt="Логотип магазина"
-                          />
-                        </div>
-                      )}
-
-                      <label className="admin-file-button">
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={(event) => {
-                            const file =
-                              event.target.files?.[0] ||
-                              null;
-
-                            updateShopForm({
-                              logoFile: file,
-                            });
-                          }}
-                        />
-
-                        <span>
-                          {shopForm.logoFile ||
-                          shopForm.logoUrl
-                            ? "СМЕНИТЬ ФОТО"
-                            : "ВЫБРАТЬ ФОТО"}
-                        </span>
-                      </label>
-                    </div>
 
                     <div className="admin-colors">
                       <label className="admin-color">

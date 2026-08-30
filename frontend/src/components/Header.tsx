@@ -12,15 +12,11 @@ import "./Header.css";
 
 type HeaderProps = {
   onCartClick: () => void;
-  brandName?: string;
-  logoUrl?: string | null;
   homePath?: string;
 };
 
 export function Header({
   onCartClick,
-  brandName = "SWA6Y5TAN",
-  logoUrl,
   homePath = "/",
 }: HeaderProps) {
   const { count } = useCart();
@@ -69,11 +65,11 @@ export function Header({
           className="brand__logo"
           type="button"
           onClick={handleLogoClick}
-          aria-label={brandName}
+          aria-label="SWA6Y5TAN"
         >
           <img
-            src={logoUrl || "/logo.png"}
-            alt={brandName}
+            src="/logo.png"
+            alt="SWA6Y5TAN"
           />
         </button>
 

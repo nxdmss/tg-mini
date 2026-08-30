@@ -10,8 +10,6 @@ export type Shop = {
   name: string;
   slug: string;
   description?: string | null;
-  logoUrl?: string | null;
-  bannerUrl?: string | null;
   backgroundColor: string;
   textColor: string;
   accentColor: string;
