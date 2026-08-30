@@ -1,921 +1,1179 @@
+
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
-import {
-  createBrand,
-  createCategory,
-  createProduct,
-  deleteBrand,
-  deleteCategory,
-  deleteProduct,
-  getApiErrorMessage,
-  getAdminOrders,
-  getBrands,
-  getCategories,
-  getMe,
-  getProducts,
-  updateOrderStatus,
-  updateProduct,
-  updateProductStock,
-  type ProductFormPayload,
-  type ProductImageItem,
-} from "../api";
-import type { AdminOrder, AuthUser, Brand, Category, OrderStatus, Product } from "../types";
-import { getTelegramLaunchInfo } from "../telegram";
-import { compressImageFiles } from "../imageCompress";
-import { formatPrice, getProductDeepLink, getProductPreviewImage } from "../utils";
-type FormState = {
+
+import { api } from "../api";
+
+import type {
+  AdminOrder,
+  Brand,
+  Category,
+  Product,
+} from "../types";
+
+import "./Admin.css";
+
+type TabKey =
+  | "products"
+  | "catalog"
+  | "orders";
+
+type Shop = {
+  id: string;
+  name: string;
+  slug: string;
+  productCount?: number;
+};
+
+type ProductWithShop = Product & {
+  shop?: Shop | null;
+};
+
+type ProductFormState = {
   id?: string;
   name: string;
   price: string;
   description: string;
+  inStock: boolean;
   brandId: string;
   categoryId: string;
-  inStock: boolean;
-  sizes: string;
-  stockBySize: Record<string, string>;
-  imageItems: ProductImageItem[];
+  sizesText: string;
+  imagesText: string;
 };
-type AdminTab = "products" | "catalog" | "orders";
-type OrderView = "active" | "archive";
-const emptyForm: FormState = {
+
+const PRODUCT_FORM_INITIAL: ProductFormState = {
   name: "",
   price: "",
   description: "",
+  inStock: true,
   brandId: "",
   categoryId: "",
-  inStock: true,
-  sizes: "XS, S, M, L, XL",
-  stockBySize: {
-    XS: "0",
-    S: "0",
-    M: "0",
-    L: "0",
-    XL: "0",
-  },
-  imageItems: [],
+  sizesText: "",
+  imagesText: "",
 };
-function newFileKey(file: File) {
-  return `file:${file.name}:${file.size}:${file.lastModified}:${Math.random().toString(36).slice(2, 8)}`;
-}
-function moveImageToPreview(items: ProductImageItem[], key: string) {
-  const index = items.findIndex((item) => item.key === key);
-  if (index <= 0) return items;
-  const next = [...items];
-  const [picked] = next.splice(index, 1);
-  next.unshift(picked);
-  return next;
-}
-function sizesFromInput(value: string) {
+
+const ORDER_STATUSES: AdminOrder["status"][] = [
+  "PENDING",
+  "PAID",
+  "CANCELLED",
+  "SHIPPED",
+  "DONE",
+];
+
+function parseMultilineValues(value: string) {
   return value
-    .split(",")
-    .map((size) => size.trim())
+    .split(/\r?\n/)
+    .map((item) => item.trim())
     .filter(Boolean);
 }
-function hasLegacyUpload(product: Product) {
-  return product.images.some((image) => image.url.includes("/uploads/"));
+
+function formatPrice(value: number) {
+  return new Intl.NumberFormat("ru-RU").format(value) + " ₽";
 }
-function shortOrderNumber(id: string) {
-  let hash = 0;
-  for (let i = 0; i < id.length; i += 1) {
-    hash = (hash * 31 + id.charCodeAt(i)) % 100000;
+
+function formatOrderDate(value?: string) {
+  if (!value) {
+    return "—";
   }
-  return String(hash).padStart(5, "0");
+
+  try {
+    return new Date(value).toLocaleString("ru-RU");
+  } catch {
+    return value;
+  }
 }
-function orderTotal(order: AdminOrder) {
-  return order.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
-}
-const orderStatusLabel: Record<OrderStatus, string> = {
-  PENDING: "Новый",
-  PAID: "В работе",
-  SHIPPED: "Отправлен",
-  DONE: "Готово",
-  CANCELLED: "Отменен",
-};
+
 export default function Admin() {
-  const [user, setUser] = useState<AuthUser | null>(null);
-  const [brands, setBrands] = useState<Brand[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [products, setProducts] = useState<Product[]>([]);
-  const [orders, setOrders] = useState<AdminOrder[]>([]);
-  const [activeTab, setActiveTab] = useState<AdminTab>("products");
-  const [orderView, setOrderView] = useState<OrderView>("active");
-  const [form, setForm] = useState<FormState>(emptyForm);
-  const [brandName, setBrandName] = useState("");
-  const [categoryName, setCategoryName] = useState("");
-  const [booting, setBooting] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [saveStage, setSaveStage] = useState<"compress" | "upload" | null>(null);
-  const [compressingImages, setCompressingImages] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const isEditing = Boolean(form.id);
-  const canSubmit =
-    form.name.trim().length > 1 &&
-    Number(form.price) > 0 &&
-    Boolean(form.brandId) &&
-    Boolean(form.categoryId) &&
-    sizesFromInput(form.sizes).length > 0;
-  async function boot() {
-    setBooting(true);
-    setError(null);
+  const [activeTab, setActiveTab] =
+    useState<TabKey>("products");
+
+  const [loading, setLoading] =
+    useState(true);
+  const [saving, setSaving] =
+    useState(false);
+  const [message, setMessage] =
+    useState<string>("");
+
+  const [products, setProducts] =
+    useState<ProductWithShop[]>([]);
+  const [brands, setBrands] =
+    useState<Brand[]>([]);
+  const [categories, setCategories] =
+    useState<Category[]>([]);
+  const [orders, setOrders] =
+    useState<AdminOrder[]>([]);
+  const [shops, setShops] =
+    useState<Shop[]>([]);
+
+  const [productSearch, setProductSearch] =
+    useState("");
+  const [form, setForm] = useState<ProductFormState>(
+    PRODUCT_FORM_INITIAL,
+  );
+
+  const [newBrandName, setNewBrandName] =
+    useState("");
+  const [newCategoryName, setNewCategoryName] =
+    useState("");
+
+  async function loadAdminData() {
+    setLoading(true);
+    setMessage("");
+
     try {
-      const [me, brandsData, categoriesData, productsData, ordersData] = await Promise.all([
-        getMe(),
-        getBrands(),
-        getCategories(),
-        getProducts(),
-        getAdminOrders(),
+      const [
+        productsRes,
+        brandsRes,
+        categoriesRes,
+        ordersRes,
+        shopsRes,
+      ] = await Promise.all([
+        api.get<ProductWithShop[]>("/products"),
+        api.get<Brand[]>("/brands"),
+        api.get<Category[]>("/categories"),
+        api.get<AdminOrder[]>("/orders/admin"),
+        api.get<Shop[]>("/shops"),
       ]);
-      setUser(me);
-      setBrands(brandsData);
-      setCategories(categoriesData);
-      setProducts(productsData);
-      setOrders(ordersData);
+
+      setProducts(productsRes.data);
+      setBrands(brandsRes.data);
+      setCategories(categoriesRes.data);
+      setOrders(ordersRes.data);
+      setShops(shopsRes.data);
+
       setForm((current) => ({
         ...current,
-        brandId: current.brandId || brandsData[0]?.id || "",
-        categoryId: current.categoryId || categoriesData[0]?.id || "",
+        brandId:
+          current.brandId ||
+          brandsRes.data[0]?.id ||
+          "",
+        categoryId:
+          current.categoryId ||
+          categoriesRes.data[0]?.id ||
+          "",
       }));
-    } catch {
-      setError("Не удалось загрузить админ-панель. Проверьте Telegram-доступ и API.");
+    } catch (error) {
+      console.error(error);
+      setMessage(
+        "Не удалось загрузить админку. Обнови страницу.",
+      );
     } finally {
-      setBooting(false);
+      setLoading(false);
     }
   }
+
   useEffect(() => {
-// Data fetching on mount is intentional for this protected admin screen.
-// eslint-disable-next-line react-hooks/set-state-in-effect
-    void boot();
+    void loadAdminData();
   }, []);
-  async function refreshProducts() {
-    const data = await getProducts();
-    setProducts(data);
+
+  const filteredProducts = useMemo(() => {
+    const search = productSearch.trim().toLowerCase();
+
+    if (!search) {
+      return products;
+    }
+
+    return products.filter((product) => {
+      const values = [
+        product.name,
+        product.brand?.name,
+        product.category?.name,
+        product.shop?.name,
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+
+      return values.includes(search);
+    });
+  }, [products, productSearch]);
+
+  function updateForm(
+    patch: Partial<ProductFormState>,
+  ) {
+    setForm((current) => ({
+      ...current,
+      ...patch,
+    }));
   }
-  async function refreshCatalog() {
-    const [brandsData, categoriesData] = await Promise.all([getBrands(), getCategories()]);
-    setBrands(brandsData);
-    setCategories(categoriesData);
-  }
-  async function refreshOrders() {
-    const data = await getAdminOrders();
-    setOrders(data);
-  }
+
   function resetForm() {
     setForm({
-      ...emptyForm,
+      ...PRODUCT_FORM_INITIAL,
       brandId: brands[0]?.id || "",
       categoryId: categories[0]?.id || "",
     });
+    setMessage("");
   }
-  function editProduct(product: Product) {
-    setMessage(null);
-    setError(null);
+
+  function startEditProduct(
+    product: ProductWithShop,
+  ) {
+    setActiveTab("products");
     setForm({
       id: product.id,
       name: product.name,
       price: String(product.price),
-      description: product.description ?? "",
-      brandId: product.brand.id,
-      categoryId: product.category.id,
+      description:
+        product.description || "",
       inStock: product.inStock,
-      sizes: product.sizes.map((size) => size.size).join(", "),
-      stockBySize: Object.fromEntries(
-        product.sizes.map((item) => [item.size, String(item.stock)]),
-      ),
-      imageItems: product.images.map((image) => ({
-        key: image.id,
-        type: "url" as const,
-        url: image.url,
-      })),
+      brandId: product.brand?.id || "",
+      categoryId:
+        product.category?.id || "",
+      sizesText: product.sizes
+        .map((item) => item.size)
+        .join("\n"),
+      imagesText: product.images
+        .map((item) => item.url)
+        .join("\n"),
     });
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    setMessage("");
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
   }
-  function toPayload(): ProductFormPayload {
-    return {
-      name: form.name.trim(),
-      price: Number(form.price),
-      description: form.description.trim() || undefined,
-      brandId: form.brandId,
-      categoryId: form.categoryId,
-      inStock: form.inStock,
-      sizes: sizesFromInput(form.sizes),
-      imageItems: form.imageItems,
-    };
-  }
-  async function submit() {
-    if (!canSubmit) {
-      setError("Заполните название, цену, бренд, категорию и хотя бы один размер.");
-      return;
-    }
-    setSaving(true);
-    setError(null);
-    setMessage(null);
-    try {
-      const progress = (stage: "compress" | "upload") => setSaveStage(stage);
-      const stocks = sizesFromInput(form.sizes).map((size) => {
-        const value = Number(form.stockBySize[size] ?? 0);
 
-        return {
-          size,
-          stock: Number.isFinite(value) ? Math.max(0, Math.floor(value)) : 0,
-        };
-      });
+  async function handleSubmitProduct(
+    event: React.FormEvent,
+  ) {
+    event.preventDefault();
+    setSaving(true);
+    setMessage("");
+
+    try {
+      const payload = {
+        name: form.name.trim(),
+        price: Number(form.price),
+        description:
+          form.description.trim() || undefined,
+        inStock: form.inStock,
+        brandId: form.brandId,
+        categoryId: form.categoryId,
+        sizes: parseMultilineValues(
+          form.sizesText,
+        ),
+        images: parseMultilineValues(
+          form.imagesText,
+        ),
+      };
+
+      if (!payload.name) {
+        throw new Error("Укажи название товара.");
+      }
+
+      if (!payload.price || Number.isNaN(payload.price)) {
+        throw new Error("Укажи корректную цену.");
+      }
+
+      if (!payload.brandId) {
+        throw new Error("Выбери бренд.");
+      }
+
+      if (!payload.categoryId) {
+        throw new Error("Выбери категорию.");
+      }
 
       if (form.id) {
-        await updateProduct(form.id, toPayload(), progress);
-        await updateProductStock(form.id, {
-          inStock: form.inStock,
-          sizes: stocks,
-        });
-        setMessage("Товар и остатки обновлены.");
+        await api.patch(
+          `/products/${form.id}`,
+          payload,
+        );
+        setMessage("Товар обновлён.");
       } else {
-        const created = await createProduct(toPayload(), progress);
-        await updateProductStock(created.id, {
-          inStock: form.inStock,
-          sizes: stocks,
-        });
+        await api.post("/products", payload);
         setMessage("Товар создан.");
       }
-      await refreshProducts();
+
       resetForm();
-    } catch (saveError) {
-      setError(getApiErrorMessage(saveError));
-    } finally {
-      setSaving(false);
-      setSaveStage(null);
-    }
-  }
-  async function removeProduct(product: Product) {
-    if (!window.confirm(`Удалить "${product.name}"?`)) return;
-    setSaving(true);
-    setError(null);
-    setMessage(null);
-    try {
-      await deleteProduct(product.id);
-      await refreshProducts();
-      if (form.id === product.id) resetForm();
-      setMessage("Товар удален.");
-    } catch (deleteError) {
-      setError(getApiErrorMessage(deleteError));
-    } finally {
-      setSaving(false);
-    }
-  }
-  async function copyProductLink(product: Product) {
-    const link = getProductDeepLink(product.id);
-    try {
-      await navigator.clipboard.writeText(link);
-      setMessage(`Ссылка скопирована: ${product.name}`);
-      setError(null);
-    } catch {
-      setMessage(link);
-      setError(null);
-    }
-  }
-  async function submitBrand() {
-    const name = brandName.trim();
-    if (!name) return;
-    setSaving(true);
-    setError(null);
-    setMessage(null);
-    try {
-      await createBrand(name);
-      setBrandName("");
-      await refreshCatalog();
-      setMessage("Бренд добавлен.");
-    } catch (createError) {
-      setError(getApiErrorMessage(createError));
-    } finally {
-      setSaving(false);
-    }
-  }
-  async function submitCategory() {
-    const name = categoryName.trim();
-    if (!name) return;
-    setSaving(true);
-    setError(null);
-    setMessage(null);
-    try {
-      await createCategory(name);
-      setCategoryName("");
-      await refreshCatalog();
-      setMessage("Категория добавлена.");
-    } catch (createError) {
-      setError(getApiErrorMessage(createError));
-    } finally {
-      setSaving(false);
-    }
-  }
-  async function removeBrand(brand: Brand) {
-    if ((brand._count?.products ?? 0) > 0) {
-      setError("Сначала перенесите или удалите товары этого бренда.");
-      return;
-    }
-    if (!window.confirm(`Удалить бренд "${brand.name}"?`)) return;
-    setSaving(true);
-    setError(null);
-    setMessage(null);
-    try {
-      await deleteBrand(brand.id);
-      await refreshCatalog();
-      setMessage("Бренд удален.");
-    } catch (deleteError) {
-      setError(getApiErrorMessage(deleteError));
-    } finally {
-      setSaving(false);
-    }
-  }
-  async function removeCategory(category: Category) {
-    if ((category._count?.products ?? 0) > 0) {
-      setError("Сначала перенесите или удалите товары этой категории.");
-      return;
-    }
-    if (!window.confirm(`Удалить категорию "${category.name}"?`)) return;
-    setSaving(true);
-    setError(null);
-    setMessage(null);
-    try {
-      await deleteCategory(category.id);
-      await refreshCatalog();
-      setMessage("Категория удалена.");
-    } catch (deleteError) {
-      setError(getApiErrorMessage(deleteError));
-    } finally {
-      setSaving(false);
-    }
-  }
-  async function setOrderStatus(order: AdminOrder, status: OrderStatus) {
-    setSaving(true);
-    setError(null);
-    setMessage(null);
-    try {
-      const updatedOrder = await updateOrderStatus(order.id, status);
-      setOrders((current) =>
-        current.map((item) => (item.id === updatedOrder.id ? updatedOrder : item)),
+      await loadAdminData();
+    } catch (error: any) {
+      console.error(error);
+      setMessage(
+        error?.message ||
+          error?.response?.data?.message ||
+          "Не удалось сохранить товар.",
       );
-      setMessage(`Заказ ${shortOrderNumber(order.id)} обновлен.`);
-    } catch (updateError) {
-      setError(getApiErrorMessage(updateError));
     } finally {
       setSaving(false);
     }
   }
-  const selectedFiles = useMemo(
-    () =>
-      form.imageItems
-        .filter((item) => item.type === "file")
-        .map((item) => item.file.name)
-        .join(", "),
-    [form.imageItems],
-  );
-  const telegramInfo = getTelegramLaunchInfo();
-  const activeOrders = orders.filter(
-    (order) => order.status !== "DONE" && order.status !== "CANCELLED",
-  );
-  const archivedOrders = orders.filter(
-    (order) => order.status === "DONE" || order.status === "CANCELLED",
-  );
-  const visibleOrders = orderView === "active" ? activeOrders : archivedOrders;
-  if (booting) {
-    return (
-      <main className="admin-page container">
-        <div className="state">Загружаем админ-панель...</div>
-      </main>
+
+  async function handleDeleteProduct(
+    productId: string,
+  ) {
+    const ok = window.confirm(
+      "Удалить этот товар?",
     );
+
+    if (!ok) {
+      return;
+    }
+
+    setMessage("");
+
+    try {
+      await api.delete(`/products/${productId}`);
+      setMessage("Товар удалён.");
+      await loadAdminData();
+    } catch (error) {
+      console.error(error);
+      setMessage(
+        "Не удалось удалить товар.",
+      );
+    }
   }
-  if (error && !user) {
-    return (
-      <main className="admin-page container">
-        <div className="state">
-          <div className="state__icon">!</div>
-          {error}
-          <div className="debug-card">
-            <span>Telegram object: {telegramInfo.hasTelegramObject ? "yes" : "no"}</span>
-            <span>initData: {telegramInfo.hasInitData ? "yes" : "no"}</span>
-            <span>initData length: {telegramInfo.initDataLength}</span>
-            <span>User ID: {telegramInfo.userId ?? "none"}</span>
-            <span>Platform: {telegramInfo.platform ?? "unknown"}</span>
-            <span>Version: {telegramInfo.version ?? "unknown"}</span>
-          </div>
-        </div>
-      </main>
+
+  async function handleCreateBrand() {
+    const name = newBrandName.trim();
+
+    if (!name) {
+      return;
+    }
+
+    setMessage("");
+
+    try {
+      await api.post("/brands", { name });
+      setNewBrandName("");
+      setMessage("Бренд добавлен.");
+      await loadAdminData();
+    } catch (error) {
+      console.error(error);
+      setMessage(
+        "Не удалось добавить бренд.",
+      );
+    }
+  }
+
+  async function handleCreateCategory() {
+    const name = newCategoryName.trim();
+
+    if (!name) {
+      return;
+    }
+
+    setMessage("");
+
+    try {
+      await api.post("/categories", {
+        name,
+      });
+      setNewCategoryName("");
+      setMessage("Категория добавлена.");
+      await loadAdminData();
+    } catch (error) {
+      console.error(error);
+      setMessage(
+        "Не удалось добавить категорию.",
+      );
+    }
+  }
+
+  async function handleDeleteBrand(
+    brandId: string,
+  ) {
+    const ok = window.confirm(
+      "Удалить бренд?",
     );
+
+    if (!ok) {
+      return;
+    }
+
+    setMessage("");
+
+    try {
+      await api.delete(`/brands/${brandId}`);
+      setMessage("Бренд удалён.");
+      await loadAdminData();
+    } catch (error) {
+      console.error(error);
+      setMessage(
+        "Не удалось удалить бренд.",
+      );
+    }
   }
-  if (user?.role !== "ADMIN") {
-    return (
-      <main className="admin-page container">
-        <div className="state">
-          <div className="state__icon">!</div>
-          Доступ только для администраторов SWA6Y5TAN.
-        </div>
-      </main>
+
+  async function handleDeleteCategory(
+    categoryId: string,
+  ) {
+    const ok = window.confirm(
+      "Удалить категорию?",
     );
+
+    if (!ok) {
+      return;
+    }
+
+    setMessage("");
+
+    try {
+      await api.delete(
+        `/categories/${categoryId}`,
+      );
+      setMessage("Категория удалена.");
+      await loadAdminData();
+    } catch (error) {
+      console.error(error);
+      setMessage(
+        "Не удалось удалить категорию.",
+      );
+    }
   }
+
+  async function handleChangeOrderStatus(
+    orderId: string,
+    status: AdminOrder["status"],
+  ) {
+    setMessage("");
+
+    try {
+      await api.patch(
+        `/orders/admin/${orderId}/status`,
+        { status },
+      );
+      setMessage("Статус заказа обновлён.");
+      await loadAdminData();
+    } catch (error) {
+      console.error(error);
+      setMessage(
+        "Не удалось обновить статус заказа.",
+      );
+    }
+  }
+
+  const currentShopName =
+    shops[0]?.name || "SWA6Y5TAN";
+
   return (
-    <main className="admin-page container">
-      <div className="admin-hero">
-        <div>
-          <span className="eyebrow">SWA6Y5TAN admin</span>
-          <h1>Управление каталогом</h1>
-          <p>Создавайте карточки, обновляйте размеры, наличие и фото без доступа к базе.</p>
-        </div>
-        <Link className="admin-link" to="/">
-          На витрину
-        </Link>
-      </div>
-      <div className="admin-tabs">
-        <button
-          className={`chip ${activeTab === "products" ? "chip--active" : ""}`}
-          onClick={() => setActiveTab("products")}
-        >
-          Товары
-        </button>
-        <button
-          className={`chip ${activeTab === "catalog" ? "chip--active" : ""}`}
-          onClick={() => setActiveTab("catalog")}
-        >
-          Бренды и категории
-        </button>
-        <button
-          className={`chip ${activeTab === "orders" ? "chip--active" : ""}`}
-          onClick={() => setActiveTab("orders")}
-        >
-          Заказы
-        </button>
-      </div>
-      {activeTab === "products" && (
-      <section className="admin-grid">
-        <div className="admin-panel">
-          <div className="admin-panel__head">
-            <h2>{isEditing ? "Редактировать товар" : "Новый товар"}</h2>
-            {isEditing && (
-              <button className="link-remove" onClick={resetForm}>
-                Сбросить
-              </button>
-            )}
-          </div>
-          <label className="admin-field">
-            Название
-            <input
-              className="field"
-              value={form.name}
-              onChange={(e) => setForm({ ...form, name: e.target.value })}
-            />
-          </label>
-          <div className="admin-two">
-            <label className="admin-field">
-              Цена
-              <input
-                className="field"
-                type="number"
-                inputMode="numeric"
-                value={form.price}
-                onChange={(e) => setForm({ ...form, price: e.target.value })}
-              />
-            </label>
-            <label className="admin-field admin-check">
-              <input
-                type="checkbox"
-                checked={form.inStock}
-                onChange={(e) => setForm({ ...form, inStock: e.target.checked })}
-              />
-              В наличии
-            </label>
-          </div>
-          <label className="admin-field">
-            Описание
-            <textarea
-              className="field admin-textarea"
-              value={form.description}
-              onChange={(e) => setForm({ ...form, description: e.target.value })}
-            />
-          </label>
-          <div className="admin-two">
-            <label className="admin-field">
-              Бренд
-              <select
-                className="field"
-                value={form.brandId}
-                onChange={(e) => setForm({ ...form, brandId: e.target.value })}
-              >
-                {brands.map((brand) => (
-                  <option key={brand.id} value={brand.id}>
-                    {brand.name}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="admin-field">
-              Категория
-              <select
-                className="field"
-                value={form.categoryId}
-                onChange={(e) => setForm({ ...form, categoryId: e.target.value })}
-              >
-                {categories.map((category) => (
-                  <option key={category.id} value={category.id}>
-                    {category.name}
-                  </option>
-                ))}
-              </select>
-            </label>
-          </div>
-          <label className="admin-field">
-            Размеры через запятую
-            <input
-              className="field"
-              value={form.sizes}
-              onChange={(e) => setForm({ ...form, sizes: e.target.value })}
-            />
-          </label>
-          {sizesFromInput(form.sizes).length > 0 && (
-            <div className="admin-field">
-              <span>Остатки по размерам</span>
-              <div className="admin-two">
-                {sizesFromInput(form.sizes).map((size) => (
-                  <label className="admin-field" key={size}>
-                    {size}
-                    <input
-                      className="field"
-                      type="number"
-                      min="0"
-                      step="1"
-                      inputMode="numeric"
-                      value={form.stockBySize[size] ?? "0"}
-                      onChange={(e) =>
-                        setForm((current) => ({
-                          ...current,
-                          stockBySize: {
-                            ...current.stockBySize,
-                            [size]: e.target.value,
-                          },
-                        }))
-                      }
-                    />
-                  </label>
-                ))}
-              </div>
+    <div className="admin-page">
+      <div className="container admin-page__container">
+        <header className="admin-topbar">
+          <div className="admin-topbar__left">
+            <div className="admin-topbar__eyebrow">
+              ADMIN
             </div>
-          )}
-          {form.imageItems.length > 0 && (
-            <div className="admin-images">
-              {form.imageItems.map((item, index) => (
-                <div className="admin-image-wrap" key={item.key}>
-                  <div className="admin-image">
-                    <img
-                      src={item.type === "url" ? item.url : URL.createObjectURL(item.file)}
-                      alt=""
-                    />
-                    {index === 0 && <span className="admin-image__badge">Превью</span>}
-                  </div>
-                  <div className="admin-image__actions">
-                    {index !== 0 && (
+
+            <h1 className="admin-topbar__title">
+              SWA6Y5TAN PANEL
+            </h1>
+          </div>
+
+          <div className="admin-topbar__right">
+            <button
+              type="button"
+              className={`admin-tab ${
+                activeTab === "products"
+                  ? "is-active"
+                  : ""
+              }`}
+              onClick={() =>
+                setActiveTab("products")
+              }
+            >
+              Товары
+            </button>
+
+            <button
+              type="button"
+              className={`admin-tab ${
+                activeTab === "catalog"
+                  ? "is-active"
+                  : ""
+              }`}
+              onClick={() =>
+                setActiveTab("catalog")
+              }
+            >
+              Каталог
+            </button>
+
+            <button
+              type="button"
+              className={`admin-tab ${
+                activeTab === "orders"
+                  ? "is-active"
+                  : ""
+              }`}
+              onClick={() =>
+                setActiveTab("orders")
+              }
+            >
+              Заказы
+            </button>
+          </div>
+        </header>
+
+        {message && (
+          <div className="admin-toast">
+            {message}
+          </div>
+        )}
+
+        {loading ? (
+          <div className="admin-loading">
+            ЗАГРУЗКА...
+          </div>
+        ) : (
+          <>
+            {activeTab === "products" && (
+              <section className="admin-layout">
+                <div className="admin-layout__main">
+                  <form
+                    className="admin-form"
+                    onSubmit={
+                      handleSubmitProduct
+                    }
+                  >
+                    <div className="admin-card">
+                      <div className="admin-card__number">
+                        1
+                      </div>
+
+                      <div className="admin-card__content">
+                        <div className="admin-card__header">
+                          <h2>
+                            ОСНОВА
+                          </h2>
+
+                          <div className="admin-badge">
+                            магазин:{" "}
+                            {currentShopName}
+                          </div>
+                        </div>
+
+                        <div className="admin-grid admin-grid--2">
+                          <label className="field">
+                            <span className="field__label">
+                              Название товара
+                            </span>
+
+                            <input
+                              className="field__control"
+                              value={form.name}
+                              onChange={(event) =>
+                                updateForm({
+                                  name: event
+                                    .target.value,
+                                })
+                              }
+                              placeholder="Например: Oakley Zip Hoodie"
+                            />
+                          </label>
+
+                          <label className="field">
+                            <span className="field__label">
+                              Цена
+                            </span>
+
+                            <input
+                              className="field__control"
+                              inputMode="numeric"
+                              value={form.price}
+                              onChange={(event) =>
+                                updateForm({
+                                  price: event
+                                    .target.value,
+                                })
+                              }
+                              placeholder="5900"
+                            />
+                          </label>
+                        </div>
+
+                        <label className="field">
+                          <span className="field__label">
+                            Описание
+                          </span>
+
+                          <textarea
+                            className="field__control field__control--textarea"
+                            value={form.description}
+                            onChange={(event) =>
+                              updateForm({
+                                description:
+                                  event.target
+                                    .value,
+                              })
+                            }
+                            placeholder="Коротко и по делу."
+                          />
+                        </label>
+
+                        <label className="toggle">
+                          <input
+                            type="checkbox"
+                            checked={form.inStock}
+                            onChange={(event) =>
+                              updateForm({
+                                inStock:
+                                  event.target
+                                    .checked,
+                              })
+                            }
+                          />
+
+                          <span className="toggle__ui" />
+
+                          <span className="toggle__text">
+                            В наличии
+                          </span>
+                        </label>
+                      </div>
+                    </div>
+
+                    <div className="admin-card">
+                      <div className="admin-card__number">
+                        2
+                      </div>
+
+                      <div className="admin-card__content">
+                        <div className="admin-card__header">
+                          <h2>
+                            КАТАЛОГ
+                          </h2>
+                        </div>
+
+                        <div className="admin-grid admin-grid--2">
+                          <label className="field">
+                            <span className="field__label">
+                              Бренд
+                            </span>
+
+                            <select
+                              className="field__control"
+                              value={form.brandId}
+                              onChange={(event) =>
+                                updateForm({
+                                  brandId:
+                                    event.target
+                                      .value,
+                                })
+                              }
+                            >
+                              <option value="">
+                                Выбери бренд
+                              </option>
+
+                              {brands.map(
+                                (brand) => (
+                                  <option
+                                    key={brand.id}
+                                    value={
+                                      brand.id
+                                    }
+                                  >
+                                    {brand.name}
+                                  </option>
+                                ),
+                              )}
+                            </select>
+                          </label>
+
+                          <label className="field">
+                            <span className="field__label">
+                              Категория
+                            </span>
+
+                            <select
+                              className="field__control"
+                              value={form.categoryId}
+                              onChange={(event) =>
+                                updateForm({
+                                  categoryId:
+                                    event.target
+                                      .value,
+                                })
+                              }
+                            >
+                              <option value="">
+                                Выбери категорию
+                              </option>
+
+                              {categories.map(
+                                (
+                                  category,
+                                ) => (
+                                  <option
+                                    key={
+                                      category.id
+                                    }
+                                    value={
+                                      category.id
+                                    }
+                                  >
+                                    {
+                                      category.name
+                                    }
+                                  </option>
+                                ),
+                              )}
+                            </select>
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="admin-card">
+                      <div className="admin-card__number">
+                        3
+                      </div>
+
+                      <div className="admin-card__content">
+                        <div className="admin-card__header">
+                          <h2>
+                            РАЗМЕРЫ
+                          </h2>
+
+                          <div className="admin-card__hint">
+                            один размер = одна строка
+                          </div>
+                        </div>
+
+                        <label className="field">
+                          <span className="field__label">
+                            Размеры
+                          </span>
+
+                          <textarea
+                            className="field__control field__control--textarea field__control--compact"
+                            value={form.sizesText}
+                            onChange={(event) =>
+                              updateForm({
+                                sizesText:
+                                  event.target
+                                    .value,
+                              })
+                            }
+                            placeholder={"S\nM\nL\nXL"}
+                          />
+                        </label>
+                      </div>
+                    </div>
+
+                    <div className="admin-card">
+                      <div className="admin-card__number">
+                        4
+                      </div>
+
+                      <div className="admin-card__content">
+                        <div className="admin-card__header">
+                          <h2>
+                            ФОТО
+                          </h2>
+
+                          <div className="admin-card__hint">
+                            одна ссылка = одна строка
+                          </div>
+                        </div>
+
+                        <label className="field">
+                          <span className="field__label">
+                            Ссылки на фото
+                          </span>
+
+                          <textarea
+                            className="field__control field__control--textarea"
+                            value={form.imagesText}
+                            onChange={(event) =>
+                              updateForm({
+                                imagesText:
+                                  event.target
+                                    .value,
+                              })
+                            }
+                            placeholder={"https://...\nhttps://..."}
+                          />
+                        </label>
+                      </div>
+                    </div>
+
+                    <div className="admin-actions">
+                      <button
+                        type="submit"
+                        className="admin-button admin-button--primary"
+                        disabled={saving}
+                      >
+                        {saving
+                          ? "СОХРАНЯЮ..."
+                          : form.id
+                            ? "ОБНОВИТЬ ТОВАР"
+                            : "СОЗДАТЬ ТОВАР"}
+                      </button>
+
                       <button
                         type="button"
-                        className="chip"
-                        onClick={() =>
-                          setForm({
-                            ...form,
-                            imageItems: moveImageToPreview(form.imageItems, item.key),
-                          })
-                        }
+                        className="admin-button"
+                        onClick={resetForm}
                       >
-                        На превью
+                        ОЧИСТИТЬ
                       </button>
-                    )}
+                    </div>
+                  </form>
+                </div>
+
+                <aside className="admin-layout__side">
+                  <div className="admin-panel">
+                    <div className="admin-panel__header">
+                      <h3>
+                        ТОВАРЫ
+                      </h3>
+
+                      <div className="admin-panel__meta">
+                        {filteredProducts.length}
+                      </div>
+                    </div>
+
+                    <input
+                      className="field__control admin-search"
+                      placeholder="Поиск по товарам"
+                      value={productSearch}
+                      onChange={(event) =>
+                        setProductSearch(
+                          event.target.value,
+                        )
+                      }
+                    />
+
+                    <div className="admin-products-list">
+                      {filteredProducts.map(
+                        (product) => (
+                          <article
+                            className="admin-product-card"
+                            key={product.id}
+                          >
+                            <div className="admin-product-card__media">
+                              {product.images[0] ? (
+                                <img
+                                  src={
+                                    product
+                                      .images[0]
+                                      .url
+                                  }
+                                  alt={
+                                    product.name
+                                  }
+                                />
+                              ) : (
+                                <div className="admin-product-card__placeholder">
+                                  NO PHOTO
+                                </div>
+                              )}
+                            </div>
+
+                            <div className="admin-product-card__body">
+                              <div className="admin-product-card__top">
+                                <h4>
+                                  {product.name}
+                                </h4>
+
+                                <div className="admin-badge">
+                                  {formatPrice(
+                                    product.price,
+                                  )}
+                                </div>
+                              </div>
+
+                              <div className="admin-product-card__meta">
+                                <span>
+                                  {
+                                    product
+                                      .brand
+                                      ?.name
+                                  }
+                                </span>
+
+                                <span>
+                                  {
+                                    product
+                                      .category
+                                      ?.name
+                                  }
+                                </span>
+
+                                <span>
+                                  {product.shop
+                                    ?.name ||
+                                    currentShopName}
+                                </span>
+                              </div>
+
+                              <div className="admin-product-card__actions">
+                                <button
+                                  type="button"
+                                  className="admin-mini-button"
+                                  onClick={() =>
+                                    startEditProduct(
+                                      product,
+                                    )
+                                  }
+                                >
+                                  ИЗМЕНИТЬ
+                                </button>
+
+                                <button
+                                  type="button"
+                                  className="admin-mini-button admin-mini-button--danger"
+                                  onClick={() =>
+                                    handleDeleteProduct(
+                                      product.id,
+                                    )
+                                  }
+                                >
+                                  УДАЛИТЬ
+                                </button>
+                              </div>
+                            </div>
+                          </article>
+                        ),
+                      )}
+                    </div>
+                  </div>
+                </aside>
+              </section>
+            )}
+
+            {activeTab === "catalog" && (
+              <section className="admin-layout admin-layout--catalog">
+                <div className="admin-panel">
+                  <div className="admin-panel__header">
+                    <h3>БРЕНДЫ</h3>
+                    <div className="admin-panel__meta">
+                      {brands.length}
+                    </div>
+                  </div>
+
+                  <div className="admin-inline-form">
+                    <input
+                      className="field__control"
+                      placeholder="Новый бренд"
+                      value={newBrandName}
+                      onChange={(event) =>
+                        setNewBrandName(
+                          event.target.value,
+                        )
+                      }
+                    />
+
                     <button
                       type="button"
-                      className="chip"
-                      onClick={() =>
-                        setForm({
-                          ...form,
-                          imageItems: form.imageItems.filter((image) => image.key !== item.key),
-                        })
+                      className="admin-button admin-button--primary"
+                      onClick={
+                        handleCreateBrand
                       }
                     >
-                      Убрать
+                      ДОБАВИТЬ
                     </button>
                   </div>
-                </div>
-              ))}
-            </div>
-          )}
-          <label className="admin-upload">
-            <input
-              type="file"
-              accept="image/*"
-              multiple
-              onChange={(e) => {
-                const picked = Array.from(e.target.files ?? []);
-                if (picked.length === 0) return;
-                void (async () => {
-                  setCompressingImages(true);
-                  setError(null);
-                  try {
-                    const compressed = await compressImageFiles(picked);
-                    setForm((current) => ({
-                      ...current,
-                      imageItems: [
-                        ...current.imageItems,
-                        ...compressed.map((file) => ({
-                          key: newFileKey(file),
-                          type: "file" as const,
-                          file,
-                        })),
-                      ],
-                    }));
-                  } catch {
-                    setError("Не удалось обработать фото. Попробуйте другие файлы.");
-                  } finally {
-                    setCompressingImages(false);
-                  }
-                })();
-                e.target.value = "";
-              }}
-              disabled={compressingImages}
-            />
-            <span>
-              {compressingImages
-                ? "Сжимаем фото..."
-                : selectedFiles || "Добавить фото (можно несколько)"}
-              {form.imageItems.length > 0 && ` · всего: ${form.imageItems.length}`}
-            </span>
-          </label>
-          {message && <div className="notice notice--ok">{message}</div>}
-          {error && <div className="notice notice--error">{error}</div>}
-          <button
-            className="btn"
-            onClick={submit}
-            disabled={saving || compressingImages || !canSubmit}
-          >
-            {saving
-              ? saveStage === "compress"
-                ? "Сжимаем фото..."
-                : saveStage === "upload"
-                  ? "Загружаем на сервер..."
-                  : "Сохраняем..."
-              : isEditing
-                ? "Сохранить изменения"
-                : "Создать товар"}
-          </button>
-        </div>
-        <div className="admin-panel">
-          <div className="admin-panel__head">
-            <h2>Товары</h2>
-            <span className="count">
-              <strong>{products.length}</strong> всего
-            </span>
-          </div>
-          <div className="admin-list">
-            {products.map((product) => (
-              <article className="admin-product" key={product.id}>
-                <div className="admin-product__media">
-                  {getProductPreviewImage(product) ? (
-                    <img src={getProductPreviewImage(product)} alt={product.name} />
-                  ) : (
-                    <div className="media-fallback">SWA6Y5TAN</div>
-                  )}
-                </div>
-                <div className="admin-product__body">
-                  <span className="admin-product__name">{product.name}</span>
-                  <span className="admin-product__meta">
-                    {product.category.name} · {formatPrice(product.price)}
-                  </span>
-                  <span className="admin-product__meta">
-                    {product.inStock ? "В наличии" : "Скрыт из наличия"} ·{" "}
-                    {product.sizes.length > 0
-                      ? product.sizes
-                          .map((item) => `${item.size}: ${item.stock}`)
-                          .join(" · ")
-                      : "без размеров"}
-                  </span>
-                  <span className="admin-product__meta admin-product__meta--mono">
-                    ID: {product.id}
-                  </span>
-                  {(product.sizes.length === 0 || hasLegacyUpload(product)) && (
-                    <div className="admin-badges">
-                      {product.sizes.length === 0 && (
-                        <span className="admin-badge admin-badge--warn">Добавьте размеры</span>
-                      )}
-                      {hasLegacyUpload(product) && (
-                        <span className="admin-badge admin-badge--warn">
-                          Замените фото на Cloudinary
+
+                  <div className="admin-chip-list">
+                    {brands.map((brand) => (
+                      <div
+                        className="admin-chip"
+                        key={brand.id}
+                      >
+                        <span>
+                          {brand.name}
                         </span>
-                      )}
-                    </div>
-                  )}
-                  <div className="admin-product__actions">
-                    <button
-                      className="chip"
-                      onClick={() => void copyProductLink(product)}
-                      disabled={saving}
-                    >
-                      Ссылка
-                    </button>
-                    <button className="chip" onClick={() => editProduct(product)} disabled={saving}>
-                      Изменить
-                    </button>
-                    <button
-                      className="chip"
-                      onClick={() => void removeProduct(product)}
-                      disabled={saving}
-                    >
-                      Удалить
-                    </button>
-                  </div>
-                </div>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
-      )}
-      {activeTab === "catalog" && (
-        <section className="admin-grid">
-          <div className="admin-panel">
-            <div className="admin-panel__head">
-              <h2>Новый бренд</h2>
-            </div>
-            <label className="admin-field">
-              Название бренда
-              <input
-                className="field"
-                value={brandName}
-                onChange={(e) => setBrandName(e.target.value)}
-              />
-            </label>
-            <button className="btn" onClick={submitBrand} disabled={saving || !brandName.trim()}>
-              Добавить бренд
-            </button>
-            <div className="admin-list admin-list--compact">
-              {brands.map((brand) => (
-                <div className="admin-row" key={brand.id}>
-                  <span>{brand.name}</span>
-                  <div className="admin-row__actions">
-                    <span className="count">{brand._count?.products ?? 0} товаров</span>
-                    <button
-                      className="link-remove"
-                      onClick={() => void removeBrand(brand)}
-                      disabled={saving || (brand._count?.products ?? 0) > 0}
-                    >
-                      Удалить
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-          <div className="admin-panel">
-            <div className="admin-panel__head">
-              <h2>Новая категория</h2>
-            </div>
-            <label className="admin-field">
-              Название категории
-              <input
-                className="field"
-                value={categoryName}
-                onChange={(e) => setCategoryName(e.target.value)}
-              />
-            </label>
-            <button
-              className="btn"
-              onClick={submitCategory}
-              disabled={saving || !categoryName.trim()}
-            >
-              Добавить категорию
-            </button>
-            <div className="admin-list admin-list--compact">
-              {categories.map((category) => (
-                <div className="admin-row" key={category.id}>
-                  <span>{category.name}</span>
-                  <div className="admin-row__actions">
-                    <span className="count">{category._count?.products ?? 0} товаров</span>
-                    <button
-                      className="link-remove"
-                      onClick={() => void removeCategory(category)}
-                      disabled={saving || (category._count?.products ?? 0) > 0}
-                    >
-                      Удалить
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-          {(message || error) && (
-            <div className="admin-panel">
-              {message && <div className="notice notice--ok">{message}</div>}
-              {error && <div className="notice notice--error">{error}</div>}
-            </div>
-          )}
-        </section>
-      )}
-      {activeTab === "orders" && (
-        <section className="admin-panel">
-          <div className="admin-panel__head">
-            <h2>Заказы</h2>
-            <div className="admin-panel__actions">
-              <span className="count">
-                <strong>{visibleOrders.length}</strong> в списке
-              </span>
-              <button className="chip" onClick={() => void refreshOrders()}>
-                Обновить
-              </button>
-            </div>
-          </div>
-          <div className="admin-tabs admin-tabs--inner">
-            <button
-              className={`chip ${orderView === "active" ? "chip--active" : ""}`}
-              onClick={() => setOrderView("active")}
-            >
-              Активные {activeOrders.length}
-            </button>
-            <button
-              className={`chip ${orderView === "archive" ? "chip--active" : ""}`}
-              onClick={() => setOrderView("archive")}
-            >
-              Архив {archivedOrders.length}
-            </button>
-          </div>
-          {message && <div className="notice notice--ok">{message}</div>}
-          {error && <div className="notice notice--error">{error}</div>}
-          <div className="admin-orders">
-            {visibleOrders.length === 0 ? (
-              <div className="state">
-                {orderView === "active" ? "Активных заказов нет" : "Архив заказов пуст"}
-              </div>
-            ) : (
-              visibleOrders.map((order) => (
-                <article className="admin-order" key={order.id}>
-                  <div className="admin-order__head">
-                    <div>
-                      <span className="admin-product__name">
-                        Заказ {shortOrderNumber(order.id)}
-                      </span>
-                      <span className="admin-product__meta">
-                        {order.createdAt
-                          ? new Date(order.createdAt).toLocaleString("ru-RU")
-                          : "без даты"}
-                      </span>
-                    </div>
-                    <span className="admin-badge">{orderStatusLabel[order.status]}</span>
-                  </div>
-                  <div className="admin-order__details">
-                    <span>Имя: {order.customerName || order.user?.name || "не указано"}</span>
-                    <span>Телефон: {order.phone || order.user?.phone || "не указан"}</span>
-                    {order.user?.telegramId && (
-                      <span>
-                        Telegram:{" "}
-                        <a href={`tg://user?id=${order.user.telegramId}`}>
-                          {order.user.telegramId}
-                        </a>
-                      </span>
-                    )}
-                    <span>Получение: {order.deliveryMethod || "не указано"}</span>
-                    <span>Адрес: {order.address || "не указан"}</span>
-                    <span>Комментарий: {order.comment || "нет"}</span>
-                  </div>
-                  <div className="admin-order__items">
-                    {order.items.map((item) => (
-                      <span key={item.id}>
-                        {item.product.name} · размер {item.size} · {item.quantity} шт. ·{" "}
-                        {formatPrice(item.price * item.quantity)}
-                      </span>
+
+                        <button
+                          type="button"
+                          onClick={() =>
+                            handleDeleteBrand(
+                              brand.id,
+                            )
+                          }
+                        >
+                          ×
+                        </button>
+                      </div>
                     ))}
                   </div>
-                  <div className="summary-row">
-                    <span>Итого</span>
-                    <span>{formatPrice(orderTotal(order))}</span>
+                </div>
+
+                <div className="admin-panel">
+                  <div className="admin-panel__header">
+                    <h3>КАТЕГОРИИ</h3>
+                    <div className="admin-panel__meta">
+                      {categories.length}
+                    </div>
                   </div>
-                  <div className="admin-product__actions">
+
+                  <div className="admin-inline-form">
+                    <input
+                      className="field__control"
+                      placeholder="Новая категория"
+                      value={newCategoryName}
+                      onChange={(event) =>
+                        setNewCategoryName(
+                          event.target.value,
+                        )
+                      }
+                    />
+
                     <button
-                      className="chip"
-                      onClick={() => void setOrderStatus(order, "PAID")}
-                      disabled={saving}
+                      type="button"
+                      className="admin-button admin-button--primary"
+                      onClick={
+                        handleCreateCategory
+                      }
                     >
-                      В работе
-                    </button>
-                    <button
-                      className="chip"
-                      onClick={() => void setOrderStatus(order, "DONE")}
-                      disabled={saving}
-                    >
-                      Готово
-                    </button>
-                    <button
-                      className="chip"
-                      onClick={() => void setOrderStatus(order, "CANCELLED")}
-                      disabled={saving}
-                    >
-                      Отменить
+                      ДОБАВИТЬ
                     </button>
                   </div>
-                </article>
-              ))
+
+                  <div className="admin-chip-list">
+                    {categories.map(
+                      (category) => (
+                        <div
+                          className="admin-chip"
+                          key={category.id}
+                        >
+                          <span>
+                            {category.name}
+                          </span>
+
+                          <button
+                            type="button"
+                            onClick={() =>
+                              handleDeleteCategory(
+                                category.id,
+                              )
+                            }
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ),
+                    )}
+                  </div>
+                </div>
+              </section>
             )}
-          </div>
-        </section>
-      )}
-    </main>
+
+            {activeTab === "orders" && (
+              <section className="admin-orders">
+                {orders.map((order) => (
+                  <article
+                    className="admin-order-card"
+                    key={order.id}
+                  >
+                    <div className="admin-order-card__top">
+                      <div>
+                        <div className="admin-order-card__title">
+                          Заказ #{order.id.slice(0, 8)}
+                        </div>
+
+                        <div className="admin-order-card__meta">
+                          {formatOrderDate(
+                            order.createdAt,
+                          )}
+                        </div>
+                      </div>
+
+                      <select
+                        className="field__control admin-status-select"
+                        value={order.status}
+                        onChange={(event) =>
+                          void handleChangeOrderStatus(
+                            order.id,
+                            event.target
+                              .value as AdminOrder["status"],
+                          )
+                        }
+                      >
+                        {ORDER_STATUSES.map(
+                          (status) => (
+                            <option
+                              key={status}
+                              value={status}
+                            >
+                              {status}
+                            </option>
+                          ),
+                        )}
+                      </select>
+                    </div>
+
+                    <div className="admin-order-card__columns">
+                      <div className="admin-order-card__column">
+                        <div className="admin-order-label">
+                          Клиент
+                        </div>
+                        <div>
+                          {order.customerName ||
+                            order.user
+                              ?.name ||
+                            "—"}
+                        </div>
+                        <div>
+                          {order.phone ||
+                            order.user
+                              ?.phone ||
+                            "—"}
+                        </div>
+                      </div>
+
+                      <div className="admin-order-card__column">
+                        <div className="admin-order-label">
+                          Доставка
+                        </div>
+                        <div>
+                          {order.deliveryMethod ||
+                            "—"}
+                        </div>
+                        <div>
+                          {order.address ||
+                            "—"}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="admin-order-items">
+                      {order.items.map((item) => (
+                        <div
+                          className="admin-order-item"
+                          key={item.id}
+                        >
+                          <span>
+                            {item.product.name}
+                          </span>
+
+                          <span>
+                            {item.size}
+                          </span>
+
+                          <span>
+                            ×{item.quantity}
+                          </span>
+
+                          <span>
+                            {formatPrice(
+                              item.price,
+                            )}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+
+                    {order.comment && (
+                      <div className="admin-order-comment">
+                        {order.comment}
+                      </div>
+                    )}
+                  </article>
+                ))}
+
+                {orders.length === 0 && (
+                  <div className="admin-loading">
+                    ЗАКАЗОВ ПОКА НЕТ
+                  </div>
+                )}
+              </section>
+            )}
+          </>
+        )}
+      </div>
+    </div>
   );
 }
