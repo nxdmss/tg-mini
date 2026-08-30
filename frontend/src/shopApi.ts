@@ -19,6 +19,15 @@ export type Shop = {
   productCount: number;
 };
 
+
+export async function getShops(): Promise<Shop[]> {
+  const res = await api.get<Shop[]>(
+    "/shops",
+  );
+
+  return res.data;
+}
+
 export async function getShop(
   slug: string,
 ): Promise<Shop> {

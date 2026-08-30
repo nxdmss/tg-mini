@@ -12,11 +12,11 @@ import {
 import {
   getCategories,
   getProduct,
-  getProducts,
 } from "./api";
 import {
   getShop,
   getShopProducts,
+  getShops,
 } from "./shopApi";
 import type { Shop } from "./shopApi";
 
@@ -33,6 +33,9 @@ import { CartDrawer } from "./components/CartDrawer";
 import { Filters } from "./components/Filters";
 import { PrankProduct } from "./components/PrankProduct";
 import { ShopHero } from "./components/ShopHero";
+import { ShopSwitcher } from "./components/ShopSwitcher";
+
+import "./components/ShopTransitions.css";
 
 import { consumeStartParam } from "./telegram";
 
@@ -66,8 +69,14 @@ export default function App() {
   const [categories, setCategories] = useState<Category[]>([]);
 
   const [shop, setShop] = useState<Shop | null>(null);
+  const [shops, setShops] = useState<Shop[]>([]);
   const [shopLoading, setShopLoading] = useState(false);
   const [shopError, setShopError] = useState(false);
+  const [shopSwitcherOpen, setShopSwitcherOpen] = useState(false);
+  const [switchingTo, setSwitchingTo] = useState<Shop | null>(null);
+  const [shopTransition, setShopTransition] = useState<
+    "idle" | "out" | "in"
+  >("idle");
 
   useEffect(() => {
     preloadPrankAssets();
@@ -90,6 +99,7 @@ export default function App() {
 
   const isProductPage = Boolean(productIdFromUrl);
   const isShopRoute = Boolean(shopSlug);
+  const activeShopSlug = shopSlug || "swagystan";
 
   const shopHomePath = shopSlug
     ? `/shop/${shopSlug}`
@@ -120,14 +130,30 @@ export default function App() {
   ]);
 
   useEffect(() => {
-    if (!shopSlug) {
-      setShop(null);
-      setShopError(false);
-      setShopLoading(false);
+    let active = true;
 
-      return;
+    async function loadShops() {
+      try {
+        const data = await getShops();
+
+        if (active) {
+          setShops(data);
+        }
+      } catch {
+        if (active) {
+          setShops([]);
+        }
+      }
     }
 
+    void loadShops();
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
     let active = true;
 
     async function loadShop() {
@@ -135,7 +161,7 @@ export default function App() {
       setShopError(false);
 
       try {
-        const data = await getShop(shopSlug!);
+        const data = await getShop(activeShopSlug);
 
         if (active) {
           setShop(data);
@@ -157,7 +183,7 @@ export default function App() {
     return () => {
       active = false;
     };
-  }, [shopSlug]);
+  }, [activeShopSlug]);
 
   useEffect(() => {
     document.title = shop?.name || "SWA6Y5TAN";
@@ -175,9 +201,10 @@ export default function App() {
       setError(false);
 
       try {
-        const data = shopSlug
-          ? await getShopProducts(shopSlug, query)
-          : await getProducts(query);
+        const data = await getShopProducts(
+          activeShopSlug,
+          query,
+        );
 
         if (active) {
           setProducts(data);
@@ -202,7 +229,53 @@ export default function App() {
   }, [
     query,
     productIdFromUrl,
-    shopSlug,
+    activeShopSlug,
+  ]);
+
+  useEffect(() => {
+    if (
+      shopTransition !== "out" ||
+      !switchingTo ||
+      shop?.slug !== switchingTo.slug ||
+      shopLoading ||
+      loading
+    ) {
+      return;
+    }
+
+    setShopTransition("in");
+
+    const timer = window.setTimeout(() => {
+      setShopTransition("idle");
+      setSwitchingTo(null);
+    }, 320);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [
+    shopTransition,
+    switchingTo,
+    shop,
+    shopLoading,
+    loading,
+  ]);
+
+  useEffect(() => {
+    if (
+      shopTransition === "out" &&
+      switchingTo &&
+      shopError &&
+      activeShopSlug === switchingTo.slug
+    ) {
+      setShopTransition("idle");
+      setSwitchingTo(null);
+    }
+  }, [
+    shopTransition,
+    switchingTo,
+    shopError,
+    activeShopSlug,
   ]);
 
   useEffect(() => {
@@ -311,6 +384,29 @@ export default function App() {
     products,
   ]);
 
+  function handleSwitchShop(nextShop: Shop) {
+    setShopSwitcherOpen(false);
+
+    if (nextShop.slug === activeShopSlug) {
+      return;
+    }
+
+    setSwitchingTo(nextShop);
+    setShopTransition("out");
+
+    window.setTimeout(() => {
+      setQuery((current) => ({
+        sort: current.sort || "name_asc",
+      }));
+
+      navigate(
+        nextShop.slug === "swagystan"
+          ? "/"
+          : `/shop/${nextShop.slug}`,
+      );
+    }, 170);
+  }
+
   function openProduct(product: Product) {
     setProductLinkError(false);
 
@@ -336,13 +432,15 @@ export default function App() {
     navigate(shopHomePath);
   }
 
-  const shopThemeStyle: ShopThemeStyle = shop
+  const themeShop = switchingTo || shop;
+
+  const shopThemeStyle: ShopThemeStyle = themeShop
     ? {
-        "--bg": shop.backgroundColor,
-        "--text": shop.textColor,
-        "--shop-accent": shop.accentColor,
-        background: shop.backgroundColor,
-        color: shop.textColor,
+        "--bg": themeShop.backgroundColor,
+        "--text": themeShop.textColor,
+        "--shop-accent": themeShop.accentColor,
+        background: themeShop.backgroundColor,
+        color: themeShop.textColor,
       }
     : {};
 
@@ -444,7 +542,11 @@ export default function App() {
 
   return (
     <div
-      className="app"
+      className={`app ${
+        shopTransition !== "idle"
+          ? "is-shop-switching"
+          : ""
+      }`}
       style={shopThemeStyle}
     >
       <div className="store-top">
@@ -455,74 +557,103 @@ export default function App() {
           homePath={shopHomePath}
         />
 
-        {isShopRoute && (
+        <div
+          className={`shop-stage ${
+            shopTransition === "out"
+              ? "shop-stage--out"
+              : shopTransition === "in"
+                ? "shop-stage--in"
+                : ""
+          }`}
+        >
           <ShopHero
             shop={shop}
             loading={shopLoading}
+            onOpenSwitcher={() =>
+              setShopSwitcherOpen(true)
+            }
           />
-        )}
 
-        <Filters
-          categories={categories}
-          query={query}
-          onChange={(nextQuery) =>
-            setQuery(nextQuery)
-          }
-        />
+          <Filters
+            categories={categories}
+            query={query}
+            onChange={(nextQuery) =>
+              setQuery(nextQuery)
+            }
+          />
+        </div>
       </div>
 
-      <main className="container">
-        {loading || (isShopRoute && shopLoading) ? (
-          <div className="grid grid--skeleton">
-            {Array.from({
-              length: 6,
-            }).map((_, index) => (
-              <div
-                className="skeleton-card"
-                key={index}
-              >
-                <div className="skeleton-card__media" />
+      <div
+        className={`shop-stage ${
+          shopTransition === "out"
+            ? "shop-stage--out"
+            : shopTransition === "in"
+              ? "shop-stage--in"
+              : ""
+        }`}
+      >
+        <main className="container">
+          {loading || shopLoading ? (
+            <div className="grid grid--skeleton">
+              {Array.from({
+                length: 6,
+              }).map((_, index) => (
+                <div
+                  className="skeleton-card"
+                  key={index}
+                >
+                  <div className="skeleton-card__media" />
 
-                <div className="skeleton-card__line skeleton-card__line--short" />
+                  <div className="skeleton-card__line skeleton-card__line--short" />
 
-                <div className="skeleton-card__line" />
+                  <div className="skeleton-card__line" />
+                </div>
+              ))}
+            </div>
+          ) : error ? (
+            <div className="state">
+              <div className="state__icon">
+                !
               </div>
-            ))}
-          </div>
-        ) : error ? (
-          <div className="state">
-            <div className="state__icon">
-              !
-            </div>
 
-            Не удалось загрузить товары.
-            Проверьте подключение и обновите страницу.
-          </div>
-        ) : products.length === 0 ? (
-          <div className="state">
-            <div className="state__icon">
-              ∅
+              Не удалось загрузить товары.
+              Проверьте подключение и обновите страницу.
             </div>
+          ) : products.length === 0 ? (
+            <div className="state">
+              <div className="state__icon">
+                ∅
+              </div>
 
-            По выбранным фильтрам товаров нет
+              В этом магазине пока нет товаров
+            </div>
+          ) : (
+            <div className="grid">
+              {products.map(
+                (product, index) => (
+                  <ProductCard
+                    key={product.id}
+                    product={product}
+                    index={index}
+                    onClick={() =>
+                      openProduct(product)
+                    }
+                  />
+                ),
+              )}
+            </div>
+          )}
+        </main>
+
+        <footer className="footer">
+          <div className="container footer__inner">
+            <span className="footer__brand">
+              {shop?.name || "SWA6Y5TAN"}
+            </span>
           </div>
-        ) : (
-          <div className="grid">
-            {products.map(
-              (product, index) => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  index={index}
-                  onClick={() =>
-                    openProduct(product)
-                  }
-                />
-              ),
-            )}
-          </div>
-        )}
-      </main>
+        </footer>
+      </div>
 
       {cartOpen && (
         <CartDrawer
@@ -532,13 +663,30 @@ export default function App() {
         />
       )}
 
-      <footer className="footer">
-        <div className="container footer__inner">
-          <span className="footer__brand">
-            {shop?.name || "SWA6Y5TAN"}
-          </span>
+      <ShopSwitcher
+        open={shopSwitcherOpen}
+        shops={shops}
+        activeShopId={shop?.id}
+        onClose={() =>
+          setShopSwitcherOpen(false)
+        }
+        onSelect={handleSwitchShop}
+      />
+
+      <div
+        className={`shop-transition-layer shop-transition-layer--${shopTransition}`}
+        aria-hidden="true"
+      >
+        <div className="shop-transition-layer__eyebrow">
+          SWAG / SWITCHING STORE
         </div>
-      </footer>
+
+        <div className="shop-transition-layer__name">
+          {switchingTo?.name || shop?.name || "SWA6Y5TAN"}
+        </div>
+
+        <div className="shop-transition-layer__line" />
+      </div>
     </div>
   );
 }
