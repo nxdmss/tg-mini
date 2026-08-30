@@ -1,0 +1,120 @@
+.store-identity {
+  padding: 12px 0 2px;
+  opacity: 0;
+  transform: translateY(12px);
+  animation:
+    store-identity-enter 620ms
+    cubic-bezier(0.16, 1, 0.3, 1)
+    60ms both;
+  transition:
+    opacity 250ms ease,
+    transform 420ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes store-identity-enter {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.store-identity.is-leaving {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.store-identity__back {
+  min-height: 36px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 0;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  opacity: 0.54;
+  transition:
+    opacity 200ms ease,
+    transform 280ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.store-identity__back:active {
+  opacity: 1;
+  transform: translateX(-4px);
+}
+
+.store-identity__back span {
+  font-size: 17px;
+  line-height: 1;
+}
+
+.store-identity__eyebrow {
+  margin-top: 11px;
+  margin-bottom: 7px;
+  font-size: 9px;
+  line-height: 1;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  opacity: 0.48;
+}
+
+.store-identity__name {
+  margin: 0;
+  font-size: clamp(38px, 11vw, 88px);
+  line-height: 0.86;
+  font-weight: 850;
+  letter-spacing: -0.065em;
+  text-transform: uppercase;
+}
+
+.store-identity__rule {
+  height: 4px;
+  margin-top: 14px;
+  background: currentColor;
+}
+
+.store-identity__bottom {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  padding-top: 8px;
+}
+
+.store-identity__bottom p {
+  max-width: 680px;
+  margin: 0;
+  font-size: 10px;
+  line-height: 1.45;
+  font-weight: 550;
+  opacity: 0.62;
+}
+
+.store-identity__bottom > span {
+  flex: 0 0 auto;
+  padding-top: 2px;
+  font-size: 9px;
+  font-weight: 800;
+  white-space: nowrap;
+  opacity: 0.46;
+}
+
+@media (min-width: 700px) {
+  .store-identity {
+    padding-top: 20px;
+  }
+
+  .store-identity__bottom p {
+    font-size: 11px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .store-identity,
+  .store-identity__back {
+    animation-duration: 1ms !important;
+    animation-delay: 0ms !important;
+    transition-duration: 1ms !important;
+  }
+}

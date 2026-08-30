@@ -32,9 +32,10 @@ import { ProductDetail } from "./components/ProductDetail";
 import { CartDrawer } from "./components/CartDrawer";
 import { Filters } from "./components/Filters";
 import { PrankProduct } from "./components/PrankProduct";
-import { ShopSwitcher } from "./components/ShopSwitcher";
+import { MarketplaceHome } from "./components/MarketplaceHome";
+import { StoreIdentity } from "./components/StoreIdentity";
 
-import "./components/ShopTransitions.css";
+import "./components/StoreTransitions.css";
 
 import { consumeStartParam } from "./telegram";
 
@@ -61,8 +62,7 @@ export default function App() {
   const {
     id: productIdFromUrl,
     shopSlug,
-  } =
-    useParams<AppRouteParams>();
+  } = useParams<AppRouteParams>();
 
   const navigate =
     useNavigate();
@@ -94,6 +94,12 @@ export default function App() {
     useState<Shop[]>([]);
 
   const [
+    shopsLoading,
+    setShopsLoading,
+  ] =
+    useState(true);
+
+  const [
     shopLoading,
     setShopLoading,
   ] =
@@ -106,19 +112,24 @@ export default function App() {
     useState(false);
 
   const [
-    switchingTo,
-    setSwitchingTo,
+    openingSlug,
+    setOpeningSlug,
   ] =
-    useState<Shop | null>(
+    useState<string | null>(
       null,
     );
 
   const [
-    shopTransition,
-    setShopTransition,
-  ] = useState<
-    "idle" | "out" | "in"
-  >("idle");
+    leavingStore,
+    setLeavingStore,
+  ] =
+    useState(false);
+
+  const [
+    justEnteredStore,
+    setJustEnteredStore,
+  ] =
+    useState(true);
 
   useEffect(() => {
     preloadPrankAssets();
@@ -136,7 +147,7 @@ export default function App() {
     loading,
     setLoading,
   ] =
-    useState(true);
+    useState(false);
 
   const [
     error,
@@ -169,17 +180,15 @@ export default function App() {
       productIdFromUrl,
     );
 
-  const isShopRoute =
-    Boolean(shopSlug);
+  const isMarketplaceHome =
+    !shopSlug &&
+    !productIdFromUrl;
 
   const activeShopSlug =
     shopSlug ||
-    "swagystan";
-
-  const shopHomePath =
-    shopSlug
-      ? `/shop/${shopSlug}`
-      : "/";
+    (productIdFromUrl
+      ? "swagystan"
+      : null);
 
   const selectedProduct =
     useMemo(() => {
@@ -218,6 +227,8 @@ export default function App() {
     let active = true;
 
     async function loadShops() {
+      setShopsLoading(true);
+
       try {
         const data =
           await getShops();
@@ -228,6 +239,12 @@ export default function App() {
       } catch {
         if (active) {
           setShops([]);
+        }
+      } finally {
+        if (active) {
+          setShopsLoading(
+            false,
+          );
         }
       }
     }
@@ -240,6 +257,13 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    if (!activeShopSlug) {
+      setShop(null);
+      setShopError(false);
+      setShopLoading(false);
+      return;
+    }
+
     let active = true;
 
     async function loadShop() {
@@ -278,14 +302,27 @@ export default function App() {
 
   useEffect(() => {
     document.title =
-      shop?.name ||
-      "SWA6Y5TAN";
-  }, [shop]);
+      isMarketplaceHome
+        ? "SWAG"
+        : shop?.name ||
+          "SWAG";
+  }, [
+    isMarketplaceHome,
+    shop,
+  ]);
 
   useEffect(() => {
     if (
+      !activeShopSlug ||
       productIdFromUrl
     ) {
+      if (
+        isMarketplaceHome
+      ) {
+        setProducts([]);
+        setLoading(false);
+      }
+
       return;
     }
 
@@ -326,79 +363,12 @@ export default function App() {
     query,
     productIdFromUrl,
     activeShopSlug,
+    isMarketplaceHome,
   ]);
 
   useEffect(() => {
     if (
-      shopTransition !==
-        "out" ||
-      !switchingTo ||
-      shop?.slug !==
-        switchingTo.slug ||
-      shopLoading ||
-      loading
-    ) {
-      return;
-    }
-
-    setShopTransition(
-      "in",
-    );
-
-    const timer =
-      window.setTimeout(
-        () => {
-          setShopTransition(
-            "idle",
-          );
-
-          setSwitchingTo(
-            null,
-          );
-        },
-        520,
-      );
-
-    return () => {
-      window.clearTimeout(
-        timer,
-      );
-    };
-  }, [
-    shopTransition,
-    switchingTo,
-    shop,
-    shopLoading,
-    loading,
-  ]);
-
-  useEffect(() => {
-    if (
-      shopTransition ===
-        "out" &&
-      switchingTo &&
-      shopError &&
-      activeShopSlug ===
-        switchingTo.slug
-    ) {
-      setShopTransition(
-        "idle",
-      );
-
-      setSwitchingTo(
-        null,
-      );
-    }
-  }, [
-    shopTransition,
-    switchingTo,
-    shopError,
-    activeShopSlug,
-  ]);
-
-  useEffect(() => {
-    if (
-      productIdFromUrl
+      isMarketplaceHome
     ) {
       return;
     }
@@ -428,7 +398,7 @@ export default function App() {
       active = false;
     };
   }, [
-    productIdFromUrl,
+    isMarketplaceHome,
   ]);
 
   useEffect(() => {
@@ -537,42 +507,89 @@ export default function App() {
     products,
   ]);
 
-  function handleSwitchShop(
-    nextShop: Shop,
-  ) {
+  useEffect(() => {
     if (
-      nextShop.slug ===
-      activeShopSlug
+      !shopSlug ||
+      shopLoading ||
+      !shop
     ) {
       return;
     }
 
-    setSwitchingTo(
-      nextShop,
+    setJustEnteredStore(
+      true,
     );
 
-    setShopTransition(
-      "out",
+    const timer =
+      window.setTimeout(
+        () => {
+          setJustEnteredStore(
+            false,
+          );
+        },
+        650,
+      );
+
+    return () => {
+      window.clearTimeout(
+        timer,
+      );
+    };
+  }, [
+    shopSlug,
+    shopLoading,
+    shop,
+  ]);
+
+  function openStore(
+    nextShop: Shop,
+  ) {
+    if (openingSlug) {
+      return;
+    }
+
+    setOpeningSlug(
+      nextShop.slug,
     );
 
     window.setTimeout(
       () => {
-        setQuery(
-          (current) => ({
-            sort:
-              current.sort ||
-              "name_asc",
-          }),
-        );
+        setQuery({
+          sort: "name_asc",
+        });
 
         navigate(
-          nextShop.slug ===
-            "swagystan"
-            ? "/"
-            : `/shop/${nextShop.slug}`,
+          `/shop/${nextShop.slug}`,
+        );
+
+        setOpeningSlug(
+          null,
         );
       },
-      170,
+      470,
+    );
+  }
+
+  function backToStores() {
+    if (leavingStore) {
+      return;
+    }
+
+    setLeavingStore(true);
+
+    window.setTimeout(
+      () => {
+        setQuery({
+          sort: "name_asc",
+        });
+
+        navigate("/");
+
+        setLeavingStore(
+          false,
+        );
+      },
+      320,
     );
   }
 
@@ -612,43 +629,44 @@ export default function App() {
       false,
     );
 
-    navigate(
-      shopHomePath,
-    );
+    if (shopSlug) {
+      navigate(
+        `/shop/${shopSlug}`,
+      );
+    } else {
+      navigate("/");
+    }
   }
-
-  const themeShop =
-    switchingTo || shop;
 
   const shopThemeStyle:
     ShopThemeStyle =
-    themeShop
+    shop &&
+    !isMarketplaceHome
       ? {
           "--bg":
-            themeShop.backgroundColor,
+            shop.backgroundColor,
           "--text":
-            themeShop.textColor,
+            shop.textColor,
           "--shop-accent":
-            themeShop.accentColor,
+            shop.accentColor,
           background:
-            themeShop.backgroundColor,
+            shop.backgroundColor,
           color:
-            themeShop.textColor,
+            shop.textColor,
         }
-      : {};
-
-  const contentClass =
-    shopTransition ===
-    "out"
-      ? "shop-content-stage shop-content-stage--out"
-      : shopTransition ===
-          "in"
-        ? "shop-content-stage shop-content-stage--in"
-        : "shop-content-stage";
+      : {
+          "--bg": "#ffffff",
+          "--text": "#000000",
+          "--shop-accent":
+            "#000000",
+          background:
+            "#ffffff",
+          color: "#000000",
+        };
 
   if (isProductPage) {
     if (
-      isShopRoute &&
+      shopSlug &&
       shopError
     ) {
       return (
@@ -662,8 +680,8 @@ export default function App() {
             <button
               type="button"
               className="product-route-state__back"
-              onClick={() =>
-                navigate("/")
+              onClick={
+                backToStores
               }
             >
               ←
@@ -746,17 +764,31 @@ export default function App() {
   }
 
   if (
-    isShopRoute &&
+    activeShopSlug &&
     shopError
   ) {
     return (
-      <div className="app">
+      <div
+        className="app"
+        style={
+          shopThemeStyle
+        }
+      >
+        <Header
+          onCartClick={() =>
+            setCartOpen(
+              true,
+            )
+          }
+          homePath="/"
+        />
+
         <main className="product-route-state">
           <button
             type="button"
             className="product-route-state__back"
-            onClick={() =>
-              navigate("/")
+            onClick={
+              backToStores
             }
           >
             ←
@@ -766,6 +798,51 @@ export default function App() {
             МАГАЗИН НЕ НАЙДЕН
           </div>
         </main>
+      </div>
+    );
+  }
+
+  if (isMarketplaceHome) {
+    return (
+      <div
+        className="app"
+        style={
+          shopThemeStyle
+        }
+      >
+        <div className="store-top">
+          <Header
+            onCartClick={() =>
+              setCartOpen(
+                true,
+              )
+            }
+            homePath="/"
+          />
+        </div>
+
+        <MarketplaceHome
+          shops={shops}
+          loading={
+            shopsLoading
+          }
+          openingSlug={
+            openingSlug
+          }
+          onOpen={
+            openStore
+          }
+        />
+
+        {cartOpen && (
+          <CartDrawer
+            onClose={() =>
+              setCartOpen(
+                false,
+              )
+            }
+          />
+        )}
       </div>
     );
   }
@@ -784,26 +861,29 @@ export default function App() {
               true,
             )
           }
-          homePath={
-            shopHomePath
-          }
+          homePath="/"
         />
 
-        <ShopSwitcher
-          shop={shop}
-          shops={shops}
-          loading={
-            shopLoading
-          }
-          onSelect={
-            handleSwitchShop
-          }
-        />
+        {shop && (
+          <StoreIdentity
+            shop={shop}
+            leaving={
+              leavingStore
+            }
+            onBack={
+              backToStores
+            }
+          />
+        )}
 
         <div
-          className={
-            contentClass
-          }
+          className={`store-catalog-stage ${
+            leavingStore
+              ? "is-leaving"
+              : justEnteredStore
+                ? "is-entering"
+                : ""
+          }`}
         >
           <Filters
             categories={
@@ -822,9 +902,13 @@ export default function App() {
       </div>
 
       <div
-        className={
-          contentClass
-        }
+        className={`store-catalog-stage ${
+          leavingStore
+            ? "is-leaving"
+            : justEnteredStore
+              ? "is-entering"
+              : ""
+        }`}
       >
         <main className="container">
           {loading ||
@@ -907,7 +991,7 @@ export default function App() {
           <div className="container footer__inner">
             <span className="footer__brand">
               {shop?.name ||
-                "SWA6Y5TAN"}
+                "SWAG"}
             </span>
           </div>
         </footer>
