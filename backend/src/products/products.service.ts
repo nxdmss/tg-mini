@@ -5,7 +5,10 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
-import { v2 as cloudinary, UploadApiResponse } from 'cloudinary';
+import {
+  v2 as cloudinary,
+  UploadApiResponse,
+} from 'cloudinary';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateProductDto } from './create-product.dto';
 import { QueryProductsDto } from './query-products.dto';
@@ -16,7 +19,10 @@ const DEFAULT_SHOP_SLUG = 'swagystan';
 
 const productInclude = {
   images: {
-    orderBy: [{ sortOrder: 'asc' }, { url: 'asc' }],
+    orderBy: [
+      { sortOrder: 'asc' },
+      { url: 'asc' },
+    ],
   },
   sizes: true,
   brand: true,
@@ -28,7 +34,9 @@ const productInclude = {
 export class ProductsService {
   constructor(private prisma: PrismaService) {}
 
-  async findAll(query: QueryProductsDto = {}) {
+  async findAll(
+    query: QueryProductsDto = {},
+  ) {
     const where: Prisma.ProductWhereInput = {
       deletedAt: null,
     };
@@ -83,98 +91,169 @@ export class ProductsService {
       where.inStock = query.inStock;
     }
 
-    let orderBy: Prisma.ProductOrderByWithRelationInput = {
+    let orderBy:
+      Prisma.ProductOrderByWithRelationInput = {
       name: 'asc',
     };
 
     if (query.sort === 'newest') {
-      orderBy = { createdAt: 'desc' };
-    } else if (query.sort === 'price_asc') {
-      orderBy = { price: 'asc' };
-    } else if (query.sort === 'price_desc') {
-      orderBy = { price: 'desc' };
+      orderBy = {
+        createdAt: 'desc',
+      };
+    } else if (
+      query.sort === 'price_asc'
+    ) {
+      orderBy = {
+        price: 'asc',
+      };
+    } else if (
+      query.sort === 'price_desc'
+    ) {
+      orderBy = {
+        price: 'desc',
+      };
     }
 
-    const products = await this.prisma.product.findMany({
-      where,
-      orderBy,
-      include: productInclude,
-    });
+    const products =
+      await this.prisma.product.findMany({
+        where,
+        orderBy,
+        include: productInclude,
+      });
 
-    return products.map((product) => this.normalizeProduct(product));
+    return products.map((product) =>
+      this.normalizeProduct(product),
+    );
   }
 
   async findOne(id: string) {
-    const product = await this.prisma.product.findFirst({
-      where: { id, deletedAt: null },
-      include: productInclude,
-    });
+    const product =
+      await this.prisma.product.findFirst({
+        where: {
+          id,
+          deletedAt: null,
+        },
+        include: productInclude,
+      });
 
     if (!product) {
-      throw new NotFoundException(`Product ${id} not found`);
+      throw new NotFoundException(
+        `Product ${id} not found`,
+      );
     }
 
     return this.normalizeProduct(product);
   }
 
-  async create(data: CreateProductDto, imageFiles: any[] = []) {
-    await this.ensureActiveCatalogRefs(data.brandId, data.categoryId);
-
-    const defaultShopId = await this.getDefaultShopId();
-
-    const uploadedUrls = await this.uploadImages(imageFiles);
-    const savedImageUrls = this.mergeImageUrls(
-      data.images ?? [],
-      uploadedUrls,
-      data.imagesOrder,
+  async create(
+    data: CreateProductDto,
+    imageFiles: any[] = [],
+  ) {
+    await this.ensureActiveCatalogRefs(
+      data.brandId,
+      data.categoryId,
     );
 
-    const product = await this.prisma.product.create({
-      data: {
-        name: data.name,
-        price: data.price,
-        description: data.description,
-        inStock: data.inStock ?? true,
-        shop: {
-          connect: {
-            id: defaultShopId,
-          },
-        },
-        brand: {
-          connect: {
-            id: data.brandId,
-          },
-        },
-        category: {
-          connect: {
-            id: data.categoryId,
-          },
-        },
-        images: {
-          create: savedImageUrls.map((url, index) => ({
-            url,
-            sortOrder: index,
-          })),
-        },
-        sizes: {
-          create: (data.sizes || []).map((size) => ({
-            size,
-          })),
-        },
-      },
-      include: productInclude,
-    });
+    const shopId = data.shopId
+      ? await this.ensureActiveShop(
+          data.shopId,
+        )
+      : await this.getDefaultShopId();
 
-    return this.normalizeProduct(product);
+    const uploadedUrls =
+      await this.uploadImages(
+        imageFiles,
+      );
+
+    const savedImageUrls =
+      this.mergeImageUrls(
+        data.images ?? [],
+        uploadedUrls,
+        data.imagesOrder,
+      );
+
+    const product =
+      await this.prisma.product.create({
+        data: {
+          name: data.name,
+          price: data.price,
+          description:
+            data.description,
+          inStock:
+            data.inStock ?? true,
+
+          shop: {
+            connect: {
+              id: shopId,
+            },
+          },
+
+          brand: {
+            connect: {
+              id: data.brandId,
+            },
+          },
+
+          category: {
+            connect: {
+              id: data.categoryId,
+            },
+          },
+
+          images: {
+            create:
+              savedImageUrls.map(
+                (url, index) => ({
+                  url,
+                  sortOrder: index,
+                }),
+              ),
+          },
+
+          sizes: {
+            create: (
+              data.sizes || []
+            ).map((size) => ({
+              size,
+            })),
+          },
+        },
+        include: productInclude,
+      });
+
+    return this.normalizeProduct(
+      product,
+    );
   }
 
-  async update(id: string, data: UpdateProductDto, imageFiles: any[] = []) {
-    await this.ensureProductExists(id);
-    await this.ensureActiveCatalogRefs(data.brandId, data.categoryId);
+  async update(
+    id: string,
+    data: UpdateProductDto,
+    imageFiles: any[] = [],
+  ) {
+    await this.ensureProductExists(
+      id,
+    );
 
-    const uploadedUrls = await this.uploadImages(imageFiles);
+    await this.ensureActiveCatalogRefs(
+      data.brandId,
+      data.categoryId,
+    );
+
+    const shopId = data.shopId
+      ? await this.ensureActiveShop(
+          data.shopId,
+        )
+      : undefined;
+
+    const uploadedUrls =
+      await this.uploadImages(
+        imageFiles,
+      );
+
     const imageUrls =
-      data.images !== undefined || uploadedUrls.length > 0
+      data.images !== undefined ||
+      uploadedUrls.length > 0
         ? this.mergeImageUrls(
             data.images ?? [],
             uploadedUrls,
@@ -182,108 +261,191 @@ export class ProductsService {
           )
         : undefined;
 
-    const product = await this.prisma.product.update({
-      where: { id },
-      data: {
-        name: data.name,
-        price: data.price,
-        description: data.description,
-        inStock: data.inStock,
-        brand: data.brandId
-          ? { connect: { id: data.brandId } }
-          : undefined,
-        category: data.categoryId
-          ? { connect: { id: data.categoryId } }
-          : undefined,
-        images:
-          imageUrls !== undefined
-            ? {
-                deleteMany: {},
-                create: imageUrls.map((url, index) => ({
-                  url,
-                  sortOrder: index,
-                })),
-              }
-            : undefined,
-        sizes:
-          data.sizes !== undefined
-            ? {
-                deleteMany: {},
-                create: data.sizes.map((size) => ({ size })),
-              }
-            : undefined,
-      },
-      include: productInclude,
-    });
-
-    return this.normalizeProduct(product);
-  }
-
-  async updateStock(id: string, data: UpdateProductStockDto) {
-    await this.ensureProductExists(id);
-
-    const product = await this.prisma.$transaction(async (tx) => {
-      await tx.product.update({
-        where: { id },
-        data: {
-          inStock: data.inStock,
-        },
-      });
-
-      await tx.productSize.deleteMany({
+    const product =
+      await this.prisma.product.update({
         where: {
-          productId: id,
+          id,
         },
-      });
+        data: {
+          name: data.name,
+          price: data.price,
+          description:
+            data.description,
+          inStock:
+            data.inStock,
 
-      if (data.sizes.length > 0) {
-        await tx.productSize.createMany({
-          data: data.sizes.map((item) => ({
-            productId: id,
-            size: item.size,
-            stock: item.stock,
-          })),
-        });
-      }
+          shop: shopId
+            ? {
+                connect: {
+                  id: shopId,
+                },
+              }
+            : undefined,
 
-      return tx.product.findUnique({
-        where: { id },
+          brand: data.brandId
+            ? {
+                connect: {
+                  id: data.brandId,
+                },
+              }
+            : undefined,
+
+          category:
+            data.categoryId
+              ? {
+                  connect: {
+                    id:
+                      data.categoryId,
+                  },
+                }
+              : undefined,
+
+          images:
+            imageUrls !==
+            undefined
+              ? {
+                  deleteMany: {},
+                  create:
+                    imageUrls.map(
+                      (
+                        url,
+                        index,
+                      ) => ({
+                        url,
+                        sortOrder:
+                          index,
+                      }),
+                    ),
+                }
+              : undefined,
+
+          sizes:
+            data.sizes !==
+            undefined
+              ? {
+                  deleteMany: {},
+                  create:
+                    data.sizes.map(
+                      (size) => ({
+                        size,
+                      }),
+                    ),
+                }
+              : undefined,
+        },
         include: productInclude,
       });
-    });
+
+    return this.normalizeProduct(
+      product,
+    );
+  }
+
+  async updateStock(
+    id: string,
+    data: UpdateProductStockDto,
+  ) {
+    await this.ensureProductExists(
+      id,
+    );
+
+    const product =
+      await this.prisma.$transaction(
+        async (tx) => {
+          await tx.product.update({
+            where: {
+              id,
+            },
+            data: {
+              inStock:
+                data.inStock,
+            },
+          });
+
+          await tx.productSize.deleteMany(
+            {
+              where: {
+                productId: id,
+              },
+            },
+          );
+
+          if (
+            data.sizes.length > 0
+          ) {
+            await tx.productSize.createMany(
+              {
+                data:
+                  data.sizes.map(
+                    (item) => ({
+                      productId:
+                        id,
+                      size:
+                        item.size,
+                      stock:
+                        item.stock,
+                    }),
+                  ),
+              },
+            );
+          }
+
+          return tx.product.findUnique(
+            {
+              where: {
+                id,
+              },
+              include:
+                productInclude,
+            },
+          );
+        },
+      );
 
     if (!product) {
-      throw new NotFoundException(`Product ${id} not found`);
+      throw new NotFoundException(
+        `Product ${id} not found`,
+      );
     }
 
-    return this.normalizeProduct(product);
+    return this.normalizeProduct(
+      product,
+    );
   }
 
   async remove(id: string) {
-    await this.ensureProductExists(id);
+    await this.ensureProductExists(
+      id,
+    );
 
     await this.prisma.product.update({
-      where: { id },
+      where: {
+        id,
+      },
       data: {
         deletedAt: new Date(),
         inStock: false,
       },
     });
 
-    return { ok: true };
+    return {
+      ok: true,
+    };
   }
 
   private async getDefaultShopId() {
-    const shop = await this.prisma.shop.findFirst({
-      where: {
-        slug: DEFAULT_SHOP_SLUG,
-        isActive: true,
-        deletedAt: null,
-      },
-      select: {
-        id: true,
-      },
-    });
+    const shop =
+      await this.prisma.shop.findFirst({
+        where: {
+          slug:
+            DEFAULT_SHOP_SLUG,
+          isActive: true,
+          deletedAt: null,
+        },
+        select: {
+          id: true,
+        },
+      });
 
     if (!shop) {
       throw new InternalServerErrorException(
@@ -294,16 +456,45 @@ export class ProductsService {
     return shop.id;
   }
 
-  private async ensureProductExists(id: string) {
-    const product = await this.prisma.product.findFirst({
-      where: {
-        id,
-        deletedAt: null,
-      },
-    });
+  private async ensureActiveShop(
+    shopId: string,
+  ) {
+    const shop =
+      await this.prisma.shop.findFirst({
+        where: {
+          id: shopId,
+          isActive: true,
+          deletedAt: null,
+        },
+        select: {
+          id: true,
+        },
+      });
+
+    if (!shop) {
+      throw new BadRequestException(
+        'Shop not found or inactive',
+      );
+    }
+
+    return shop.id;
+  }
+
+  private async ensureProductExists(
+    id: string,
+  ) {
+    const product =
+      await this.prisma.product.findFirst({
+        where: {
+          id,
+          deletedAt: null,
+        },
+      });
 
     if (!product) {
-      throw new NotFoundException(`Product ${id} not found`);
+      throw new NotFoundException(
+        `Product ${id} not found`,
+      );
     }
   }
 
@@ -312,36 +503,46 @@ export class ProductsService {
     categoryId?: string,
   ) {
     if (brandId) {
-      const brand = await this.prisma.brand.findFirst({
-        where: {
-          id: brandId,
-          deletedAt: null,
-        },
-      });
+      const brand =
+        await this.prisma.brand.findFirst({
+          where: {
+            id: brandId,
+            deletedAt: null,
+          },
+        });
 
       if (!brand) {
-        throw new BadRequestException('Brand not found');
+        throw new BadRequestException(
+          'Brand not found',
+        );
       }
     }
 
     if (categoryId) {
-      const category = await this.prisma.category.findFirst({
-        where: {
-          id: categoryId,
-          deletedAt: null,
-        },
-      });
+      const category =
+        await this.prisma.category.findFirst(
+          {
+            where: {
+              id: categoryId,
+              deletedAt: null,
+            },
+          },
+        );
 
       if (!category) {
-        throw new BadRequestException('Category not found');
+        throw new BadRequestException(
+          'Category not found',
+        );
       }
     }
   }
 
   private normalizeProduct(
-    product: Prisma.ProductGetPayload<{
-      include: typeof productInclude;
-    }>,
+    product:
+      Prisma.ProductGetPayload<{
+        include:
+          typeof productInclude;
+      }>,
   ) {
     const backendUrl = (
       process.env.BACKEND_URL ||
@@ -350,19 +551,33 @@ export class ProductsService {
 
     return {
       ...product,
-      sizes: product.sizes || [],
-      images: (product.images || []).map((img) => {
-        if (img.url.startsWith('http')) {
-          return img;
-        }
 
-        const cleanPath = img.url.replace(/^\/+/, '');
+      sizes:
+        product.sizes || [],
 
-        return {
-          ...img,
-          url: `${backendUrl}/${cleanPath}`,
-        };
-      }),
+      images:
+        (
+          product.images || []
+        ).map((img) => {
+          if (
+            img.url.startsWith(
+              'http',
+            )
+          ) {
+            return img;
+          }
+
+          const cleanPath =
+            img.url.replace(
+              /^\/+/, 
+              '',
+            );
+
+          return {
+            ...img,
+            url: `${backendUrl}/${cleanPath}`,
+          };
+        }),
     };
   }
 
@@ -372,48 +587,100 @@ export class ProductsService {
     imagesOrder?: string,
   ) {
     if (!imagesOrder) {
-      return [...existingUrls, ...uploadedUrls];
+      return [
+        ...existingUrls,
+        ...uploadedUrls,
+      ];
     }
 
-    let order: Array<'url' | 'file'>;
+    let order:
+      Array<'url' | 'file'>;
 
     try {
-      order = JSON.parse(imagesOrder);
+      order =
+        JSON.parse(
+          imagesOrder,
+        );
     } catch {
-      return [...existingUrls, ...uploadedUrls];
+      return [
+        ...existingUrls,
+        ...uploadedUrls,
+      ];
     }
 
-    if (!Array.isArray(order)) {
-      return [...existingUrls, ...uploadedUrls];
+    if (
+      !Array.isArray(order)
+    ) {
+      return [
+        ...existingUrls,
+        ...uploadedUrls,
+      ];
     }
 
     let urlIndex = 0;
     let fileIndex = 0;
+
     const merged: string[] = [];
 
-    for (const slot of order) {
-      if (slot === 'url') {
-        const url = existingUrls[urlIndex++];
-        if (url) merged.push(url);
-      } else if (slot === 'file') {
-        const url = uploadedUrls[fileIndex++];
-        if (url) merged.push(url);
+    for (
+      const slot of order
+    ) {
+      if (
+        slot === 'url'
+      ) {
+        const url =
+          existingUrls[
+            urlIndex++
+          ];
+
+        if (url) {
+          merged.push(url);
+        }
+      } else if (
+        slot === 'file'
+      ) {
+        const url =
+          uploadedUrls[
+            fileIndex++
+          ];
+
+        if (url) {
+          merged.push(url);
+        }
       }
     }
 
-    while (urlIndex < existingUrls.length) {
-      merged.push(existingUrls[urlIndex++]);
+    while (
+      urlIndex <
+      existingUrls.length
+    ) {
+      merged.push(
+        existingUrls[
+          urlIndex++
+        ],
+      );
     }
 
-    while (fileIndex < uploadedUrls.length) {
-      merged.push(uploadedUrls[fileIndex++]);
+    while (
+      fileIndex <
+      uploadedUrls.length
+    ) {
+      merged.push(
+        uploadedUrls[
+          fileIndex++
+        ],
+      );
     }
 
     return merged;
   }
 
-  private async uploadImages(imageFiles: any[] = []) {
-    if (imageFiles.length === 0) {
+  private async uploadImages(
+    imageFiles: any[] = [],
+  ) {
+    if (
+      imageFiles.length === 0
+    ) {
       return [];
     }
 
@@ -422,54 +689,84 @@ export class ProductsService {
     return Promise.all(
       imageFiles.map(
         (file) =>
-          new Promise<string>((resolve, reject) => {
-            const stream = cloudinary.uploader.upload_stream(
-              {
-                folder:
-                  process.env.CLOUDINARY_FOLDER ||
-                  'zov/products',
-                resource_type: 'image',
-                quality: 'auto:good',
-                fetch_format: 'auto',
-              },
-              (
-                error,
-                result?: UploadApiResponse,
-              ) => {
-                if (error || !result) {
-                  reject(
-                    new InternalServerErrorException(
-                      error?.message ||
-                        'Cloudinary upload failed',
-                    ),
-                  );
+          new Promise<string>(
+            (
+              resolve,
+              reject,
+            ) => {
+              const stream =
+                cloudinary.uploader.upload_stream(
+                  {
+                    folder:
+                      process.env
+                        .CLOUDINARY_FOLDER ||
+                      'zov/products',
+                    resource_type:
+                      'image',
+                    quality:
+                      'auto:good',
+                    fetch_format:
+                      'auto',
+                  },
+                  (
+                    error,
+                    result?:
+                      UploadApiResponse,
+                  ) => {
+                    if (
+                      error ||
+                      !result
+                    ) {
+                      reject(
+                        new InternalServerErrorException(
+                          error?.message ||
+                            'Image upload failed',
+                        ),
+                      );
 
-                  return;
-                }
+                      return;
+                    }
 
-                resolve(result.secure_url);
-              },
-            );
+                    resolve(
+                      result.secure_url,
+                    );
+                  },
+                );
 
-            stream.end(file.buffer);
-          }),
+              stream.end(
+                file.buffer,
+              );
+            },
+          ),
       ),
     );
   }
 
   private configureCloudinary() {
-    if (process.env.CLOUDINARY_URL) {
+    if (
+      process.env
+        .CLOUDINARY_URL
+    ) {
       return;
     }
 
     const cloudName =
-      process.env.CLOUDINARY_CLOUD_NAME;
-    const apiKey =
-      process.env.CLOUDINARY_API_KEY;
-    const apiSecret =
-      process.env.CLOUDINARY_API_SECRET;
+      process.env
+        .CLOUDINARY_CLOUD_NAME;
 
-    if (!cloudName || !apiKey || !apiSecret) {
+    const apiKey =
+      process.env
+        .CLOUDINARY_API_KEY;
+
+    const apiSecret =
+      process.env
+        .CLOUDINARY_API_SECRET;
+
+    if (
+      !cloudName ||
+      !apiKey ||
+      !apiSecret
+    ) {
       const missing = [
         !cloudName
           ? 'CLOUDINARY_CLOUD_NAME'
@@ -483,9 +780,9 @@ export class ProductsService {
       ].filter(Boolean);
 
       throw new BadRequestException(
-        `Cloudinary is not configured. Missing: ${missing.join(
+        `Image storage is not configured. Missing: ${missing.join(
           ', ',
-        )}. Alternatively set CLOUDINARY_URL.`,
+        )}.`,
       );
     }
 

@@ -1,4 +1,3 @@
-import { Transform } from 'class-transformer';
 import {
   IsBoolean,
   IsHexColor,
@@ -7,14 +6,6 @@ import {
   MaxLength,
   MinLength,
 } from 'class-validator';
-
-function toBoolean(value: unknown) {
-  if (typeof value === 'boolean') return value;
-  if (typeof value === 'string') {
-    return value === 'true' || value === '1' || value === 'on';
-  }
-  return value;
-}
 
 export class UpdateShopDto {
   @IsOptional()
@@ -47,7 +38,6 @@ export class UpdateShopDto {
   accentColor?: string;
 
   @IsOptional()
-  @Transform(({ value }) => toBoolean(value))
   @IsBoolean()
   isActive?: boolean;
 }

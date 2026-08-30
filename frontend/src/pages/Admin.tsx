@@ -8,7 +8,6 @@ import {
 import {
   createBrand,
   createCategory,
-  createProduct,
   deleteBrand,
   deleteCategory,
   deleteProduct,
@@ -17,8 +16,12 @@ import {
   getCategories,
   getProducts,
   updateOrderStatus,
-  updateProduct,
 } from "../api";
+
+import {
+  createAdminProduct,
+  updateAdminProduct,
+} from "../productAdminApi";
 
 import {
   createShop,
@@ -70,6 +73,7 @@ const SHOP_FORM_INITIAL: ShopFormState = {
 
 type ProductFormState = {
   id?: string;
+  shopId: string;
   name: string;
   price: string;
   description: string;
@@ -81,6 +85,7 @@ type ProductFormState = {
 };
 
 const PRODUCT_FORM_INITIAL: ProductFormState = {
+  shopId: "",
   name: "",
   price: "",
   description: "",
@@ -275,8 +280,36 @@ export default function Admin() {
         ? categoriesResult.value
         : [];
 
+    const nextShops =
+      shopsResult.status ===
+      "fulfilled"
+        ? shopsResult.value
+        : [];
+
+    const defaultShopId =
+      nextShops.find(
+        (shop) =>
+          shop.slug ===
+            "swagystan" &&
+          shop.isActive,
+      )?.id ||
+      nextShops.find(
+        (shop) => shop.isActive,
+      )?.id ||
+      "";
+
     setForm((current) => ({
       ...current,
+
+      shopId:
+        nextShops.some(
+          (shop) =>
+            shop.id ===
+              current.shopId &&
+            shop.isActive,
+        )
+          ? current.shopId
+          : defaultShopId,
 
       brandId:
         current.brandId ||
@@ -317,11 +350,20 @@ export default function Admin() {
           .trim()
           .toLowerCase();
 
+      const shopProducts =
+        form.shopId
+          ? products.filter(
+              (product) =>
+                product.shop?.id ===
+                form.shopId,
+            )
+          : [];
+
       if (!search) {
-        return products;
+        return shopProducts;
       }
 
-      return products.filter(
+      return shopProducts.filter(
         (product) => {
           const text = [
             product.name,
@@ -339,6 +381,7 @@ export default function Admin() {
     }, [
       products,
       productSearch,
+      form.shopId,
     ]);
 
   function updateForm(
@@ -351,8 +394,24 @@ export default function Admin() {
   }
 
   function resetForm() {
+    const fallbackShopId =
+      shops.find(
+        (shop) =>
+          shop.slug ===
+            "swagystan" &&
+          shop.isActive,
+      )?.id ||
+      shops.find(
+        (shop) => shop.isActive,
+      )?.id ||
+      "";
+
     setForm({
       ...PRODUCT_FORM_INITIAL,
+
+      shopId:
+        form.shopId ||
+        fallbackShopId,
 
       brandId:
         brands[0]?.id || "",
@@ -371,6 +430,9 @@ export default function Admin() {
 
     setForm({
       id: product.id,
+      shopId:
+        product.shop?.id ||
+        form.shopId,
       name: product.name,
       price: String(
         product.price,
@@ -434,6 +496,12 @@ export default function Admin() {
         );
       }
 
+      if (!form.shopId) {
+        throw new Error(
+          "Выбери магазин.",
+        );
+      }
+
       if (!form.brandId) {
         throw new Error(
           "Выбери бренд.",
@@ -452,6 +520,9 @@ export default function Admin() {
         );
 
       const payload = {
+        shopId:
+          form.shopId,
+
         name,
         price,
 
@@ -486,7 +557,7 @@ export default function Admin() {
       };
 
       if (form.id) {
-        await updateProduct(
+        await updateAdminProduct(
           form.id,
           payload,
         );
@@ -495,7 +566,7 @@ export default function Admin() {
           "Товар обновлён.",
         );
       } else {
-        await createProduct(
+        await createAdminProduct(
           payload,
         );
 
@@ -890,13 +961,16 @@ export default function Admin() {
     }
   }
 
-  const currentShopName =
+  const selectedProductShop =
     shops.find(
       (shop) =>
-        shop.slug === "swagystan",
-    )?.name ||
-    shops[0]?.name ||
-    "SWA6Y5TAN";
+        shop.id ===
+        form.shopId,
+    );
+
+  const selectedProductShopName =
+    selectedProductShop?.name ||
+    "ВЫБЕРИ МАГАЗИН";
 
   return (
     <div className="admin-page">
@@ -1006,7 +1080,7 @@ export default function Admin() {
 
                     <span className="admin-pill">
                       {
-                        currentShopName
+                        selectedProductShopName
                       }
                     </span>
                   </div>
@@ -1017,6 +1091,57 @@ export default function Admin() {
                       handleSubmitProduct
                     }
                   >
+                    <label className="admin-field">
+                      <span>
+                        Магазин
+                      </span>
+
+                      <select
+                        value={
+                          form.shopId
+                        }
+                        onChange={(
+                          event,
+                        ) => {
+                          updateForm({
+                            shopId:
+                              event
+                                .target
+                                .value,
+                          });
+
+                          setProductSearch(
+                            "",
+                          );
+                        }}
+                      >
+                        <option value="">
+                          Выбери магазин
+                        </option>
+
+                        {shops.map(
+                          (shop) => (
+                            <option
+                              key={
+                                shop.id
+                              }
+                              value={
+                                shop.id
+                              }
+                              disabled={
+                                !shop.isActive
+                              }
+                            >
+                              {shop.name}
+                              {!shop.isActive
+                                ? " — ВЫКЛ"
+                                : ""}
+                            </option>
+                          ),
+                        )}
+                      </select>
+                    </label>
+
                     <label className="admin-field">
                       <span>
                         Название
@@ -1297,7 +1422,9 @@ export default function Admin() {
                 <section className="admin-box">
                   <div className="admin-box__head">
                     <h2>
-                      Товары
+                      Товары — {
+                        selectedProductShopName
+                      }
                     </h2>
 
                     <span className="admin-pill">
@@ -1378,6 +1505,13 @@ export default function Admin() {
                               <span>
                                 {product
                                   .category
+                                  ?.name ||
+                                  "—"}
+                              </span>
+
+                              <span>
+                                {product
+                                  .shop
                                   ?.name ||
                                   "—"}
                               </span>
