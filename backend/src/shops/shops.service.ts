@@ -13,7 +13,6 @@ import { UpdateShopDto } from './update-shop.dto';
 
 type ShopImageFiles = {
   logo?: any[];
-  banner?: any[];
 };
 
 const shopSelect = {
@@ -137,10 +136,10 @@ export class ShopsService {
       );
     }
 
-    const [logoUrl, bannerUrl] = await Promise.all([
-      this.uploadImage(files.logo?.[0], 'logos'),
-      this.uploadImage(files.banner?.[0], 'banners'),
-    ]);
+    const logoUrl = await this.uploadImage(
+      files.logo?.[0],
+      'logos',
+    );
 
     try {
       const shop = await this.prisma.shop.create({
@@ -149,7 +148,7 @@ export class ShopsService {
           slug,
           description: emptyToNull(body.description),
           logoUrl: logoUrl ?? null,
-          bannerUrl: bannerUrl ?? null,
+          bannerUrl: null,
           backgroundColor:
             body.backgroundColor ?? '#ffffff',
           textColor:
@@ -190,7 +189,6 @@ export class ShopsService {
       select: {
         id: true,
         logoUrl: true,
-        bannerUrl: true,
       },
     });
 
@@ -209,10 +207,10 @@ export class ShopsService {
       );
     }
 
-    const [newLogoUrl, newBannerUrl] = await Promise.all([
-      this.uploadImage(files.logo?.[0], 'logos'),
-      this.uploadImage(files.banner?.[0], 'banners'),
-    ]);
+    const newLogoUrl = await this.uploadImage(
+      files.logo?.[0],
+      'logos',
+    );
 
     try {
       const shop = await this.prisma.shop.update({
@@ -227,7 +225,7 @@ export class ShopsService {
           slug,
           description: emptyToNull(body.description),
           logoUrl: newLogoUrl ?? undefined,
-          bannerUrl: newBannerUrl ?? undefined,
+          bannerUrl: null,
           backgroundColor: body.backgroundColor,
           textColor: body.textColor,
           accentColor: body.accentColor,
@@ -251,9 +249,49 @@ export class ShopsService {
     }
   }
 
+  async remove(id: string) {
+    const shop = await this.prisma.shop.findFirst({
+      where: {
+        id,
+        deletedAt: null,
+      },
+      select: {
+        id: true,
+        slug: true,
+        name: true,
+      },
+    });
+
+    if (!shop) {
+      throw new NotFoundException('Shop not found');
+    }
+
+    if (shop.slug === 'swagystan') {
+      throw new BadRequestException(
+        'Основной магазин SWA6Y5TAN удалить нельзя',
+      );
+    }
+
+    await this.prisma.shop.update({
+      where: {
+        id,
+      },
+      data: {
+        isActive: false,
+        deletedAt: new Date(),
+      },
+    });
+
+    return {
+      ok: true,
+      id: shop.id,
+      name: shop.name,
+    };
+  }
+
   private async uploadImage(
     file: any | undefined,
-    folder: 'logos' | 'banners',
+    folder: 'logos',
   ): Promise<string | undefined> {
     if (!file) {
       return undefined;

@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Patch,
@@ -18,12 +19,10 @@ import { UpdateShopDto } from './update-shop.dto';
 
 type ShopImageFiles = {
   logo?: any[];
-  banner?: any[];
 };
 
 const shopImageInterceptor = FileFieldsInterceptor([
   { name: 'logo', maxCount: 1 },
-  { name: 'banner', maxCount: 1 },
 ]);
 
 @Controller('shops')
@@ -66,4 +65,10 @@ export class ShopsController {
   ) {
     return this.shopsService.update(id, body, files);
   }
+  @Delete(':id')
+  @UseGuards(TelegramAuthGuard, AdminGuard)
+  remove(@Param('id') id: string) {
+    return this.shopsService.remove(id);
+  }
+
 }

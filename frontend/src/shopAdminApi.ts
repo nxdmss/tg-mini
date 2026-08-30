@@ -30,7 +30,6 @@ export type ShopPayload = {
   accentColor: string;
   isActive: boolean;
   logoFile?: File | null;
-  bannerFile?: File | null;
 };
 
 function adminAuthHeaders() {
@@ -83,7 +82,6 @@ async function shopFormData(
 
   const files = [
     payload.logoFile,
-    payload.bannerFile,
   ].filter((file): file is File => Boolean(file));
 
   let compressed = files;
@@ -99,9 +97,6 @@ async function shopFormData(
     index += 1;
   }
 
-  if (payload.bannerFile) {
-    form.append("banner", compressed[index]);
-  }
 
   return form;
 }
@@ -148,4 +143,15 @@ export async function updateShop(
   );
 
   return res.data;
+}
+
+export async function deleteShop(
+  id: string,
+): Promise<void> {
+  await api.delete(
+    `/shops/${id}`,
+    {
+      headers: adminAuthHeaders(),
+    },
+  );
 }

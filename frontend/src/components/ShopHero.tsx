@@ -27,18 +27,6 @@ export function ShopHero({
 
   return (
     <section className="shop-identity">
-      {shop.bannerUrl && (
-        <div className="container">
-          <div className="shop-identity__banner">
-            <img
-              src={shop.bannerUrl}
-              alt=""
-              aria-hidden="true"
-            />
-          </div>
-        </div>
-      )}
-
       <div className="container shop-identity__inner">
         {shop.logoUrl && (
           <div className="shop-identity__logo">

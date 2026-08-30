@@ -22,6 +22,7 @@ import {
 
 import {
   createShop,
+  deleteShop,
   getAdminShops,
   updateShop,
   type AdminShop,
@@ -52,9 +53,7 @@ type ShopFormState = {
   slug: string;
   description: string;
   logoUrl: string;
-  bannerUrl: string;
   logoFile: File | null;
-  bannerFile: File | null;
   backgroundColor: string;
   textColor: string;
   accentColor: string;
@@ -66,9 +65,7 @@ const SHOP_FORM_INITIAL: ShopFormState = {
   slug: "",
   description: "",
   logoUrl: "",
-  bannerUrl: "",
   logoFile: null,
-  bannerFile: null,
   backgroundColor: "#ffffff",
   textColor: "#000000",
   accentColor: "#000000",
@@ -742,10 +739,7 @@ export default function Admin() {
         shop.description || "",
       logoUrl:
         shop.logoUrl || "",
-      bannerUrl:
-        shop.bannerUrl || "",
       logoFile: null,
-      bannerFile: null,
       backgroundColor:
         shop.backgroundColor ||
         "#ffffff",
@@ -803,8 +797,6 @@ export default function Admin() {
           shopForm.description.trim(),
         logoFile:
           shopForm.logoFile,
-        bannerFile:
-          shopForm.bannerFile,
         backgroundColor:
           shopForm.backgroundColor,
         textColor:
@@ -857,6 +849,53 @@ export default function Admin() {
       );
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function handleDeleteShop(
+    shop: AdminShop,
+  ) {
+    if (shop.slug === "swagystan") {
+      setMessage(
+        "Основной магазин SWA6Y5TAN удалить нельзя.",
+      );
+      return;
+    }
+
+    const ok = window.confirm(
+      `Удалить магазин "${shop.name}"? Товары из базы не удалятся.`,
+    );
+
+    if (!ok) {
+      return;
+    }
+
+    setMessage("");
+
+    try {
+      await deleteShop(shop.id);
+
+      if (shopForm.id === shop.id) {
+        resetShopForm();
+      }
+
+      setMessage(
+        "Магазин удалён.",
+      );
+
+      await loadAdminData();
+    } catch (error: any) {
+      console.error(error);
+
+      const backendMessage =
+        error?.response?.data?.message;
+
+      setMessage(
+        (Array.isArray(backendMessage)
+          ? backendMessage.join(" ")
+          : backendMessage) ||
+          "Не удалось удалить магазин.",
+      );
     }
   }
 
@@ -1546,51 +1585,6 @@ export default function Admin() {
                       </label>
                     </div>
 
-                    <div className="admin-media-field">
-                      <div className="admin-media-field__label">
-                        Баннер
-                      </div>
-
-                      {(shopForm.bannerFile ||
-                        shopForm.bannerUrl) && (
-                        <div className="admin-media-preview admin-media-preview--banner">
-                          <img
-                            src={
-                              shopForm.bannerFile
-                                ? URL.createObjectURL(
-                                    shopForm.bannerFile,
-                                  )
-                                : shopForm.bannerUrl
-                            }
-                            alt="Баннер магазина"
-                          />
-                        </div>
-                      )}
-
-                      <label className="admin-file-button">
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={(event) => {
-                            const file =
-                              event.target.files?.[0] ||
-                              null;
-
-                            updateShopForm({
-                              bannerFile: file,
-                            });
-                          }}
-                        />
-
-                        <span>
-                          {shopForm.bannerFile ||
-                          shopForm.bannerUrl
-                            ? "СМЕНИТЬ ФОТО"
-                            : "ВЫБРАТЬ ФОТО"}
-                        </span>
-                      </label>
-                    </div>
-
                     <div className="admin-colors">
                       <label className="admin-color">
                         <span>
@@ -1811,7 +1805,7 @@ export default function Admin() {
                             </span>
                           </div>
 
-                          <div className="admin-item__buttons">
+                          <div className="admin-shop-actions">
                             <button
                               type="button"
                               className="admin-btn"
@@ -1832,6 +1826,20 @@ export default function Admin() {
                             >
                               ОТКРЫТЬ
                             </a>
+
+                            {shop.slug !== "swagystan" && (
+                              <button
+                                type="button"
+                                className="admin-btn admin-btn--delete"
+                                onClick={() =>
+                                  void handleDeleteShop(
+                                    shop,
+                                  )
+                                }
+                              >
+                                УДАЛИТЬ
+                              </button>
+                            )}
                           </div>
                         </article>
                       ),
