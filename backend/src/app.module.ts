@@ -14,6 +14,8 @@ import { AuthModule } from './auth/auth.module';
 
 import { TelegramModule } from './telegram/telegram.module';
 
+import { ShopsModule } from './shops/shops.module';
+
 import { AppController } from './app.controller';
 
 import { AppService } from './app.service';
@@ -35,6 +37,8 @@ import { AppService } from './app.service';
     AuthModule,
 
     TelegramModule,
+
+    ShopsModule,
   ],
 
   controllers: [

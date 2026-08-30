@@ -12,6 +12,8 @@ import { QueryProductsDto } from './query-products.dto';
 import { UpdateProductDto } from './update-product.dto';
 import { UpdateProductStockDto } from './update-product-stock.dto';
 
+const DEFAULT_SHOP_SLUG = 'swagystan';
+
 const productInclude = {
   images: {
     orderBy: [{ sortOrder: 'asc' }, { url: 'asc' }],
@@ -19,6 +21,7 @@ const productInclude = {
   sizes: true,
   brand: true,
   category: true,
+  shop: true,
 } satisfies Prisma.ProductInclude;
 
 @Injectable()
@@ -29,6 +32,17 @@ export class ProductsService {
     const where: Prisma.ProductWhereInput = {
       deletedAt: null,
     };
+
+    if (query.shop) {
+      where.shop = {
+        slug: {
+          equals: query.shop,
+          mode: 'insensitive',
+        },
+        isActive: true,
+        deletedAt: null,
+      };
+    }
 
     if (query.category) {
       where.category = {
@@ -106,8 +120,14 @@ export class ProductsService {
   async create(data: CreateProductDto, imageFiles: any[] = []) {
     await this.ensureActiveCatalogRefs(data.brandId, data.categoryId);
 
+    const defaultShopId = await this.getDefaultShopId();
+
     const uploadedUrls = await this.uploadImages(imageFiles);
-    const savedImageUrls = this.mergeImageUrls(data.images ?? [], uploadedUrls, data.imagesOrder);
+    const savedImageUrls = this.mergeImageUrls(
+      data.images ?? [],
+      uploadedUrls,
+      data.imagesOrder,
+    );
 
     const product = await this.prisma.product.create({
       data: {
@@ -115,6 +135,11 @@ export class ProductsService {
         price: data.price,
         description: data.description,
         inStock: data.inStock ?? true,
+        shop: {
+          connect: {
+            id: defaultShopId,
+          },
+        },
         brand: {
           connect: {
             id: data.brandId,
@@ -150,7 +175,11 @@ export class ProductsService {
     const uploadedUrls = await this.uploadImages(imageFiles);
     const imageUrls =
       data.images !== undefined || uploadedUrls.length > 0
-        ? this.mergeImageUrls(data.images ?? [], uploadedUrls, data.imagesOrder)
+        ? this.mergeImageUrls(
+            data.images ?? [],
+            uploadedUrls,
+            data.imagesOrder,
+          )
         : undefined;
 
     const product = await this.prisma.product.update({
@@ -160,8 +189,12 @@ export class ProductsService {
         price: data.price,
         description: data.description,
         inStock: data.inStock,
-        brand: data.brandId ? { connect: { id: data.brandId } } : undefined,
-        category: data.categoryId ? { connect: { id: data.categoryId } } : undefined,
+        brand: data.brandId
+          ? { connect: { id: data.brandId } }
+          : undefined,
+        category: data.categoryId
+          ? { connect: { id: data.categoryId } }
+          : undefined,
         images:
           imageUrls !== undefined
             ? {
@@ -186,8 +219,49 @@ export class ProductsService {
     return this.normalizeProduct(product);
   }
 
+  async updateStock(id: string, data: UpdateProductStockDto) {
+    await this.ensureProductExists(id);
+
+    const product = await this.prisma.$transaction(async (tx) => {
+      await tx.product.update({
+        where: { id },
+        data: {
+          inStock: data.inStock,
+        },
+      });
+
+      await tx.productSize.deleteMany({
+        where: {
+          productId: id,
+        },
+      });
+
+      if (data.sizes.length > 0) {
+        await tx.productSize.createMany({
+          data: data.sizes.map((item) => ({
+            productId: id,
+            size: item.size,
+            stock: item.stock,
+          })),
+        });
+      }
+
+      return tx.product.findUnique({
+        where: { id },
+        include: productInclude,
+      });
+    });
+
+    if (!product) {
+      throw new NotFoundException(`Product ${id} not found`);
+    }
+
+    return this.normalizeProduct(product);
+  }
+
   async remove(id: string) {
     await this.ensureProductExists(id);
+
     await this.prisma.product.update({
       where: { id },
       data: {
@@ -195,20 +269,54 @@ export class ProductsService {
         inStock: false,
       },
     });
+
     return { ok: true };
   }
 
+  private async getDefaultShopId() {
+    const shop = await this.prisma.shop.findFirst({
+      where: {
+        slug: DEFAULT_SHOP_SLUG,
+        isActive: true,
+        deletedAt: null,
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    if (!shop) {
+      throw new InternalServerErrorException(
+        `Default shop "${DEFAULT_SHOP_SLUG}" not found`,
+      );
+    }
+
+    return shop.id;
+  }
+
   private async ensureProductExists(id: string) {
-    const product = await this.prisma.product.findFirst({ where: { id, deletedAt: null } });
+    const product = await this.prisma.product.findFirst({
+      where: {
+        id,
+        deletedAt: null,
+      },
+    });
+
     if (!product) {
       throw new NotFoundException(`Product ${id} not found`);
     }
   }
 
-  private async ensureActiveCatalogRefs(brandId?: string, categoryId?: string) {
+  private async ensureActiveCatalogRefs(
+    brandId?: string,
+    categoryId?: string,
+  ) {
     if (brandId) {
       const brand = await this.prisma.brand.findFirst({
-        where: { id: brandId, deletedAt: null },
+        where: {
+          id: brandId,
+          deletedAt: null,
+        },
       });
 
       if (!brand) {
@@ -218,7 +326,10 @@ export class ProductsService {
 
     if (categoryId) {
       const category = await this.prisma.category.findFirst({
-        where: { id: categoryId, deletedAt: null },
+        where: {
+          id: categoryId,
+          deletedAt: null,
+        },
       });
 
       if (!category) {
@@ -227,7 +338,11 @@ export class ProductsService {
     }
   }
 
-  private normalizeProduct(product: Prisma.ProductGetPayload<{ include: typeof productInclude }>) {
+  private normalizeProduct(
+    product: Prisma.ProductGetPayload<{
+      include: typeof productInclude;
+    }>,
+  ) {
     const backendUrl = (
       process.env.BACKEND_URL ||
       'https://tg-mini-backend.onrender.com'
@@ -251,12 +366,17 @@ export class ProductsService {
     };
   }
 
-  private mergeImageUrls(existingUrls: string[], uploadedUrls: string[], imagesOrder?: string) {
+  private mergeImageUrls(
+    existingUrls: string[],
+    uploadedUrls: string[],
+    imagesOrder?: string,
+  ) {
     if (!imagesOrder) {
       return [...existingUrls, ...uploadedUrls];
     }
 
     let order: Array<'url' | 'file'>;
+
     try {
       order = JSON.parse(imagesOrder);
     } catch {
@@ -293,56 +413,79 @@ export class ProductsService {
   }
 
   private async uploadImages(imageFiles: any[] = []) {
-    if (imageFiles.length === 0) return [];
+    if (imageFiles.length === 0) {
+      return [];
+    }
 
     this.configureCloudinary();
 
     return Promise.all(
-      imageFiles.map((file) =>
-        new Promise<string>((resolve, reject) => {
-          const stream = cloudinary.uploader.upload_stream(
-            {
-              folder: process.env.CLOUDINARY_FOLDER || 'zov/products',
-              resource_type: 'image',
-              quality: 'auto:good',
-              fetch_format: 'auto',
-            },
-            (error, result?: UploadApiResponse) => {
-              if (error || !result) {
-                reject(
-                  new InternalServerErrorException(
-                    error?.message || 'Cloudinary upload failed',
-                  ),
-                );
-                return;
-              }
+      imageFiles.map(
+        (file) =>
+          new Promise<string>((resolve, reject) => {
+            const stream = cloudinary.uploader.upload_stream(
+              {
+                folder:
+                  process.env.CLOUDINARY_FOLDER ||
+                  'zov/products',
+                resource_type: 'image',
+                quality: 'auto:good',
+                fetch_format: 'auto',
+              },
+              (
+                error,
+                result?: UploadApiResponse,
+              ) => {
+                if (error || !result) {
+                  reject(
+                    new InternalServerErrorException(
+                      error?.message ||
+                        'Cloudinary upload failed',
+                    ),
+                  );
 
-              resolve(result.secure_url);
-            },
-          );
+                  return;
+                }
 
-          stream.end(file.buffer);
-        }),
+                resolve(result.secure_url);
+              },
+            );
+
+            stream.end(file.buffer);
+          }),
       ),
     );
   }
 
   private configureCloudinary() {
-    if (process.env.CLOUDINARY_URL) return;
+    if (process.env.CLOUDINARY_URL) {
+      return;
+    }
 
-    const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
-    const apiKey = process.env.CLOUDINARY_API_KEY;
-    const apiSecret = process.env.CLOUDINARY_API_SECRET;
+    const cloudName =
+      process.env.CLOUDINARY_CLOUD_NAME;
+    const apiKey =
+      process.env.CLOUDINARY_API_KEY;
+    const apiSecret =
+      process.env.CLOUDINARY_API_SECRET;
 
     if (!cloudName || !apiKey || !apiSecret) {
       const missing = [
-        !cloudName ? 'CLOUDINARY_CLOUD_NAME' : null,
-        !apiKey ? 'CLOUDINARY_API_KEY' : null,
-        !apiSecret ? 'CLOUDINARY_API_SECRET' : null,
+        !cloudName
+          ? 'CLOUDINARY_CLOUD_NAME'
+          : null,
+        !apiKey
+          ? 'CLOUDINARY_API_KEY'
+          : null,
+        !apiSecret
+          ? 'CLOUDINARY_API_SECRET'
+          : null,
       ].filter(Boolean);
 
       throw new BadRequestException(
-        `Cloudinary is not configured. Missing: ${missing.join(', ')}. Alternatively set CLOUDINARY_URL.`,
+        `Cloudinary is not configured. Missing: ${missing.join(
+          ', ',
+        )}. Alternatively set CLOUDINARY_URL.`,
       );
     }
 

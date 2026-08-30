@@ -3,8 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_DATABASE_URL")
 }
 
 model User {
@@ -17,6 +18,25 @@ model User {
   role         Role     @default(USER)
   orders       Order[]
   createdAt    DateTime @default(now())
+}
+
+model Shop {
+  id              String    @id @default(cuid())
+  name            String
+  slug            String    @unique
+  description     String?
+  logoUrl         String?
+  bannerUrl       String?
+  backgroundColor String    @default("#ffffff")
+  textColor       String    @default("#000000")
+  accentColor     String    @default("#000000")
+  isActive        Boolean   @default(true)
+
+  products Product[]
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
 }
 
 model Brand {
@@ -41,9 +61,11 @@ model Product {
 
   inStock Boolean @default(true)
 
+  shopId     String?
   brandId    String
   categoryId String
 
+  shop     Shop?    @relation(fields: [shopId], references: [id], onDelete: SetNull)
   brand    Brand    @relation(fields: [brandId], references: [id])
   category Category @relation(fields: [categoryId], references: [id])
 
@@ -53,6 +75,8 @@ model Product {
 
   createdAt DateTime  @default(now())
   deletedAt DateTime?
+
+  @@index([shopId])
 }
 
 model ProductImage {
@@ -79,7 +103,7 @@ model Order {
   id String @id @default(cuid())
 
   userId String?
-  user   User?   @relation(fields: [userId], references: [id])
+  user   User? @relation(fields: [userId], references: [id])
 
   status OrderStatus @default(PENDING)
 
@@ -100,7 +124,7 @@ model OrderItem {
   id String @id @default(cuid())
 
   orderId String
-  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  order   Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
   productId String
   product   Product @relation(fields: [productId], references: [id])

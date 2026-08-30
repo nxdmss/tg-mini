@@ -11,7 +11,8 @@
     "postinstall": "prisma generate",
     "prisma:migrate": "prisma migrate deploy",
     "prisma:push": "prisma db push",
-    "seed": "ts-node prisma/seed.ts"
+    "seed": "ts-node prisma/seed.ts",
+    "shop:backfill": "ts-node prisma/backfill-default-shop.ts"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
