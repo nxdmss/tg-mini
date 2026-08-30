@@ -32,10 +32,9 @@ import { ProductDetail } from "./components/ProductDetail";
 import { CartDrawer } from "./components/CartDrawer";
 import { Filters } from "./components/Filters";
 import { PrankProduct } from "./components/PrankProduct";
-import { MarketplaceHome } from "./components/MarketplaceHome";
-import { StoreIdentity } from "./components/StoreIdentity";
+import { ShopSwitcher } from "./components/ShopSwitcher";
 
-import "./components/StoreTransitions.css";
+import "./components/ShopTransitions.css";
 
 import { consumeStartParam } from "./telegram";
 
@@ -62,7 +61,8 @@ export default function App() {
   const {
     id: productIdFromUrl,
     shopSlug,
-  } = useParams<AppRouteParams>();
+  } =
+    useParams<AppRouteParams>();
 
   const navigate =
     useNavigate();
@@ -94,12 +94,6 @@ export default function App() {
     useState<Shop[]>([]);
 
   const [
-    shopsLoading,
-    setShopsLoading,
-  ] =
-    useState(true);
-
-  const [
     shopLoading,
     setShopLoading,
   ] =
@@ -112,24 +106,19 @@ export default function App() {
     useState(false);
 
   const [
-    openingSlug,
-    setOpeningSlug,
+    switchingTo,
+    setSwitchingTo,
   ] =
-    useState<string | null>(
+    useState<Shop | null>(
       null,
     );
 
   const [
-    leavingStore,
-    setLeavingStore,
-  ] =
-    useState(false);
-
-  const [
-    justEnteredStore,
-    setJustEnteredStore,
-  ] =
-    useState(true);
+    shopTransition,
+    setShopTransition,
+  ] = useState<
+    "idle" | "out" | "in"
+  >("idle");
 
   useEffect(() => {
     preloadPrankAssets();
@@ -147,7 +136,7 @@ export default function App() {
     loading,
     setLoading,
   ] =
-    useState(false);
+    useState(true);
 
   const [
     error,
@@ -180,15 +169,17 @@ export default function App() {
       productIdFromUrl,
     );
 
-  const isMarketplaceHome =
-    !shopSlug &&
-    !productIdFromUrl;
+  const isShopRoute =
+    Boolean(shopSlug);
 
   const activeShopSlug =
     shopSlug ||
-    (productIdFromUrl
-      ? "swagystan"
-      : null);
+    "swagystan";
+
+  const shopHomePath =
+    shopSlug
+      ? `/shop/${shopSlug}`
+      : "/";
 
   const selectedProduct =
     useMemo(() => {
@@ -227,8 +218,6 @@ export default function App() {
     let active = true;
 
     async function loadShops() {
-      setShopsLoading(true);
-
       try {
         const data =
           await getShops();
@@ -239,12 +228,6 @@ export default function App() {
       } catch {
         if (active) {
           setShops([]);
-        }
-      } finally {
-        if (active) {
-          setShopsLoading(
-            false,
-          );
         }
       }
     }
@@ -257,13 +240,6 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    if (!activeShopSlug) {
-      setShop(null);
-      setShopError(false);
-      setShopLoading(false);
-      return;
-    }
-
     const resolvedShopSlug =
       activeShopSlug;
 
@@ -305,27 +281,14 @@ export default function App() {
 
   useEffect(() => {
     document.title =
-      isMarketplaceHome
-        ? "SWAG"
-        : shop?.name ||
-          "SWAG";
-  }, [
-    isMarketplaceHome,
-    shop,
-  ]);
+      shop?.name ||
+      "SWA6Y5TAN";
+  }, [shop]);
 
   useEffect(() => {
     if (
-      !activeShopSlug ||
       productIdFromUrl
     ) {
-      if (
-        isMarketplaceHome
-      ) {
-        setProducts([]);
-        setLoading(false);
-      }
-
       return;
     }
 
@@ -369,12 +332,79 @@ export default function App() {
     query,
     productIdFromUrl,
     activeShopSlug,
-    isMarketplaceHome,
   ]);
 
   useEffect(() => {
     if (
-      isMarketplaceHome
+      shopTransition !==
+        "out" ||
+      !switchingTo ||
+      shop?.slug !==
+        switchingTo.slug ||
+      shopLoading ||
+      loading
+    ) {
+      return;
+    }
+
+    setShopTransition(
+      "in",
+    );
+
+    const timer =
+      window.setTimeout(
+        () => {
+          setShopTransition(
+            "idle",
+          );
+
+          setSwitchingTo(
+            null,
+          );
+        },
+        520,
+      );
+
+    return () => {
+      window.clearTimeout(
+        timer,
+      );
+    };
+  }, [
+    shopTransition,
+    switchingTo,
+    shop,
+    shopLoading,
+    loading,
+  ]);
+
+  useEffect(() => {
+    if (
+      shopTransition ===
+        "out" &&
+      switchingTo &&
+      shopError &&
+      activeShopSlug ===
+        switchingTo.slug
+    ) {
+      setShopTransition(
+        "idle",
+      );
+
+      setSwitchingTo(
+        null,
+      );
+    }
+  }, [
+    shopTransition,
+    switchingTo,
+    shopError,
+    activeShopSlug,
+  ]);
+
+  useEffect(() => {
+    if (
+      productIdFromUrl
     ) {
       return;
     }
@@ -404,7 +434,7 @@ export default function App() {
       active = false;
     };
   }, [
-    isMarketplaceHome,
+    productIdFromUrl,
   ]);
 
   useEffect(() => {
@@ -513,89 +543,78 @@ export default function App() {
     products,
   ]);
 
-  useEffect(() => {
+  function handleSwitchShop(
+    nextShop: Shop,
+  ) {
     if (
-      !shopSlug ||
-      shopLoading ||
-      !shop
+      shopSlug ===
+      nextShop.slug
     ) {
       return;
     }
 
-    setJustEnteredStore(
-      true,
+    setSwitchingTo(
+      nextShop,
     );
 
-    const timer =
-      window.setTimeout(
-        () => {
-          setJustEnteredStore(
-            false,
-          );
-        },
-        650,
-      );
-
-    return () => {
-      window.clearTimeout(
-        timer,
-      );
-    };
-  }, [
-    shopSlug,
-    shopLoading,
-    shop,
-  ]);
-
-  function openStore(
-    nextShop: Shop,
-  ) {
-    if (openingSlug) {
-      return;
-    }
-
-    setOpeningSlug(
-      nextShop.slug,
+    setShopTransition(
+      "out",
     );
 
     window.setTimeout(
       () => {
-        setQuery({
-          sort: "name_asc",
-        });
+        setQuery(
+          (current) => ({
+            sort:
+              current.sort ||
+              "name_asc",
+          }),
+        );
 
         navigate(
           `/shop/${nextShop.slug}`,
         );
-
-        setOpeningSlug(
-          null,
-        );
       },
-      470,
+      170,
     );
   }
 
-  function backToStores() {
-    if (leavingStore) {
-      return;
-    }
+  function handleClearShop() {
+    const baseShop =
+      shops.find(
+        (item) =>
+          item.slug ===
+          "swagystan",
+      ) ||
+      shop;
 
-    setLeavingStore(true);
+    if (
+      baseShop &&
+      baseShop.slug !==
+      activeShopSlug
+    ) {
+      setSwitchingTo(
+        baseShop,
+      );
+
+      setShopTransition(
+        "out",
+      );
+    }
 
     window.setTimeout(
       () => {
-        setQuery({
-          sort: "name_asc",
-        });
+        setQuery(
+          (current) => ({
+            sort:
+              current.sort ||
+              "name_asc",
+          }),
+        );
 
         navigate("/");
-
-        setLeavingStore(
-          false,
-        );
       },
-      320,
+      80,
     );
   }
 
@@ -635,44 +654,43 @@ export default function App() {
       false,
     );
 
-    if (shopSlug) {
-      navigate(
-        `/shop/${shopSlug}`,
-      );
-    } else {
-      navigate("/");
-    }
+    navigate(
+      shopHomePath,
+    );
   }
+
+  const themeShop =
+    switchingTo || shop;
 
   const shopThemeStyle:
     ShopThemeStyle =
-    shop &&
-    !isMarketplaceHome
+    themeShop
       ? {
           "--bg":
-            shop.backgroundColor,
+            themeShop.backgroundColor,
           "--text":
-            shop.textColor,
+            themeShop.textColor,
           "--shop-accent":
-            shop.accentColor,
+            themeShop.accentColor,
           background:
-            shop.backgroundColor,
+            themeShop.backgroundColor,
           color:
-            shop.textColor,
+            themeShop.textColor,
         }
-      : {
-          "--bg": "#ffffff",
-          "--text": "#000000",
-          "--shop-accent":
-            "#000000",
-          background:
-            "#ffffff",
-          color: "#000000",
-        };
+      : {};
+
+  const contentClass =
+    shopTransition ===
+    "out"
+      ? "shop-content-stage shop-content-stage--out"
+      : shopTransition ===
+          "in"
+        ? "shop-content-stage shop-content-stage--in"
+        : "shop-content-stage";
 
   if (isProductPage) {
     if (
-      shopSlug &&
+      isShopRoute &&
       shopError
     ) {
       return (
@@ -686,8 +704,8 @@ export default function App() {
             <button
               type="button"
               className="product-route-state__back"
-              onClick={
-                backToStores
+              onClick={() =>
+                navigate("/")
               }
             >
               ←
@@ -770,31 +788,17 @@ export default function App() {
   }
 
   if (
-    activeShopSlug &&
+    isShopRoute &&
     shopError
   ) {
     return (
-      <div
-        className="app"
-        style={
-          shopThemeStyle
-        }
-      >
-        <Header
-          onCartClick={() =>
-            setCartOpen(
-              true,
-            )
-          }
-          homePath="/"
-        />
-
+      <div className="app">
         <main className="product-route-state">
           <button
             type="button"
             className="product-route-state__back"
-            onClick={
-              backToStores
+            onClick={() =>
+              navigate("/")
             }
           >
             ←
@@ -804,51 +808,6 @@ export default function App() {
             МАГАЗИН НЕ НАЙДЕН
           </div>
         </main>
-      </div>
-    );
-  }
-
-  if (isMarketplaceHome) {
-    return (
-      <div
-        className="app"
-        style={
-          shopThemeStyle
-        }
-      >
-        <div className="store-top">
-          <Header
-            onCartClick={() =>
-              setCartOpen(
-                true,
-              )
-            }
-            homePath="/"
-          />
-        </div>
-
-        <MarketplaceHome
-          shops={shops}
-          loading={
-            shopsLoading
-          }
-          openingSlug={
-            openingSlug
-          }
-          onOpen={
-            openStore
-          }
-        />
-
-        {cartOpen && (
-          <CartDrawer
-            onClose={() =>
-              setCartOpen(
-                false,
-              )
-            }
-          />
-        )}
       </div>
     );
   }
@@ -870,26 +829,27 @@ export default function App() {
           homePath="/"
         />
 
-        {shop && (
-          <StoreIdentity
-            shop={shop}
-            leaving={
-              leavingStore
-            }
-            onBack={
-              backToStores
-            }
-          />
-        )}
+        <ShopSwitcher
+          shop={shop}
+          shops={shops}
+          loading={
+            shopLoading
+          }
+          selected={
+            Boolean(shopSlug)
+          }
+          onSelect={
+            handleSwitchShop
+          }
+          onClear={
+            handleClearShop
+          }
+        />
 
         <div
-          className={`store-catalog-stage ${
-            leavingStore
-              ? "is-leaving"
-              : justEnteredStore
-                ? "is-entering"
-                : ""
-          }`}
+          className={
+            contentClass
+          }
         >
           <Filters
             categories={
@@ -908,13 +868,9 @@ export default function App() {
       </div>
 
       <div
-        className={`store-catalog-stage ${
-          leavingStore
-            ? "is-leaving"
-            : justEnteredStore
-              ? "is-entering"
-              : ""
-        }`}
+        className={
+          contentClass
+        }
       >
         <main className="container">
           {loading ||
@@ -997,7 +953,7 @@ export default function App() {
           <div className="container footer__inner">
             <span className="footer__brand">
               {shop?.name ||
-                "SWAG"}
+                "SWA6Y5TAN"}
             </span>
           </div>
         </footer>

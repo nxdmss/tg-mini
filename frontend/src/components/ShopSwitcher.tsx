@@ -13,13 +13,25 @@ type ShopSwitcherProps = {
   shop: Shop | null;
   shops: Shop[];
   loading: boolean;
+  selected: boolean;
   onSelect: (shop: Shop) => void;
+  onClear: () => void;
 };
 
 type NameRefs = Record<
   string,
   HTMLSpanElement | null
 >;
+
+function nextFrame() {
+  return new Promise<void>(
+    (resolve) => {
+      window.requestAnimationFrame(
+        () => resolve(),
+      );
+    },
+  );
+}
 
 function flyName(
   from: HTMLElement,
@@ -110,7 +122,7 @@ function flyName(
           opacity: 1,
         },
         {
-          offset: 0.72,
+          offset: 0.7,
           opacity: 1,
         },
         {
@@ -120,7 +132,7 @@ function flyName(
         },
       ],
       {
-        duration: 470,
+        duration: 480,
         easing:
           "cubic-bezier(0.16, 1, 0.3, 1)",
         fill: "forwards",
@@ -138,152 +150,109 @@ export function ShopSwitcher({
   shop,
   shops,
   loading,
+  selected,
   onSelect,
+  onClear,
 }: ShopSwitcherProps) {
-  const [chooserOpen, setChooserOpen] =
-    useState(false);
+  const [
+    mode,
+    setMode,
+  ] = useState<
+    "rail" | "focus"
+  >(
+    selected
+      ? "focus"
+      : "rail",
+  );
 
-  const [displayShop, setDisplayShop] =
-    useState<Shop | null>(shop);
+  const [
+    displayShop,
+    setDisplayShop,
+  ] =
+    useState<Shop | null>(
+      shop,
+    );
 
-  const [flyingSlug, setFlyingSlug] =
-    useState<string | null>(null);
+  const [
+    flyingSlug,
+    setFlyingSlug,
+  ] =
+    useState<string | null>(
+      null,
+    );
 
-  const [pickedSlug, setPickedSlug] =
-    useState<string | null>(null);
+  const [
+    pickedSlug,
+    setPickedSlug,
+  ] =
+    useState<string | null>(
+      null,
+    );
 
   const mainNameRef =
     useRef<HTMLSpanElement | null>(
       null,
     );
 
+  const railRef =
+    useRef<HTMLDivElement | null>(
+      null,
+    );
+
   const railNameRefs =
     useRef<NameRefs>({});
 
-  const sortedShops = useMemo(
-    () =>
-      shops.filter(
-        (item) => item.isActive,
-      ),
-    [shops],
-  );
+  const activeShops =
+    useMemo(
+      () =>
+        shops.filter(
+          (item) =>
+            item.isActive,
+        ),
+      [shops],
+    );
 
   useEffect(() => {
     if (!shop) {
       return;
     }
 
-    if (!pickedSlug) {
-      setDisplayShop(shop);
-    }
-
     if (
-      pickedSlug === shop.slug
+      !flyingSlug
     ) {
       setDisplayShop(shop);
-      setPickedSlug(null);
     }
   }, [
     shop,
-    pickedSlug,
+    flyingSlug,
   ]);
 
   useEffect(() => {
-    if (!chooserOpen) {
+    if (flyingSlug) {
       return;
     }
 
-    function handleKeyDown(
-      event: KeyboardEvent,
-    ) {
-      if (
-        event.key === "Escape" &&
-        displayShop
-      ) {
-        void closeChooser(
-          displayShop,
-        );
-      }
-    }
-
-    window.addEventListener(
-      "keydown",
-      handleKeyDown,
+    setMode(
+      selected
+        ? "focus"
+        : "rail",
     );
 
-    return () => {
-      window.removeEventListener(
-        "keydown",
-        handleKeyDown,
-      );
-    };
-  });
-
-  async function openChooser() {
-    if (
-      !displayShop ||
-      chooserOpen ||
-      flyingSlug
-    ) {
-      return;
+    if (!selected) {
+      setPickedSlug(null);
     }
+  }, [
+    selected,
+    flyingSlug,
+  ]);
 
-    const from =
-      mainNameRef.current;
-
-    const railTarget =
-      railNameRefs.current[
-        displayShop.slug
-      ];
-
-    if (!from || !railTarget) {
-      setChooserOpen(true);
-      return;
-    }
-
-    railTarget.scrollIntoView({
-      behavior: "auto",
-      block: "nearest",
-      inline: "center",
-    });
-
-    await new Promise<void>(
-      (resolve) => {
-        window.requestAnimationFrame(
-          () => resolve(),
-        );
-      },
-    );
-
-    const to =
-      railNameRefs.current[
-        displayShop.slug
-      ];
-
-    if (!to) {
-      setChooserOpen(true);
-      return;
-    }
-
-    setFlyingSlug(
-      displayShop.slug,
-    );
-
-    setChooserOpen(true);
-
-    await flyName(
-      from,
-      to,
-      displayShop.name,
-    );
-
-    setFlyingSlug(null);
-  }
-
-  async function closeChooser(
+  async function selectShop(
     nextShop: Shop,
   ) {
-    if (flyingSlug) {
+    if (
+      flyingSlug ||
+      mode !== "rail"
+    ) {
       return;
     }
 
@@ -295,48 +264,123 @@ export function ShopSwitcher({
     const to =
       mainNameRef.current;
 
-    setPickedSlug(
-      nextShop.slug,
-    );
-
     setDisplayShop(
       nextShop,
+    );
+
+    setPickedSlug(
+      nextShop.slug,
     );
 
     setFlyingSlug(
       nextShop.slug,
     );
 
-    window.setTimeout(() => {
-      setChooserOpen(false);
-    }, 70);
+    await nextFrame();
+
+    setMode("focus");
+
+    window.setTimeout(
+      () => {
+        onSelect(nextShop);
+      },
+      115,
+    );
 
     if (
-      shop?.slug !==
-      nextShop.slug
+      from &&
+      to
     ) {
-      window.setTimeout(() => {
-        onSelect(nextShop);
-      }, 110);
-    }
-
-    if (from && to) {
       await flyName(
         from,
         to,
         nextShop.name,
       );
     } else {
-      await new Promise(
-        (resolve) =>
+      await new Promise<void>(
+        (resolve) => {
           window.setTimeout(
             resolve,
-            360,
-          ),
+            420,
+          );
+        },
       );
     }
 
     setFlyingSlug(null);
+    setPickedSlug(null);
+  }
+
+  async function clearShop() {
+    if (
+      !displayShop ||
+      flyingSlug ||
+      mode !== "focus"
+    ) {
+      return;
+    }
+
+    const target =
+      railNameRefs.current[
+        displayShop.slug
+      ];
+
+    target?.scrollIntoView({
+      behavior: "smooth",
+      block: "nearest",
+      inline: "center",
+    });
+
+    await nextFrame();
+
+    const from =
+      mainNameRef.current;
+
+    const to =
+      railNameRefs.current[
+        displayShop.slug
+      ];
+
+    setFlyingSlug(
+      displayShop.slug,
+    );
+
+    setMode("rail");
+
+    if (
+      from &&
+      to
+    ) {
+      await flyName(
+        from,
+        to,
+        displayShop.name,
+      );
+    } else {
+      await new Promise<void>(
+        (resolve) => {
+          window.setTimeout(
+            resolve,
+            420,
+          );
+        },
+      );
+    }
+
+    setFlyingSlug(null);
+    setPickedSlug(null);
+
+    onClear();
+
+    window.setTimeout(
+      () => {
+        railRef.current?.scrollTo({
+          left: 0,
+          behavior: "smooth",
+        });
+      },
+      80,
+    );
   }
 
   if (
@@ -346,6 +390,10 @@ export function ShopSwitcher({
     return (
       <section className="shop-motion shop-motion--loading">
         <div className="container">
+          <div className="shop-motion__label">
+            МАГАЗИН
+          </div>
+
           <div className="shop-motion__skeleton" />
         </div>
       </section>
@@ -359,7 +407,7 @@ export function ShopSwitcher({
   return (
     <section
       className={`shop-motion ${
-        chooserOpen
+        mode === "rail"
           ? "is-choosing"
           : "is-focused"
       }`}
@@ -374,12 +422,22 @@ export function ShopSwitcher({
             type="button"
             className="shop-focus"
             onClick={() => {
-              void openChooser();
+              void clearShop();
             }}
-            aria-label={`Выбрать другой магазин. Сейчас ${displayShop.name}`}
+            aria-hidden={
+              mode !== "focus"
+            }
+            tabIndex={
+              mode === "focus"
+                ? 0
+                : -1
+            }
+            aria-label={`Вернуть ${displayShop.name} в список магазинов`}
           >
             <span
-              ref={mainNameRef}
+              ref={
+                mainNameRef
+              }
               className={`shop-focus__name ${
                 flyingSlug ===
                 displayShop.slug
@@ -387,64 +445,67 @@ export function ShopSwitcher({
                   : ""
               }`}
             >
-              {displayShop.name}
+              {
+                displayShop.name
+              }
             </span>
           </button>
 
           <div
             className="shop-rail-wrap"
-            aria-hidden={!chooserOpen}
+            aria-hidden={
+              mode !== "rail"
+            }
           >
-            <div className="shop-rail">
-              {sortedShops.map(
-                (item) => {
-                  const isCurrent =
-                    item.slug ===
-                    displayShop.slug;
-
-                  const isPicked =
-                    item.slug ===
-                    pickedSlug;
-
-                  return (
-                    <button
-                      type="button"
-                      key={item.id}
-                      className={`shop-rail__item ${
-                        isCurrent
-                          ? "is-current"
-                          : ""
-                      } ${
-                        isPicked
-                          ? "is-picked"
+            <div
+              ref={railRef}
+              className="shop-rail"
+            >
+              {activeShops.map(
+                (item) => (
+                  <button
+                    type="button"
+                    key={
+                      item.id
+                    }
+                    className={`shop-rail__item ${
+                      pickedSlug ===
+                      item.slug
+                        ? "is-picked"
+                        : ""
+                    }`}
+                    onClick={() => {
+                      void selectShop(
+                        item,
+                      );
+                    }}
+                    tabIndex={
+                      mode === "rail"
+                        ? 0
+                        : -1
+                    }
+                  >
+                    <span
+                      ref={(
+                        node,
+                      ) => {
+                        railNameRefs.current[
+                          item.slug
+                        ] = node;
+                      }}
+                      className={`shop-rail__name ${
+                        flyingSlug ===
+                        item.slug
+                          ? "is-flying"
                           : ""
                       }`}
-                      onClick={() => {
-                        void closeChooser(
-                          item,
-                        );
-                      }}
                     >
-                      <span
-                        ref={(
-                          node,
-                        ) => {
-                          railNameRefs.current[
-                            item.slug
-                          ] = node;
-                        }}
-                        className={`shop-rail__name ${
-                          flyingSlug ===
-                          item.slug
-                            ? "is-flying"
-                            : ""
-                        }`}
-                      >
-                        {item.name}
-                      </span>
-                    </button>
-                  );
-                },
+                      {
+                        item.name
+                      }
+                    </span>
+                  </button>
+                ),
               )}
             </div>
           </div>
@@ -452,7 +513,7 @@ export function ShopSwitcher({
 
         <div
           className={`shop-motion__details ${
-            chooserOpen
+            mode === "rail"
               ? "is-hidden"
               : ""
           }`}

@@ -16,20 +16,18 @@
   letter-spacing: 0.16em;
   opacity: 0.52;
   transition:
-    opacity 260ms ease,
-    transform 360ms cubic-bezier(0.16, 1, 0.3, 1);
+    opacity 280ms ease,
+    transform 420ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .shop-motion__stage {
   position: relative;
-  min-height: clamp(38px, 9vw, 66px);
+  min-height: clamp(42px, 9vw, 68px);
   display: flex;
   align-items: center;
-  border-bottom: 3px solid currentColor;
   overflow: hidden;
   transition:
-    min-height 420ms cubic-bezier(0.16, 1, 0.3, 1),
-    border-color 420ms ease;
+    min-height 440ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .shop-focus {
@@ -46,7 +44,7 @@
   transform: translateY(0);
   transition:
     opacity 220ms ease,
-    transform 420ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 440ms cubic-bezier(0.16, 1, 0.3, 1),
     visibility 0s linear 0s;
 }
 
@@ -64,7 +62,7 @@
   transform-origin: left center;
   transition:
     opacity 120ms ease,
-    color 280ms ease;
+    color 300ms ease;
 }
 
 .shop-focus__name.is-flying {
@@ -76,20 +74,20 @@
   min-width: 0;
   opacity: 0;
   visibility: hidden;
-  transform: translateY(9px);
+  transform: translateY(8px);
   transition:
     opacity 300ms ease,
-    transform 440ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 460ms cubic-bezier(0.16, 1, 0.3, 1),
     visibility 0s linear 300ms;
 }
 
 .shop-rail {
   display: flex;
   align-items: center;
-  gap: clamp(17px, 4vw, 36px);
+  gap: clamp(18px, 5vw, 42px);
   width: 100%;
   min-width: 0;
-  padding: 6px 1px 9px;
+  padding: 5px 1px 8px;
   overflow-x: auto;
   overflow-y: hidden;
   scrollbar-width: none;
@@ -104,7 +102,7 @@
 .shop-rail__item {
   position: relative;
   flex: 0 0 auto;
-  min-height: 38px;
+  min-height: 40px;
   padding: 4px 0;
   border: 0;
   border-radius: 0;
@@ -113,103 +111,86 @@
   background: transparent;
   color: currentColor;
   white-space: nowrap;
+  opacity: 1;
+  transform: translateY(0);
   transition:
+    opacity 220ms ease,
+    transform 280ms cubic-bezier(0.16, 1, 0.3, 1),
     background-color 180ms ease,
-    color 180ms ease,
-    transform 260ms cubic-bezier(0.16, 1, 0.3, 1),
-    opacity 220ms ease;
+    color 180ms ease;
 }
 
+.shop-rail__item::before,
 .shop-rail__item::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 3px;
-  background: currentColor;
-  transform: scaleX(0);
-  transform-origin: left center;
-  transition:
-    transform 340ms cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.shop-rail__item.is-current::after {
-  transform: scaleX(1);
+  display: none !important;
+  content: none !important;
 }
 
 .shop-rail__item.is-picked {
-  padding-left: 8px;
-  padding-right: 8px;
+  padding-left: 7px;
+  padding-right: 7px;
   background: var(--text);
   color: var(--bg);
   transform: translateY(-1px);
 }
 
-.shop-rail__item.is-picked::after {
-  transform: scaleX(0);
-}
-
 .shop-rail__name {
   display: inline-block;
-  font-size: clamp(15px, 4.3vw, 24px);
+  font-size: clamp(17px, 4.6vw, 25px);
   line-height: 1;
   font-weight: 820;
   letter-spacing: -0.045em;
   text-transform: uppercase;
   transition:
     opacity 120ms ease,
-    transform 260ms cubic-bezier(0.16, 1, 0.3, 1);
+    transform 280ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .shop-rail__name.is-flying {
   opacity: 0;
 }
 
-.shop-motion.is-choosing .shop-focus {
+.shop-motion.is-choosing
+.shop-focus {
   opacity: 0;
   visibility: hidden;
-  transform: translateY(-8px);
+  transform: translateX(-8px);
   transition:
     opacity 180ms ease,
     transform 360ms cubic-bezier(0.16, 1, 0.3, 1),
     visibility 0s linear 180ms;
 }
 
-.shop-motion.is-choosing .shop-rail-wrap {
+.shop-motion.is-choosing
+.shop-rail-wrap {
   opacity: 1;
   visibility: visible;
   transform: translateY(0);
   transition:
-    opacity 300ms ease 50ms,
-    transform 440ms cubic-bezier(0.16, 1, 0.3, 1) 20ms,
+    opacity 320ms ease 40ms,
+    transform 460ms cubic-bezier(0.16, 1, 0.3, 1) 20ms,
     visibility 0s linear 0s;
-}
-
-.shop-motion.is-choosing .shop-motion__stage {
-  min-height: 55px;
 }
 
 .shop-motion__details {
   overflow: hidden;
-  max-height: 160px;
+  max-height: 150px;
   opacity: 1;
   transform: translateY(0);
   transition:
-    max-height 400ms cubic-bezier(0.16, 1, 0.3, 1),
-    opacity 240ms ease,
-    transform 400ms cubic-bezier(0.16, 1, 0.3, 1),
-    padding 400ms cubic-bezier(0.16, 1, 0.3, 1);
+    max-height 420ms cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 250ms ease,
+    transform 420ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .shop-motion__details.is-hidden {
   max-height: 0;
   opacity: 0;
-  transform: translateY(-6px);
+  transform: translateY(-5px);
 }
 
 .shop-motion__description {
-  max-width: 720px;
+  max-width: 680px;
   margin: 8px 0 0;
   font-size: 11px;
   line-height: 1.45;
@@ -227,16 +208,19 @@
 }
 
 .shop-motion__skeleton {
-  width: min(360px, 78%);
+  width: min(340px, 75%);
   height: 48px;
-  border-bottom: 3px solid currentColor;
-  opacity: 0.16;
-  animation: shop-motion-pulse 900ms ease-in-out infinite alternate;
+  background: var(--text);
+  opacity: 0.08;
+  animation:
+    shop-motion-pulse
+    900ms ease-in-out
+    infinite alternate;
 }
 
 @keyframes shop-motion-pulse {
   to {
-    opacity: 0.34;
+    opacity: 0.18;
   }
 }
 
@@ -274,7 +258,6 @@
   .shop-focus,
   .shop-rail-wrap,
   .shop-rail__item,
-  .shop-rail__item::after,
   .shop-rail__name,
   .shop-motion__details {
     transition-duration: 1ms !important;
