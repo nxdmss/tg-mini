@@ -27,13 +27,51 @@ function nextFrame() {
   return new Promise<void>(
     (resolve) => {
       window.requestAnimationFrame(
-        () => resolve(),
+        () => {
+          window.requestAnimationFrame(
+            () => resolve(),
+          );
+        },
       );
     },
   );
 }
 
-function flyName(
+function wait(
+  duration: number,
+) {
+  return new Promise<void>(
+    (resolve) => {
+      window.setTimeout(
+        resolve,
+        duration,
+      );
+    },
+  );
+}
+
+function centerRailItemInstantly(
+  rail: HTMLDivElement | null,
+  target: HTMLElement | null,
+) {
+  if (!rail || !target) {
+    return;
+  }
+
+  const nextLeft =
+    target.offsetLeft -
+    (rail.clientWidth -
+      target.offsetWidth) /
+      2;
+
+  rail.scrollLeft =
+    Math.max(
+      0,
+      nextLeft,
+    );
+}
+
+async function flyName(
   from: HTMLElement,
   to: HTMLElement,
   name: string,
@@ -49,48 +87,6 @@ function flyName(
 
   const toStyle =
     window.getComputedStyle(to);
-
-  const ghost =
-    document.createElement("div");
-
-  ghost.className =
-    "shop-name-flight";
-
-  ghost.textContent = name;
-
-  ghost.style.left =
-    `${fromRect.left}px`;
-
-  ghost.style.top =
-    `${fromRect.top}px`;
-
-  ghost.style.width =
-    `${Math.max(
-      fromRect.width,
-      1,
-    )}px`;
-
-  ghost.style.fontFamily =
-    fromStyle.fontFamily;
-
-  ghost.style.fontWeight =
-    fromStyle.fontWeight;
-
-  ghost.style.fontSize =
-    fromStyle.fontSize;
-
-  ghost.style.lineHeight =
-    fromStyle.lineHeight;
-
-  ghost.style.letterSpacing =
-    fromStyle.letterSpacing;
-
-  ghost.style.color =
-    fromStyle.color;
-
-  document.body.appendChild(
-    ghost,
-  );
 
   const fromSize =
     Number.parseFloat(
@@ -113,37 +109,78 @@ function flyName(
     toRect.top -
     fromRect.top;
 
-  const animation =
-    ghost.animate(
-      [
-        {
-          transform:
-            "translate3d(0, 0, 0) scale(1)",
-          opacity: 1,
-        },
-        {
-          offset: 0.7,
-          opacity: 1,
-        },
-        {
-          transform:
-            `translate3d(${dx}px, ${dy}px, 0) scale(${scale})`,
-          opacity: 1,
-        },
-      ],
-      {
-        duration: 480,
-        easing:
-          "cubic-bezier(0.16, 1, 0.3, 1)",
-        fill: "forwards",
-      },
-    );
+  const ghost =
+    document.createElement("div");
 
-  return animation.finished
-    .catch(() => undefined)
-    .finally(() => {
-      ghost.remove();
-    });
+  ghost.className =
+    "shop-name-flight";
+
+  ghost.textContent = name;
+
+  Object.assign(
+    ghost.style,
+    {
+      left:
+        `${fromRect.left}px`,
+      top:
+        `${fromRect.top}px`,
+      width:
+        `${Math.max(
+          fromRect.width,
+          1,
+        )}px`,
+      fontFamily:
+        fromStyle.fontFamily,
+      fontWeight:
+        fromStyle.fontWeight,
+      fontSize:
+        fromStyle.fontSize,
+      lineHeight:
+        fromStyle.lineHeight,
+      letterSpacing:
+        fromStyle.letterSpacing,
+      color:
+        fromStyle.color,
+    },
+  );
+
+  document.body.appendChild(
+    ghost,
+  );
+
+  try {
+    const animation =
+      ghost.animate(
+        [
+          {
+            transform:
+              "translate3d(0, 0, 0) scale(1)",
+            opacity: 1,
+          },
+          {
+            offset: 0.82,
+            opacity: 1,
+          },
+          {
+            transform:
+              `translate3d(${dx}px, ${dy}px, 0) scale(${scale})`,
+            opacity: 1,
+          },
+        ],
+        {
+          duration: 520,
+          easing:
+            "cubic-bezier(0.22, 1, 0.36, 1)",
+          fill: "forwards",
+        },
+      );
+
+    await animation.finished;
+  } catch {
+    // Animation cancellation is harmless.
+  } finally {
+    ghost.remove();
+  }
 }
 
 export function ShopSwitcher({
@@ -189,6 +226,22 @@ export function ShopSwitcher({
       null,
     );
 
+  /*
+   * Important:
+   * While a new shop is being loaded App still temporarily has
+   * the previous shop object. We lock the intended slug so that
+   * the title can never jump:
+   *
+   * ZULF -> SWA6Y5TAN -> ZULF
+   */
+  const lockedSlugRef =
+    useRef<string | null>(
+      selected
+        ? shop?.slug ??
+          null
+        : null,
+    );
+
   const mainNameRef =
     useRef<HTMLSpanElement | null>(
       null,
@@ -217,30 +270,43 @@ export function ShopSwitcher({
       return;
     }
 
+    const lockedSlug =
+      lockedSlugRef.current;
+
     if (
-      !flyingSlug
+      lockedSlug &&
+      shop.slug !==
+        lockedSlug
     ) {
-      setDisplayShop(shop);
+      return;
     }
-  }, [
-    shop,
-    flyingSlug,
-  ]);
+
+    setDisplayShop(shop);
+
+    if (
+      lockedSlug ===
+      shop.slug
+    ) {
+      lockedSlugRef.current =
+        null;
+    }
+  }, [shop]);
 
   useEffect(() => {
     if (flyingSlug) {
       return;
     }
 
-    setMode(
-      selected
-        ? "focus"
-        : "rail",
-    );
-
-    if (!selected) {
-      setPickedSlug(null);
+    if (selected) {
+      setMode("focus");
+      return;
     }
+
+    lockedSlugRef.current =
+      null;
+
+    setPickedSlug(null);
+    setMode("rail");
   }, [
     selected,
     flyingSlug,
@@ -261,8 +327,12 @@ export function ShopSwitcher({
         nextShop.slug
       ];
 
-    const to =
-      mainNameRef.current;
+    /*
+     * Freeze the selected shop immediately.
+     * Any stale shop response is ignored until this slug arrives.
+     */
+    lockedSlugRef.current =
+      nextShop.slug;
 
     setDisplayShop(
       nextShop,
@@ -278,13 +348,20 @@ export function ShopSwitcher({
 
     await nextFrame();
 
+    const to =
+      mainNameRef.current;
+
     setMode("focus");
 
+    /*
+     * Start loading the real route while the name is still flying.
+     * The old shop object can no longer overwrite displayShop.
+     */
     window.setTimeout(
       () => {
         onSelect(nextShop);
       },
-      115,
+      90,
     );
 
     if (
@@ -297,14 +374,7 @@ export function ShopSwitcher({
         nextShop.name,
       );
     } else {
-      await new Promise<void>(
-        (resolve) => {
-          window.setTimeout(
-            resolve,
-            420,
-          );
-        },
-      );
+      await wait(500);
     }
 
     setFlyingSlug(null);
@@ -325,11 +395,14 @@ export function ShopSwitcher({
         displayShop.slug
       ];
 
-    target?.scrollIntoView({
-      behavior: "smooth",
-      block: "nearest",
-      inline: "center",
-    });
+    /*
+     * The rail is hidden here, so reposition it without smooth-scroll.
+     * This avoids mobile layout/scroll fighting with the flight animation.
+     */
+    centerRailItemInstantly(
+      railRef.current,
+      target,
+    );
 
     await nextFrame();
 
@@ -357,29 +430,31 @@ export function ShopSwitcher({
         displayShop.name,
       );
     } else {
-      await new Promise<void>(
-        (resolve) => {
-          window.setTimeout(
-            resolve,
-            420,
-          );
-        },
-      );
+      await wait(500);
     }
 
     setFlyingSlug(null);
     setPickedSlug(null);
 
+    /*
+     * Only after the visible title has safely returned to the rail
+     * do we restore the neutral base state.
+     */
     onClear();
 
     window.setTimeout(
       () => {
-        railRef.current?.scrollTo({
-          left: 0,
-          behavior: "smooth",
-        });
+        if (
+          railRef.current
+        ) {
+          railRef.current.scrollTo({
+            left: 0,
+            behavior:
+              "smooth",
+          });
+        }
       },
-      80,
+      120,
     );
   }
 
@@ -390,10 +465,6 @@ export function ShopSwitcher({
     return (
       <section className="shop-motion shop-motion--loading">
         <div className="container">
-          <div className="shop-motion__label">
-            МАГАЗИН
-          </div>
-
           <div className="shop-motion__skeleton" />
         </div>
       </section>
@@ -413,10 +484,6 @@ export function ShopSwitcher({
       }`}
     >
       <div className="container shop-motion__inner">
-        <div className="shop-motion__label">
-          МАГАЗИН
-        </div>
-
         <div className="shop-motion__stage">
           <button
             type="button"
