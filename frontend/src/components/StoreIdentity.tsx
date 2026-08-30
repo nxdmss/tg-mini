@@ -28,18 +28,12 @@ export function StoreIdentity({
           onClick={onBack}
         >
           <span>←</span>
-          ВСЕ МАГАЗИНЫ
+          НАЗАД
         </button>
-
-        <div className="store-identity__eyebrow">
-          SWAG / STORE
-        </div>
 
         <h1 className="store-identity__name">
           {shop.name}
         </h1>
-
-        <div className="store-identity__rule" />
 
         <div className="store-identity__bottom">
           {shop.description ? (

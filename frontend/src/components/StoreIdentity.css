@@ -1,11 +1,11 @@
 .store-identity {
-  padding: 12px 0 2px;
+  padding: 8px 0 2px;
   opacity: 0;
   transform: translateY(12px);
   animation:
     store-identity-enter 620ms
     cubic-bezier(0.16, 1, 0.3, 1)
-    60ms both;
+    40ms both;
   transition:
     opacity 250ms ease,
     transform 420ms cubic-bezier(0.16, 1, 0.3, 1);
@@ -33,7 +33,7 @@
   font-size: 9px;
   font-weight: 800;
   letter-spacing: 0.12em;
-  opacity: 0.54;
+  opacity: 0.5;
   transition:
     opacity 200ms ease,
     transform 280ms cubic-bezier(0.16, 1, 0.3, 1);
@@ -49,18 +49,8 @@
   line-height: 1;
 }
 
-.store-identity__eyebrow {
-  margin-top: 11px;
-  margin-bottom: 7px;
-  font-size: 9px;
-  line-height: 1;
-  font-weight: 800;
-  letter-spacing: 0.18em;
-  opacity: 0.48;
-}
-
 .store-identity__name {
-  margin: 0;
+  margin: 10px 0 0;
   font-size: clamp(38px, 11vw, 88px);
   line-height: 0.86;
   font-weight: 850;
@@ -68,18 +58,12 @@
   text-transform: uppercase;
 }
 
-.store-identity__rule {
-  height: 4px;
-  margin-top: 14px;
-  background: currentColor;
-}
-
 .store-identity__bottom {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 18px;
-  padding-top: 8px;
+  padding-top: 10px;
 }
 
 .store-identity__bottom p {
@@ -102,7 +86,7 @@
 
 @media (min-width: 700px) {
   .store-identity {
-    padding-top: 20px;
+    padding-top: 14px;
   }
 
   .store-identity__bottom p {
