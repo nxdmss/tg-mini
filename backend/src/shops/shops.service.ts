@@ -2,12 +2,19 @@ import {
   BadRequestException,
   ConflictException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
+import { UploadApiResponse, v2 as cloudinary } from 'cloudinary';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateShopDto } from './create-shop.dto';
 import { UpdateShopDto } from './update-shop.dto';
+
+type ShopImageFiles = {
+  logo?: any[];
+  banner?: any[];
+};
 
 const shopSelect = {
   id: true,
@@ -88,12 +95,8 @@ export class ShopsService {
         deletedAt: null,
       },
       orderBy: [
-        {
-          isActive: 'desc',
-        },
-        {
-          name: 'asc',
-        },
+        { isActive: 'desc' },
+        { name: 'asc' },
       ],
       select: shopSelect,
     });
@@ -122,7 +125,10 @@ export class ShopsService {
     return mapShop(shop);
   }
 
-  async create(body: CreateShopDto) {
+  async create(
+    body: CreateShopDto,
+    files: ShopImageFiles = {},
+  ) {
     const slug = normalizeSlug(body.slug);
 
     if (!slug) {
@@ -131,14 +137,19 @@ export class ShopsService {
       );
     }
 
+    const [logoUrl, bannerUrl] = await Promise.all([
+      this.uploadImage(files.logo?.[0], 'logos'),
+      this.uploadImage(files.banner?.[0], 'banners'),
+    ]);
+
     try {
       const shop = await this.prisma.shop.create({
         data: {
           name: body.name.trim(),
           slug,
           description: emptyToNull(body.description),
-          logoUrl: emptyToNull(body.logoUrl),
-          bannerUrl: emptyToNull(body.bannerUrl),
+          logoUrl: logoUrl ?? null,
+          bannerUrl: bannerUrl ?? null,
           backgroundColor:
             body.backgroundColor ?? '#ffffff',
           textColor:
@@ -169,6 +180,7 @@ export class ShopsService {
   async update(
     id: string,
     body: UpdateShopDto,
+    files: ShopImageFiles = {},
   ) {
     const existing = await this.prisma.shop.findFirst({
       where: {
@@ -177,6 +189,8 @@ export class ShopsService {
       },
       select: {
         id: true,
+        logoUrl: true,
+        bannerUrl: true,
       },
     });
 
@@ -195,6 +209,11 @@ export class ShopsService {
       );
     }
 
+    const [newLogoUrl, newBannerUrl] = await Promise.all([
+      this.uploadImage(files.logo?.[0], 'logos'),
+      this.uploadImage(files.banner?.[0], 'banners'),
+    ]);
+
     try {
       const shop = await this.prisma.shop.update({
         where: {
@@ -207,8 +226,8 @@ export class ShopsService {
               : body.name.trim(),
           slug,
           description: emptyToNull(body.description),
-          logoUrl: emptyToNull(body.logoUrl),
-          bannerUrl: emptyToNull(body.bannerUrl),
+          logoUrl: newLogoUrl ?? undefined,
+          bannerUrl: newBannerUrl ?? undefined,
           backgroundColor: body.backgroundColor,
           textColor: body.textColor,
           accentColor: body.accentColor,
@@ -230,5 +249,88 @@ export class ShopsService {
 
       throw error;
     }
+  }
+
+  private async uploadImage(
+    file: any | undefined,
+    folder: 'logos' | 'banners',
+  ): Promise<string | undefined> {
+    if (!file) {
+      return undefined;
+    }
+
+    if (
+      typeof file.mimetype === 'string' &&
+      !file.mimetype.startsWith('image/')
+    ) {
+      throw new BadRequestException(
+        'Можно загружать только изображения',
+      );
+    }
+
+    const maxBytes = 8 * 1024 * 1024;
+
+    if (file.size && file.size > maxBytes) {
+      throw new BadRequestException(
+        'Изображение слишком большое. Максимум 8 МБ',
+      );
+    }
+
+    this.configureImageStorage();
+
+    return new Promise<string>((resolve, reject) => {
+      const stream = cloudinary.uploader.upload_stream(
+        {
+          folder: `${
+            process.env.CLOUDINARY_FOLDER || 'zov'
+          }/shops/${folder}`,
+          resource_type: 'image',
+          quality: 'auto:good',
+          fetch_format: 'auto',
+        },
+        (
+          error,
+          result?: UploadApiResponse,
+        ) => {
+          if (error || !result) {
+            reject(
+              new InternalServerErrorException(
+                'Не удалось сохранить изображение',
+              ),
+            );
+            return;
+          }
+
+          resolve(result.secure_url);
+        },
+      );
+
+      stream.end(file.buffer);
+    });
+  }
+
+  private configureImageStorage() {
+    if (process.env.CLOUDINARY_URL) {
+      return;
+    }
+
+    const cloudName =
+      process.env.CLOUDINARY_CLOUD_NAME;
+    const apiKey =
+      process.env.CLOUDINARY_API_KEY;
+    const apiSecret =
+      process.env.CLOUDINARY_API_SECRET;
+
+    if (!cloudName || !apiKey || !apiSecret) {
+      throw new InternalServerErrorException(
+        'Хранилище изображений не настроено',
+      );
+    }
+
+    cloudinary.config({
+      cloud_name: cloudName,
+      api_key: apiKey,
+      api_secret: apiSecret,
+    });
   }
 }

@@ -634,3 +634,75 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* SHOP MEDIA PICKER */
+.admin-media-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.admin-media-field__label {
+  font-size: 10px;
+  line-height: 1.1;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.admin-media-preview {
+  width: 100%;
+  border: 2px solid #000;
+  background: #fff;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+}
+
+.admin-media-preview--logo {
+  width: 118px;
+  aspect-ratio: 1 / 1;
+}
+
+.admin-media-preview--banner {
+  aspect-ratio: 16 / 6;
+  max-height: 240px;
+}
+
+.admin-media-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.admin-media-preview--banner img {
+  object-fit: cover;
+}
+
+.admin-file-button {
+  min-height: 46px;
+  border: 2px solid #000;
+  background: #fff;
+  color: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.admin-file-button input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.admin-file-button:active {
+  background: #000;
+  color: #fff;
+}

@@ -53,6 +53,8 @@ type ShopFormState = {
   description: string;
   logoUrl: string;
   bannerUrl: string;
+  logoFile: File | null;
+  bannerFile: File | null;
   backgroundColor: string;
   textColor: string;
   accentColor: string;
@@ -65,6 +67,8 @@ const SHOP_FORM_INITIAL: ShopFormState = {
   description: "",
   logoUrl: "",
   bannerUrl: "",
+  logoFile: null,
+  bannerFile: null,
   backgroundColor: "#ffffff",
   textColor: "#000000",
   accentColor: "#000000",
@@ -740,6 +744,8 @@ export default function Admin() {
         shop.logoUrl || "",
       bannerUrl:
         shop.bannerUrl || "",
+      logoFile: null,
+      bannerFile: null,
       backgroundColor:
         shop.backgroundColor ||
         "#ffffff",
@@ -795,10 +801,10 @@ export default function Admin() {
         slug,
         description:
           shopForm.description.trim(),
-        logoUrl:
-          shopForm.logoUrl.trim(),
-        bannerUrl:
-          shopForm.bannerUrl.trim(),
+        logoFile:
+          shopForm.logoFile,
+        bannerFile:
+          shopForm.bannerFile,
         backgroundColor:
           shopForm.backgroundColor,
         textColor:
@@ -1495,57 +1501,95 @@ export default function Admin() {
                       />
                     </label>
 
-                    <label className="admin-field">
-                      <span>
-                        Логотип URL
-                      </span>
+                    <div className="admin-media-field">
+                      <div className="admin-media-field__label">
+                        Логотип
+                      </div>
 
-                      <input
-                        value={
+                      {(shopForm.logoFile ||
+                        shopForm.logoUrl) && (
+                        <div className="admin-media-preview admin-media-preview--logo">
+                          <img
+                            src={
+                              shopForm.logoFile
+                                ? URL.createObjectURL(
+                                    shopForm.logoFile,
+                                  )
+                                : shopForm.logoUrl
+                            }
+                            alt="Логотип магазина"
+                          />
+                        </div>
+                      )}
+
+                      <label className="admin-file-button">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(event) => {
+                            const file =
+                              event.target.files?.[0] ||
+                              null;
+
+                            updateShopForm({
+                              logoFile: file,
+                            });
+                          }}
+                        />
+
+                        <span>
+                          {shopForm.logoFile ||
                           shopForm.logoUrl
-                        }
-                        onChange={(
-                          event,
-                        ) =>
-                          updateShopForm(
-                            {
-                              logoUrl:
-                                event
-                                  .target
-                                  .value,
-                            },
-                          )
-                        }
-                        placeholder="https://..."
-                        autoCapitalize="none"
-                      />
-                    </label>
+                            ? "СМЕНИТЬ ФОТО"
+                            : "ВЫБРАТЬ ФОТО"}
+                        </span>
+                      </label>
+                    </div>
 
-                    <label className="admin-field">
-                      <span>
-                        Баннер URL
-                      </span>
+                    <div className="admin-media-field">
+                      <div className="admin-media-field__label">
+                        Баннер
+                      </div>
 
-                      <input
-                        value={
+                      {(shopForm.bannerFile ||
+                        shopForm.bannerUrl) && (
+                        <div className="admin-media-preview admin-media-preview--banner">
+                          <img
+                            src={
+                              shopForm.bannerFile
+                                ? URL.createObjectURL(
+                                    shopForm.bannerFile,
+                                  )
+                                : shopForm.bannerUrl
+                            }
+                            alt="Баннер магазина"
+                          />
+                        </div>
+                      )}
+
+                      <label className="admin-file-button">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(event) => {
+                            const file =
+                              event.target.files?.[0] ||
+                              null;
+
+                            updateShopForm({
+                              bannerFile: file,
+                            });
+                          }}
+                        />
+
+                        <span>
+                          {shopForm.bannerFile ||
                           shopForm.bannerUrl
-                        }
-                        onChange={(
-                          event,
-                        ) =>
-                          updateShopForm(
-                            {
-                              bannerUrl:
-                                event
-                                  .target
-                                  .value,
-                            },
-                          )
-                        }
-                        placeholder="https://..."
-                        autoCapitalize="none"
-                      />
-                    </label>
+                            ? "СМЕНИТЬ ФОТО"
+                            : "ВЫБРАТЬ ФОТО"}
+                        </span>
+                      </label>
+                    </div>
 
                     <div className="admin-colors">
                       <label className="admin-color">
