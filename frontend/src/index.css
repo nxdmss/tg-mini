@@ -1,3 +1,4 @@
+/* LOCAL CHANGE MARKER: NO IMAGE SELECTION — 2026-08-30 */
 /* SWA6Y5TAN — OPTIMIZED INDEX.CSS — UI +6% */
 
 :root {
@@ -1291,4 +1292,113 @@ button,
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* =========================================================
+   MEDIA — NO BROWSER SELECTION / DRAG
+   Text selection stays enabled.
+   ========================================================= */
+
+img,
+picture,
+video {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-user-drag: none;
+  -webkit-touch-callout: none;
+}
+
+.card__media,
+.checkout-cart-item__image,
+.admin-image,
+.admin-product__media,
+.media-fallback,
+.skeleton-card__media {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* =========================================================
+   HARD NO-SELECTION FOR UI / MEDIA
+   Only readable text remains selectable.
+   ========================================================= */
+
+/* Disable browser selection / long-press highlight on UI shells */
+button,
+a,
+.card,
+.card__media,
+.card__media img,
+.product-page__media,
+.product-page__media img,
+.checkout-cart-item__image,
+.checkout-cart-item__image img,
+.admin-image,
+.admin-image img,
+.admin-product__media,
+.admin-product__media img,
+.media-fallback,
+.skeleton-card__media,
+picture,
+video,
+svg {
+  -webkit-user-select: none !important;
+  user-select: none !important;
+  -webkit-user-drag: none !important;
+  -webkit-touch-callout: none !important;
+  -webkit-tap-highlight-color: transparent !important;
+}
+
+/* Product cards are buttons, so remove the browser button focus/active flash */
+.card,
+.card:focus,
+.card:focus-visible,
+.card:active,
+.card__media,
+.card__media:focus,
+.card__media:active {
+  outline: none !important;
+  box-shadow: none !important;
+  -webkit-tap-highlight-color: transparent !important;
+}
+
+/* Keep actual text selectable */
+p,
+span,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+label,
+strong,
+em,
+small,
+li,
+dd,
+dt,
+.card__name,
+.card__brand,
+.card__price,
+.card__category,
+.product-page__name,
+.product-page__price,
+.product-page__description,
+.checkout-section-title,
+.checkout-cart-item__name,
+.checkout-cart-item__meta,
+.checkout-summary-item__name,
+.checkout-summary-item__meta,
+.checkout-label {
+  -webkit-user-select: text !important;
+  user-select: text !important;
+  -webkit-touch-callout: default !important;
+}
+
+input,
+textarea {
+  -webkit-user-select: text !important;
+  user-select: text !important;
 }
