@@ -264,6 +264,9 @@ export default function App() {
       return;
     }
 
+    const resolvedShopSlug =
+      activeShopSlug;
+
     let active = true;
 
     async function loadShop() {
@@ -273,7 +276,7 @@ export default function App() {
       try {
         const data =
           await getShop(
-            activeShopSlug,
+            resolvedShopSlug,
           );
 
         if (active) {
@@ -326,6 +329,9 @@ export default function App() {
       return;
     }
 
+    const resolvedShopSlug =
+      activeShopSlug;
+
     let active = true;
 
     async function loadProducts() {
@@ -335,7 +341,7 @@ export default function App() {
       try {
         const data =
           await getShopProducts(
-            activeShopSlug,
+            resolvedShopSlug,
             query,
           );
 
