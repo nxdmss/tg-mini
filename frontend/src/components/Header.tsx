@@ -10,11 +10,19 @@ import { isTelegram } from "../platform";
 
 import "./Header.css";
 
+type HeaderProps = {
+  onCartClick: () => void;
+  brandName?: string;
+  logoUrl?: string | null;
+  homePath?: string;
+};
+
 export function Header({
   onCartClick,
-}: {
-  onCartClick: () => void;
-}) {
+  brandName = "SWA6Y5TAN",
+  logoUrl,
+  homePath = "/",
+}: HeaderProps) {
   const { count } = useCart();
 
   const navigate = useNavigate();
@@ -25,6 +33,8 @@ export function Header({
 
   function handleLogoClick() {
     if (!telegramMode) {
+      navigate(homePath);
+
       return;
     }
 
@@ -59,11 +69,11 @@ export function Header({
           className="brand__logo"
           type="button"
           onClick={handleLogoClick}
-          aria-label="SWA6Y5TAN"
+          aria-label={brandName}
         >
           <img
-            src="/logo.png"
-            alt="SWA6Y5TAN"
+            src={logoUrl || "/logo.png"}
+            alt={brandName}
           />
         </button>
 

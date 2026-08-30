@@ -1,11 +1,24 @@
-import { useEffect, useMemo, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import {
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+import type { CSSProperties } from "react";
+import {
+  useNavigate,
+  useParams,
+} from "react-router-dom";
 
 import {
   getCategories,
   getProduct,
   getProducts,
 } from "./api";
+import {
+  getShop,
+  getShopProducts,
+} from "./shopApi";
+import type { Shop } from "./shopApi";
 
 import type {
   Category,
@@ -19,6 +32,7 @@ import { ProductDetail } from "./components/ProductDetail";
 import { CartDrawer } from "./components/CartDrawer";
 import { Filters } from "./components/Filters";
 import { PrankProduct } from "./components/PrankProduct";
+import { ShopHero } from "./components/ShopHero";
 
 import { consumeStartParam } from "./telegram";
 
@@ -29,16 +43,35 @@ import {
   stopPrankAudio,
 } from "./prank";
 
+type AppRouteParams = {
+  id?: string;
+  shopSlug?: string;
+};
+
+type ShopThemeStyle = CSSProperties & {
+  "--bg"?: string;
+  "--text"?: string;
+  "--shop-accent"?: string;
+};
+
 export default function App() {
-  const { id: productIdFromUrl } = useParams();
+  const {
+    id: productIdFromUrl,
+    shopSlug,
+  } = useParams<AppRouteParams>();
 
   const navigate = useNavigate();
 
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+
+  const [shop, setShop] = useState<Shop | null>(null);
+  const [shopLoading, setShopLoading] = useState(false);
+  const [shopError, setShopError] = useState(false);
+
   useEffect(() => {
-  preloadPrankAssets();
-}, []);
+    preloadPrankAssets();
+  }, []);
 
   const [query, setQuery] = useState<ProductsQuery>({
     sort: "name_asc",
@@ -56,6 +89,11 @@ export default function App() {
   const [cartOpen, setCartOpen] = useState(false);
 
   const isProductPage = Boolean(productIdFromUrl);
+  const isShopRoute = Boolean(shopSlug);
+
+  const shopHomePath = shopSlug
+    ? `/shop/${shopSlug}`
+    : "/";
 
   const selectedProduct = useMemo(() => {
     if (!productIdFromUrl) {
@@ -82,6 +120,50 @@ export default function App() {
   ]);
 
   useEffect(() => {
+    if (!shopSlug) {
+      setShop(null);
+      setShopError(false);
+      setShopLoading(false);
+
+      return;
+    }
+
+    let active = true;
+
+    async function loadShop() {
+      setShopLoading(true);
+      setShopError(false);
+
+      try {
+        const data = await getShop(shopSlug!);
+
+        if (active) {
+          setShop(data);
+        }
+      } catch {
+        if (active) {
+          setShop(null);
+          setShopError(true);
+        }
+      } finally {
+        if (active) {
+          setShopLoading(false);
+        }
+      }
+    }
+
+    void loadShop();
+
+    return () => {
+      active = false;
+    };
+  }, [shopSlug]);
+
+  useEffect(() => {
+    document.title = shop?.name || "SWA6Y5TAN";
+  }, [shop]);
+
+  useEffect(() => {
     if (productIdFromUrl) {
       return;
     }
@@ -93,7 +175,9 @@ export default function App() {
       setError(false);
 
       try {
-        const data = await getProducts(query);
+        const data = shopSlug
+          ? await getShopProducts(shopSlug, query)
+          : await getProducts(query);
 
         if (active) {
           setProducts(data);
@@ -118,6 +202,7 @@ export default function App() {
   }, [
     query,
     productIdFromUrl,
+    shopSlug,
   ]);
 
   useEffect(() => {
@@ -159,8 +244,12 @@ export default function App() {
       !productIdFromUrl ||
       productIdFromUrl !== startParam
     ) {
+      const target = shopSlug
+        ? `/shop/${shopSlug}/product/${startParam}`
+        : `/product/${startParam}`;
+
       navigate(
-        `/product/${startParam}`,
+        target,
         {
           replace: true,
         },
@@ -168,6 +257,7 @@ export default function App() {
     }
   }, [
     productIdFromUrl,
+    shopSlug,
     navigate,
   ]);
 
@@ -221,32 +311,70 @@ export default function App() {
     products,
   ]);
 
-function openProduct(product: Product) {
-  setProductLinkError(false);
+  function openProduct(product: Product) {
+    setProductLinkError(false);
 
-  if (isPrankProduct(product)) {
-    void playPrankLaugh();
-  } else {
-    stopPrankAudio();
+    if (isPrankProduct(product)) {
+      void playPrankLaugh();
+    } else {
+      stopPrankAudio();
+    }
+
+    const target = shopSlug
+      ? `/shop/${shopSlug}/product/${product.id}`
+      : `/product/${product.id}`;
+
+    navigate(target);
   }
 
-  navigate(
-    `/product/${product.id}`,
-  );
-}
+  function closeProduct() {
+    stopPrankAudio();
 
-function closeProduct() {
-  stopPrankAudio();
+    setFetchedProduct(null);
+    setProductLinkError(false);
 
-  setFetchedProduct(null);
-  setProductLinkError(false);
+    navigate(shopHomePath);
+  }
 
-  navigate("/");
-}
+  const shopThemeStyle: ShopThemeStyle = shop
+    ? {
+        "--bg": shop.backgroundColor,
+        "--text": shop.textColor,
+        "--shop-accent": shop.accentColor,
+        background: shop.backgroundColor,
+        color: shop.textColor,
+      }
+    : {};
 
   if (isProductPage) {
+    if (isShopRoute && shopError) {
+      return (
+        <div
+          className="app"
+          style={shopThemeStyle}
+        >
+          <main className="product-route-state">
+            <button
+              type="button"
+              className="product-route-state__back"
+              onClick={() => navigate("/")}
+            >
+              ←
+            </button>
+
+            <div className="product-route-state__text">
+              МАГАЗИН НЕ НАЙДЕН
+            </div>
+          </main>
+        </div>
+      );
+    }
+
     return (
-      <div className="app">
+      <div
+        className="app"
+        style={shopThemeStyle}
+      >
         {selectedProduct ? (
           isPrankProduct(selectedProduct) ? (
             <PrankProduct
@@ -294,14 +422,47 @@ function closeProduct() {
     );
   }
 
+  if (isShopRoute && shopError) {
+    return (
+      <div className="app">
+        <main className="product-route-state">
+          <button
+            type="button"
+            className="product-route-state__back"
+            onClick={() => navigate("/")}
+          >
+            ←
+          </button>
+
+          <div className="product-route-state__text">
+            МАГАЗИН НЕ НАЙДЕН
+          </div>
+        </main>
+      </div>
+    );
+  }
+
   return (
-    <div className="app">
+    <div
+      className="app"
+      style={shopThemeStyle}
+    >
       <div className="store-top">
         <Header
           onCartClick={() =>
             setCartOpen(true)
           }
+          brandName={shop?.name}
+          logoUrl={shop?.logoUrl}
+          homePath={shopHomePath}
         />
+
+        {isShopRoute && (
+          <ShopHero
+            shop={shop}
+            loading={shopLoading}
+          />
+        )}
 
         <Filters
           categories={categories}
@@ -313,7 +474,7 @@ function closeProduct() {
       </div>
 
       <main className="container">
-        {loading ? (
+        {loading || (isShopRoute && shopLoading) ? (
           <div className="grid grid--skeleton">
             {Array.from({
               length: 6,
@@ -376,7 +537,7 @@ function closeProduct() {
       <footer className="footer">
         <div className="container footer__inner">
           <span className="footer__brand">
-            SWA6Y5TAN
+            {shop?.name || "SWA6Y5TAN"}
           </span>
         </div>
       </footer>

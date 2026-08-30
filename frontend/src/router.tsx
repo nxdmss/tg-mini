@@ -37,6 +37,16 @@ export default function Router() {
         />
 
         <Route
+          path="/shop/:shopSlug"
+          element={<App />}
+        />
+
+        <Route
+          path="/shop/:shopSlug/product/:id"
+          element={<App />}
+        />
+
+        <Route
           path="/admin"
           element={<Admin />}
         />
