@@ -45,7 +45,7 @@
 
 .admin-tabs {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0;
   border: 2px solid #000;
 }
@@ -465,7 +465,119 @@
   text-transform: uppercase;
 }
 
+
+.admin-shop-path {
+  font-size: 10px;
+  line-height: 1.25;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: lowercase;
+  word-break: break-all;
+}
+
+.admin-colors {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+.admin-color {
+  border: 2px solid #000;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+}
+
+.admin-color > span {
+  padding: 7px 9px;
+  border-bottom: 2px solid #000;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.admin-color__row {
+  min-height: 46px;
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr);
+  align-items: stretch;
+}
+
+.admin-color__row input[type="color"] {
+  width: 52px;
+  height: 46px;
+  padding: 0;
+  border: 0;
+  border-right: 2px solid #000;
+  background: #fff;
+  cursor: pointer;
+}
+
+.admin-color__row strong {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  padding: 0 9px;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.admin-shop-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.admin-shop-item {
+  padding: 10px;
+  border: 2px solid #000;
+  background: #fff;
+}
+
+.admin-shop-item__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  padding-bottom: 9px;
+  margin-bottom: 9px;
+  border-bottom: 2px solid #000;
+}
+
+.admin-shop-item__top h3 {
+  margin: 0 0 5px;
+  font-size: 13px;
+  line-height: 1.15;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.admin-shop-item__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px 10px;
+  margin-bottom: 10px;
+  font-size: 9px;
+  line-height: 1.2;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.admin-shop-open {
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 @media (min-width: 700px) {
+  .admin-tabs {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
   .admin-page {
     padding-top: 20px;
   }
@@ -485,6 +597,10 @@
 
   .admin-tag {
     min-width: 180px;
+  }
+
+  .admin-colors {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .admin-order-grid {

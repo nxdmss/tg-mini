@@ -6,7 +6,6 @@ import {
 } from "react";
 
 import {
-  api,
   createBrand,
   createCategory,
   createProduct,
@@ -21,6 +20,13 @@ import {
   updateProduct,
 } from "../api";
 
+import {
+  createShop,
+  getAdminShops,
+  updateShop,
+  type AdminShop,
+} from "../shopAdminApi";
+
 import type {
   AdminOrder,
   Brand,
@@ -32,18 +38,37 @@ import "./Admin.css";
 
 type TabKey =
   | "products"
+  | "shops"
   | "catalog"
   | "orders";
 
-type Shop = {
-  id: string;
-  name: string;
-  slug: string;
-  productCount?: number;
+type ProductWithShop = Product & {
+  shop?: AdminShop | null;
 };
 
-type ProductWithShop = Product & {
-  shop?: Shop | null;
+type ShopFormState = {
+  id?: string;
+  name: string;
+  slug: string;
+  description: string;
+  logoUrl: string;
+  bannerUrl: string;
+  backgroundColor: string;
+  textColor: string;
+  accentColor: string;
+  isActive: boolean;
+};
+
+const SHOP_FORM_INITIAL: ShopFormState = {
+  name: "",
+  slug: "",
+  description: "",
+  logoUrl: "",
+  bannerUrl: "",
+  backgroundColor: "#ffffff",
+  textColor: "#000000",
+  accentColor: "#000000",
+  isActive: true,
 };
 
 type ProductFormState = {
@@ -132,7 +157,12 @@ export default function Admin() {
     useState<AdminOrder[]>([]);
 
   const [shops, setShops] =
-    useState<Shop[]>([]);
+    useState<AdminShop[]>([]);
+
+  const [shopForm, setShopForm] =
+    useState<ShopFormState>(
+      SHOP_FORM_INITIAL,
+    );
 
   const [
     productSearch,
@@ -168,9 +198,7 @@ export default function Admin() {
       getProducts(),
       getBrands(),
       getCategories(),
-      api
-        .get<Shop[]>("/shops")
-        .then((res) => res.data),
+      getAdminShops(),
       getAdminOrders(),
     ]);
 
@@ -681,7 +709,156 @@ export default function Admin() {
     }
   }
 
+  function updateShopForm(
+    patch: Partial<ShopFormState>,
+  ) {
+    setShopForm((current) => ({
+      ...current,
+      ...patch,
+    }));
+  }
+
+  function resetShopForm() {
+    setShopForm(
+      SHOP_FORM_INITIAL,
+    );
+    setMessage("");
+  }
+
+  function startEditShop(
+    shop: AdminShop,
+  ) {
+    setActiveTab("shops");
+
+    setShopForm({
+      id: shop.id,
+      name: shop.name,
+      slug: shop.slug,
+      description:
+        shop.description || "",
+      logoUrl:
+        shop.logoUrl || "",
+      bannerUrl:
+        shop.bannerUrl || "",
+      backgroundColor:
+        shop.backgroundColor ||
+        "#ffffff",
+      textColor:
+        shop.textColor ||
+        "#000000",
+      accentColor:
+        shop.accentColor ||
+        "#000000",
+      isActive:
+        shop.isActive,
+    });
+
+    setMessage("");
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  }
+
+  async function handleSubmitShop(
+    event: FormEvent,
+  ) {
+    event.preventDefault();
+
+    setSaving(true);
+    setMessage("");
+
+    try {
+      const name =
+        shopForm.name.trim();
+
+      const slug =
+        shopForm.slug
+          .trim()
+          .toLowerCase();
+
+      if (!name) {
+        throw new Error(
+          "Укажи название магазина.",
+        );
+      }
+
+      if (!slug) {
+        throw new Error(
+          "Укажи slug магазина.",
+        );
+      }
+
+      const payload = {
+        name,
+        slug,
+        description:
+          shopForm.description.trim(),
+        logoUrl:
+          shopForm.logoUrl.trim(),
+        bannerUrl:
+          shopForm.bannerUrl.trim(),
+        backgroundColor:
+          shopForm.backgroundColor,
+        textColor:
+          shopForm.textColor,
+        accentColor:
+          shopForm.accentColor,
+        isActive:
+          shopForm.isActive,
+      };
+
+      if (shopForm.id) {
+        await updateShop(
+          shopForm.id,
+          payload,
+        );
+
+        setMessage(
+          "Магазин обновлён.",
+        );
+      } else {
+        await createShop(
+          payload,
+        );
+
+        setMessage(
+          "Магазин создан.",
+        );
+      }
+
+      resetShopForm();
+
+      await loadAdminData();
+    } catch (error: any) {
+      console.error(error);
+
+      const backendMessage =
+        error?.response
+          ?.data?.message;
+
+      setMessage(
+        (Array.isArray(
+          backendMessage,
+        )
+          ? backendMessage.join(
+              " ",
+            )
+          : backendMessage) ||
+          error?.message ||
+          "Не удалось сохранить магазин.",
+      );
+    } finally {
+      setSaving(false);
+    }
+  }
+
   const currentShopName =
+    shops.find(
+      (shop) =>
+        shop.slug === "swagystan",
+    )?.name ||
     shops[0]?.name ||
     "SWA6Y5TAN";
 
@@ -714,6 +891,23 @@ export default function Admin() {
             }
           >
             Товары
+          </button>
+
+          <button
+            type="button"
+            className={`admin-tabs__button ${
+              activeTab ===
+              "shops"
+                ? "is-active"
+                : ""
+            }`}
+            onClick={() =>
+              setActiveTab(
+                "shops",
+              )
+            }
+          >
+            Магазины
           </button>
 
           <button
@@ -1187,6 +1381,422 @@ export default function Admin() {
                       0 && (
                       <div className="admin-empty">
                         Товаров не найдено
+                      </div>
+                    )}
+                  </div>
+                </section>
+              </div>
+            )}
+
+            {activeTab ===
+              "shops" && (
+              <div className="admin-stack">
+                <section className="admin-box">
+                  <div className="admin-box__head">
+                    <h2>
+                      {shopForm.id
+                        ? "Изменить магазин"
+                        : "Новый магазин"}
+                    </h2>
+
+                    <span className="admin-pill">
+                      {shopForm.id
+                        ? "EDIT"
+                        : "NEW"}
+                    </span>
+                  </div>
+
+                  <form
+                    className="admin-form"
+                    onSubmit={
+                      handleSubmitShop
+                    }
+                  >
+                    <label className="admin-field">
+                      <span>
+                        Название
+                      </span>
+
+                      <input
+                        value={
+                          shopForm.name
+                        }
+                        onChange={(
+                          event,
+                        ) =>
+                          updateShopForm(
+                            {
+                              name:
+                                event
+                                  .target
+                                  .value,
+                            },
+                          )
+                        }
+                        placeholder="NORTH SIDE"
+                      />
+                    </label>
+
+                    <label className="admin-field">
+                      <span>
+                        Slug / ссылка
+                      </span>
+
+                      <input
+                        value={
+                          shopForm.slug
+                        }
+                        onChange={(
+                          event,
+                        ) =>
+                          updateShopForm(
+                            {
+                              slug:
+                                event
+                                  .target
+                                  .value
+                                  .toLowerCase(),
+                            },
+                          )
+                        }
+                        placeholder="north-side"
+                        autoCapitalize="none"
+                      />
+                    </label>
+
+                    <div className="admin-shop-path">
+                      /shop/
+                      {shopForm.slug ||
+                        "north-side"}
+                    </div>
+
+                    <label className="admin-field">
+                      <span>
+                        Описание
+                      </span>
+
+                      <textarea
+                        value={
+                          shopForm.description
+                        }
+                        onChange={(
+                          event,
+                        ) =>
+                          updateShopForm(
+                            {
+                              description:
+                                event
+                                  .target
+                                  .value,
+                            },
+                          )
+                        }
+                        placeholder="Коротко о магазине"
+                      />
+                    </label>
+
+                    <label className="admin-field">
+                      <span>
+                        Логотип URL
+                      </span>
+
+                      <input
+                        value={
+                          shopForm.logoUrl
+                        }
+                        onChange={(
+                          event,
+                        ) =>
+                          updateShopForm(
+                            {
+                              logoUrl:
+                                event
+                                  .target
+                                  .value,
+                            },
+                          )
+                        }
+                        placeholder="https://..."
+                        autoCapitalize="none"
+                      />
+                    </label>
+
+                    <label className="admin-field">
+                      <span>
+                        Баннер URL
+                      </span>
+
+                      <input
+                        value={
+                          shopForm.bannerUrl
+                        }
+                        onChange={(
+                          event,
+                        ) =>
+                          updateShopForm(
+                            {
+                              bannerUrl:
+                                event
+                                  .target
+                                  .value,
+                            },
+                          )
+                        }
+                        placeholder="https://..."
+                        autoCapitalize="none"
+                      />
+                    </label>
+
+                    <div className="admin-colors">
+                      <label className="admin-color">
+                        <span>
+                          Фон
+                        </span>
+
+                        <div className="admin-color__row">
+                          <input
+                            type="color"
+                            value={
+                              shopForm.backgroundColor
+                            }
+                            onChange={(
+                              event,
+                            ) =>
+                              updateShopForm(
+                                {
+                                  backgroundColor:
+                                    event
+                                      .target
+                                      .value,
+                                },
+                              )
+                            }
+                          />
+
+                          <strong>
+                            {
+                              shopForm.backgroundColor
+                            }
+                          </strong>
+                        </div>
+                      </label>
+
+                      <label className="admin-color">
+                        <span>
+                          Текст
+                        </span>
+
+                        <div className="admin-color__row">
+                          <input
+                            type="color"
+                            value={
+                              shopForm.textColor
+                            }
+                            onChange={(
+                              event,
+                            ) =>
+                              updateShopForm(
+                                {
+                                  textColor:
+                                    event
+                                      .target
+                                      .value,
+                                },
+                              )
+                            }
+                          />
+
+                          <strong>
+                            {
+                              shopForm.textColor
+                            }
+                          </strong>
+                        </div>
+                      </label>
+
+                      <label className="admin-color">
+                        <span>
+                          Акцент
+                        </span>
+
+                        <div className="admin-color__row">
+                          <input
+                            type="color"
+                            value={
+                              shopForm.accentColor
+                            }
+                            onChange={(
+                              event,
+                            ) =>
+                              updateShopForm(
+                                {
+                                  accentColor:
+                                    event
+                                      .target
+                                      .value,
+                                },
+                              )
+                            }
+                          />
+
+                          <strong>
+                            {
+                              shopForm.accentColor
+                            }
+                          </strong>
+                        </div>
+                      </label>
+                    </div>
+
+                    <label className="admin-check">
+                      <input
+                        type="checkbox"
+                        checked={
+                          shopForm.isActive
+                        }
+                        onChange={(
+                          event,
+                        ) =>
+                          updateShopForm(
+                            {
+                              isActive:
+                                event
+                                  .target
+                                  .checked,
+                            },
+                          )
+                        }
+                      />
+
+                      <span>
+                        Магазин активен
+                      </span>
+                    </label>
+
+                    <div className="admin-actions">
+                      <button
+                        type="submit"
+                        className="admin-btn admin-btn--primary"
+                        disabled={
+                          saving
+                        }
+                      >
+                        {saving
+                          ? "СОХРАНЯЮ..."
+                          : shopForm.id
+                            ? "ОБНОВИТЬ"
+                            : "СОЗДАТЬ"}
+                      </button>
+
+                      <button
+                        type="button"
+                        className="admin-btn"
+                        onClick={
+                          resetShopForm
+                        }
+                      >
+                        ОЧИСТИТЬ
+                      </button>
+                    </div>
+                  </form>
+                </section>
+
+                <section className="admin-box">
+                  <div className="admin-box__head">
+                    <h2>
+                      Магазины
+                    </h2>
+
+                    <span className="admin-pill">
+                      {shops.length}
+                    </span>
+                  </div>
+
+                  <div className="admin-shop-list">
+                    {shops.map(
+                      (shop) => (
+                        <article
+                          className="admin-shop-item"
+                          key={
+                            shop.id
+                          }
+                        >
+                          <div className="admin-shop-item__top">
+                            <div>
+                              <h3>
+                                {
+                                  shop.name
+                                }
+                              </h3>
+
+                              <div className="admin-shop-path">
+                                /shop/
+                                {
+                                  shop.slug
+                                }
+                              </div>
+                            </div>
+
+                            <span className="admin-pill">
+                              {shop.isActive
+                                ? "ON"
+                                : "OFF"}
+                            </span>
+                          </div>
+
+                          <div className="admin-shop-item__meta">
+                            <span>
+                              {
+                                shop.productCount
+                              }{" "}
+                              товаров
+                            </span>
+
+                            <span>
+                              BG{" "}
+                              {
+                                shop.backgroundColor
+                              }
+                            </span>
+
+                            <span>
+                              TEXT{" "}
+                              {
+                                shop.textColor
+                              }
+                            </span>
+                          </div>
+
+                          <div className="admin-item__buttons">
+                            <button
+                              type="button"
+                              className="admin-btn"
+                              onClick={() =>
+                                startEditShop(
+                                  shop,
+                                )
+                              }
+                            >
+                              ИЗМЕНИТЬ
+                            </button>
+
+                            <a
+                              className="admin-btn admin-shop-open"
+                              href={`/shop/${shop.slug}`}
+                              target="_blank"
+                              rel="noreferrer"
+                            >
+                              ОТКРЫТЬ
+                            </a>
+                          </div>
+                        </article>
+                      ),
+                    )}
+
+                    {shops.length ===
+                      0 && (
+                      <div className="admin-empty">
+                        Магазинов пока нет
                       </div>
                     )}
                   </div>
