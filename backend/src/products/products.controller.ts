@@ -16,6 +16,7 @@ import { ProductsService } from './products.service';
 import { CreateProductDto } from './create-product.dto';
 import { QueryProductsDto } from './query-products.dto';
 import { UpdateProductDto } from './update-product.dto';
+import { UpdateProductShopDto } from './update-product-shop.dto';
 import { UpdateProductStockDto } from './update-product-stock.dto';
 import { TelegramAuthGuard } from '../auth/telegram-auth.guard';
 import { AdminGuard } from '../auth/admin.guard';
@@ -89,6 +90,15 @@ export class ProductsController {
     });
 
     return this.productsService.findOne(id);
+  }
+
+  @Patch(':id/shop')
+  @UseGuards(TelegramAuthGuard, AdminGuard)
+  moveToShop(
+    @Param('id') id: string,
+    @Body() body: UpdateProductShopDto,
+  ) {
+    return this.productsService.moveToShop(id, body.shopId);
   }
 
   @Patch(':id')

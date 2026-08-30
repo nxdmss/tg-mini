@@ -2,6 +2,7 @@ import {
   useEffect,
   useMemo,
   useState,
+  type DragEvent,
   type FormEvent,
 } from "react";
 
@@ -20,6 +21,7 @@ import {
 
 import {
   createAdminProduct,
+  moveAdminProductToShop,
   updateAdminProduct,
 } from "../productAdminApi";
 
@@ -71,6 +73,19 @@ const SHOP_FORM_INITIAL: ShopFormState = {
   isActive: true,
 };
 
+type ProductImageDraft =
+  | {
+      key: string;
+      type: "url";
+      url: string;
+    }
+  | {
+      key: string;
+      type: "file";
+      file: File;
+      previewUrl: string;
+    };
+
 type ProductFormState = {
   id?: string;
   shopId: string;
@@ -81,7 +96,6 @@ type ProductFormState = {
   brandId: string;
   categoryId: string;
   sizesText: string;
-  imagesText: string;
 };
 
 const PRODUCT_FORM_INITIAL: ProductFormState = {
@@ -93,7 +107,6 @@ const PRODUCT_FORM_INITIAL: ProductFormState = {
   brandId: "",
   categoryId: "",
   sizesText: "",
-  imagesText: "",
 };
 
 const ORDER_STATUSES: AdminOrder["status"][] = [
@@ -185,6 +198,15 @@ export default function Admin() {
     useState<ProductFormState>(
       PRODUCT_FORM_INITIAL,
     );
+
+  const [productImages, setProductImages] =
+    useState<ProductImageDraft[]>([]);
+
+  const [draggingProductId, setDraggingProductId] =
+    useState<string | null>(null);
+
+  const [dragOverShopId, setDragOverShopId] =
+    useState<string | null>(null);
 
   async function loadAdminData() {
     setLoading(true);
@@ -393,7 +415,96 @@ export default function Admin() {
     }));
   }
 
+  function revokeDraftPreviews(
+    drafts: ProductImageDraft[],
+  ) {
+    drafts.forEach((item) => {
+      if (item.type === "file") {
+        URL.revokeObjectURL(
+          item.previewUrl,
+        );
+      }
+    });
+  }
+
+  function clearProductImages() {
+    setProductImages((current) => {
+      revokeDraftPreviews(current);
+      return [];
+    });
+  }
+
+  function handleProductFiles(
+    files: FileList | null,
+  ) {
+    if (!files) {
+      return;
+    }
+
+    const selected =
+      Array.from(files).filter(
+        (file) =>
+          file.type.startsWith(
+            "image/",
+          ),
+      );
+
+    setProductImages((current) => {
+      const available =
+        Math.max(
+          0,
+          10 - current.length,
+        );
+
+      const accepted =
+        selected.slice(
+          0,
+          available,
+        );
+
+      const next =
+        accepted.map(
+          (file, index) => ({
+            key: `file-${Date.now()}-${index}-${file.name}`,
+            type: "file" as const,
+            file,
+            previewUrl:
+              URL.createObjectURL(
+                file,
+              ),
+          }),
+        );
+
+      return [
+        ...current,
+        ...next,
+      ];
+    });
+  }
+
+  function removeProductImage(
+    key: string,
+  ) {
+    setProductImages((current) =>
+      current.filter((item) => {
+        if (item.key !== key) {
+          return true;
+        }
+
+        if (item.type === "file") {
+          URL.revokeObjectURL(
+            item.previewUrl,
+          );
+        }
+
+        return false;
+      }),
+    );
+  }
+
   function resetForm() {
+    clearProductImages();
+
     const fallbackShopId =
       shops.find(
         (shop) =>
@@ -450,12 +561,18 @@ export default function Admin() {
             (item) => item.size,
           )
           .join("\n"),
-      imagesText:
-        product.images
-          .map(
-            (item) => item.url,
-          )
-          .join("\n"),
+    });
+
+    setProductImages((current) => {
+      revokeDraftPreviews(current);
+
+      return product.images.map(
+        (item, index) => ({
+          key: `url-${index}-${item.url}`,
+          type: "url" as const,
+          url: item.url,
+        }),
+      );
     });
 
     setMessage("");
@@ -514,11 +631,6 @@ export default function Admin() {
         );
       }
 
-      const imageUrls =
-        parseLines(
-          form.imagesText,
-        );
-
       const payload = {
         shopId:
           form.shopId,
@@ -546,13 +658,19 @@ export default function Admin() {
           ),
 
         imageItems:
-          imageUrls.map(
-            (url, index) => ({
-              key: `url-${index}-${url}`,
-              type:
-                "url" as const,
-              url,
-            }),
+          productImages.map(
+            (item) =>
+              item.type === "url"
+                ? {
+                    key: item.key,
+                    type: "url" as const,
+                    url: item.url,
+                  }
+                : {
+                    key: item.key,
+                    type: "file" as const,
+                    file: item.file,
+                  },
           ),
       };
 
@@ -590,6 +708,87 @@ export default function Admin() {
     } finally {
       setSaving(false);
     }
+  }
+
+  async function handleMoveProduct(
+    productId: string,
+    shopId: string,
+  ) {
+    if (!shopId) {
+      return;
+    }
+
+    const product =
+      products.find(
+        (item) =>
+          item.id === productId,
+      );
+
+    if (
+      product?.shop?.id ===
+      shopId
+    ) {
+      return;
+    }
+
+    setMessage("");
+
+    try {
+      await moveAdminProductToShop(
+        productId,
+        shopId,
+      );
+
+      setMessage(
+        "Товар перенесён.",
+      );
+
+      if (
+        form.id === productId
+      ) {
+        updateForm({
+          shopId,
+        });
+      }
+
+      await loadAdminData();
+    } catch (error: any) {
+      console.error(error);
+
+      setMessage(
+        error?.response?.data
+          ?.message ||
+          "Не удалось перенести товар.",
+      );
+    } finally {
+      setDraggingProductId(
+        null,
+      );
+      setDragOverShopId(
+        null,
+      );
+    }
+  }
+
+  async function handleDropProduct(
+    shopId: string,
+    event: DragEvent<HTMLDivElement>,
+  ) {
+    event.preventDefault();
+
+    const productId =
+      event.dataTransfer.getData(
+        "text/product-id",
+      ) || draggingProductId;
+
+    if (!productId) {
+      return;
+    }
+
+    await handleMoveProduct(
+      productId,
+      shopId,
+    );
   }
 
   async function handleDeleteProduct(
@@ -1364,32 +1563,67 @@ export default function Admin() {
                       />
                     </label>
 
-                    <label className="admin-field">
-                      <span>
-                        Фото (1 ссылка = 1 строка)
+                    <div className="admin-media-field">
+                      <span className="admin-media-field__label">
+                        Фото
                       </span>
 
-                      <textarea
-                        value={
-                          form.imagesText
-                        }
-                        onChange={(
-                          event,
-                        ) =>
-                          updateForm(
-                            {
-                              imagesText:
-                                event
-                                  .target
-                                  .value,
-                            },
-                          )
-                        }
-                        placeholder={
-                          "https://...\nhttps://..."
-                        }
-                      />
-                    </label>
+                      <label className="admin-upload-btn">
+                        ВЫБРАТЬ ФОТО
+
+                        <input
+                          type="file"
+                          accept="image/*"
+                          multiple
+                          onChange={(event) => {
+                            handleProductFiles(
+                              event.target.files,
+                            );
+
+                            event.target.value =
+                              "";
+                          }}
+                        />
+                      </label>
+
+                      <div className="admin-media-note">
+                        До 10 фото. Можно выбрать сразу несколько из медиатеки.
+                      </div>
+
+                      {productImages.length > 0 && (
+                        <div className="admin-product-images">
+                          {productImages.map(
+                            (item) => (
+                              <div
+                                className="admin-product-image"
+                                key={item.key}
+                              >
+                                <img
+                                  src={
+                                    item.type === "url"
+                                      ? item.url
+                                      : item.previewUrl
+                                  }
+                                  alt="Фото товара"
+                                />
+
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    removeProductImage(
+                                      item.key,
+                                    )
+                                  }
+                                  aria-label="Удалить фото"
+                                >
+                                  ×
+                                </button>
+                              </div>
+                            ),
+                          )}
+                        </div>
+                      )}
+                    </div>
 
                     <div className="admin-actions">
                       <button
@@ -1450,16 +1684,92 @@ export default function Admin() {
                     }
                   />
 
+                  <div className="admin-transfer">
+                    <div className="admin-transfer__label">
+                      ПЕРЕТАЩИ ТОВАР В МАГАЗИН
+                    </div>
+
+                    <div className="admin-drop-shops">
+                      {shops
+                        .filter(
+                          (shop) =>
+                            shop.isActive,
+                        )
+                        .map((shop) => (
+                          <div
+                            className={`admin-drop-shop ${
+                              dragOverShopId ===
+                              shop.id
+                                ? "is-over"
+                                : ""
+                            } ${
+                              form.shopId ===
+                              shop.id
+                                ? "is-current"
+                                : ""
+                            }`}
+                            key={shop.id}
+                            onDragOver={(event) => {
+                              event.preventDefault();
+                              setDragOverShopId(
+                                shop.id,
+                              );
+                            }}
+                            onDragLeave={() =>
+                              setDragOverShopId(
+                                null,
+                              )
+                            }
+                            onDrop={(event) =>
+                              void handleDropProduct(
+                                shop.id,
+                                event,
+                              )
+                            }
+                          >
+                            {shop.name}
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+
                   <div className="admin-list">
                     {filteredProducts.map(
                       (
                         product,
                       ) => (
                         <article
-                          className="admin-item"
+                          className={`admin-item ${
+                            draggingProductId ===
+                            product.id
+                              ? "is-dragging"
+                              : ""
+                          }`}
                           key={
                             product.id
                           }
+                          draggable
+                          onDragStart={(event) => {
+                            setDraggingProductId(
+                              product.id,
+                            );
+
+                            event.dataTransfer.effectAllowed =
+                              "move";
+
+                            event.dataTransfer.setData(
+                              "text/product-id",
+                              product.id,
+                            );
+                          }}
+                          onDragEnd={() => {
+                            setDraggingProductId(
+                              null,
+                            );
+                            setDragOverShopId(
+                              null,
+                            );
+                          }}
                         >
                           <div className="admin-item__media">
                             {product
@@ -1516,6 +1826,39 @@ export default function Admin() {
                                   "—"}
                               </span>
                             </div>
+
+                            <label className="admin-move-select">
+                              <span>
+                                ПЕРЕНЕСТИ В
+                              </span>
+
+                              <select
+                                value={
+                                  product.shop?.id ||
+                                  ""
+                                }
+                                onChange={(event) =>
+                                  void handleMoveProduct(
+                                    product.id,
+                                    event.target.value,
+                                  )
+                                }
+                              >
+                                {shops
+                                  .filter(
+                                    (shop) =>
+                                      shop.isActive,
+                                  )
+                                  .map((shop) => (
+                                    <option
+                                      key={shop.id}
+                                      value={shop.id}
+                                    >
+                                      {shop.name}
+                                    </option>
+                                  ))}
+                              </select>
+                            </label>
 
                             <div className="admin-item__buttons">
                               <button

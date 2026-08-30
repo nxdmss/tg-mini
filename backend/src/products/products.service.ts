@@ -341,6 +341,33 @@ export class ProductsService {
     );
   }
 
+  async moveToShop(
+    id: string,
+    shopId: string,
+  ) {
+    await this.ensureProductExists(id);
+
+    const activeShopId =
+      await this.ensureActiveShop(shopId);
+
+    const product =
+      await this.prisma.product.update({
+        where: {
+          id,
+        },
+        data: {
+          shop: {
+            connect: {
+              id: activeShopId,
+            },
+          },
+        },
+        include: productInclude,
+      });
+
+    return this.normalizeProduct(product);
+  }
+
   async updateStock(
     id: string,
     data: UpdateProductStockDto,

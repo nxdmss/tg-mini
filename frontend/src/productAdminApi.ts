@@ -77,14 +77,18 @@ function productFormData(
     String(payload.inStock),
   );
 
-  payload.sizes.forEach(
-    (size) => {
-      form.append(
-        "sizes",
-        size,
-      );
-    },
-  );
+  if (payload.sizes.length === 0) {
+    form.append("sizes", "");
+  } else {
+    payload.sizes.forEach(
+      (size) => {
+        form.append(
+          "sizes",
+          size,
+        );
+      },
+    );
+  }
 
   const order:
     Array<"url" | "file"> = [];
@@ -112,9 +116,13 @@ function productFormData(
     }
   }
 
-  if (
-    order.length > 0
-  ) {
+  if (order.length === 0) {
+    form.append("images", "");
+    form.append(
+      "imagesOrder",
+      "[]",
+    );
+  } else {
     form.append(
       "imagesOrder",
       JSON.stringify(order),
@@ -229,6 +237,23 @@ export async function updateAdminProduct(
         headers:
           adminAuthHeaders(),
         timeout: 120000,
+      },
+    );
+
+  return res.data;
+}
+
+export async function moveAdminProductToShop(
+  id: string,
+  shopId: string,
+): Promise<Product> {
+  const res =
+    await api.patch<Product>(
+      `/products/${id}/shop`,
+      { shopId },
+      {
+        headers:
+          adminAuthHeaders(),
       },
     );
 
