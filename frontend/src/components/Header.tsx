@@ -13,11 +13,13 @@ import "./Header.css";
 type HeaderProps = {
   onCartClick: () => void;
   homePath?: string;
+  logoNegative?: boolean;
 };
 
 export function Header({
   onCartClick,
   homePath = "/",
+  logoNegative = false,
 }: HeaderProps) {
   const { count } = useCart();
 
@@ -62,15 +64,29 @@ export function Header({
     <header className="header">
       <div className="container header__inner header__inner--store">
         <button
-          className="brand__logo"
+          className={`brand__logo ${
+            logoNegative
+              ? "brand__logo--negative"
+              : ""
+          }`}
           type="button"
           onClick={handleLogoClick}
           aria-label="SWA6Y5TAN"
         >
-          <img
-            src="/logo.png"
-            alt="SWA6Y5TAN"
-          />
+          <span className="brand__logo-mark">
+            <img
+              className="brand__logo-image brand__logo-image--base"
+              src="/logo.png"
+              alt="SWA6Y5TAN"
+            />
+
+            <img
+              className="brand__logo-image brand__logo-image--negative"
+              src="/logo.png"
+              alt=""
+              aria-hidden="true"
+            />
+          </span>
         </button>
 
         <div className="header__actions">

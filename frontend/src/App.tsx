@@ -1155,6 +1155,10 @@ export default function App() {
             )
           }
           homePath="/"
+          logoNegative={
+            shop?.slug ===
+            "zulf"
+          }
         />
 
         <ShopSwitcher
