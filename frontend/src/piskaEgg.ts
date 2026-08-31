@@ -37,9 +37,8 @@ export function mountPiskaEgg() {
       position:
         "fixed",
       zIndex:
-        "3",
+        "50",
 
-      /* fixed hiding place */
       left:
         "78%",
       top:
@@ -56,22 +55,19 @@ export function mountPiskaEgg() {
       fontFamily:
         '"IBM Plex Mono", monospace',
       fontSize:
-        "7px",
+        "8px",
       fontWeight:
         "500",
       lineHeight:
         "1",
       letterSpacing:
-        "0.06em",
-
-      opacity:
-        "0.06",
+        "0.05em",
 
       color:
-        "currentColor",
+        "#777",
 
-      mixBlendMode:
-        "difference",
+      opacity:
+        "0.28",
 
       whiteSpace:
         "nowrap",
