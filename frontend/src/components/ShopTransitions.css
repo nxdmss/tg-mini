@@ -1,22 +1,22 @@
+html {
+  scrollbar-gutter: stable;
+}
+
 .app {
+  overflow-x: clip;
   transition:
-    background-color 380ms ease,
-    color 280ms ease;
+    background-color 0.14s linear,
+    color 0.12s linear;
 }
 
 .shop-content-stage {
-  will-change: opacity, transform;
   backface-visibility: hidden;
+  transform: translateZ(0);
 }
 
 .shop-content-stage
 .grid:not(.grid--skeleton)
 .card {
-  /*
-   * ProductCard already has its own CSS entrance animation.
-   * Disable it during store transitions so CSS and Motion don't
-   * animate the same transform at the same time.
-   */
   animation: none !important;
 }
 

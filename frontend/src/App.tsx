@@ -11,7 +11,6 @@ import {
 } from "react-router-dom";
 
 import {
-  AnimatePresence,
   motion,
 } from "motion/react";
 
@@ -62,6 +61,53 @@ type ShopThemeStyle =
     "--text"?: string;
     "--shop-accent"?: string;
   };
+
+
+type CachedCatalog = {
+  shop: Shop;
+  products: Product[];
+};
+
+function catalogCacheKey(
+  slug: string,
+  sort:
+    | ProductsQuery["sort"]
+    | undefined,
+) {
+  return `${slug}::${
+    sort || "name_asc"
+  }`;
+}
+
+function warmProductImages(
+  products: Product[],
+) {
+  if (
+    typeof window ===
+    "undefined"
+  ) {
+    return;
+  }
+
+  products
+    .slice(0, 8)
+    .forEach((product) => {
+      const url =
+        product.images?.[0]?.url;
+
+      if (!url) {
+        return;
+      }
+
+      const image =
+        new Image();
+
+      image.decoding =
+        "async";
+
+      image.src = url;
+    });
+}
 
 export default function App() {
   const {
@@ -125,6 +171,22 @@ export default function App() {
   const skipProductLoadRef =
     useRef<string | null>(
       null,
+    );
+
+
+  const catalogCacheRef =
+    useRef<
+      Map<
+        string,
+        CachedCatalog
+      >
+    >(
+      new Map(),
+    );
+
+  const prefetchingRef =
+    useRef<Set<string>>(
+      new Set(),
     );
 
   useEffect(() => {
@@ -245,6 +307,146 @@ export default function App() {
       active = false;
     };
   }, []);
+
+  /*
+   * Cache the neutral, unfiltered catalog scene. Store switching
+   * resets search/category/brand and preserves only sorting.
+   */
+  useEffect(() => {
+    if (
+      productIdFromUrl ||
+      loading ||
+      !shop ||
+      query.category ||
+      query.brand ||
+      query.search ||
+      query.inStock !==
+        undefined
+    ) {
+      return;
+    }
+
+    const key =
+      catalogCacheKey(
+        shop.slug,
+        query.sort,
+      );
+
+    catalogCacheRef.current.set(
+      key,
+      {
+        shop,
+        products,
+      },
+    );
+
+    warmProductImages(
+      products,
+    );
+  }, [
+    productIdFromUrl,
+    loading,
+    shop,
+    products,
+    query.sort,
+    query.category,
+    query.brand,
+    query.search,
+    query.inStock,
+  ]);
+
+  /*
+   * Preload the first stores so a click normally never waits on network.
+   * Refs are updated only, so this causes no React re-render.
+   */
+  useEffect(() => {
+    if (
+      productIdFromUrl ||
+      shops.length === 0
+    ) {
+      return;
+    }
+
+    const timer =
+      window.setTimeout(
+        () => {
+          const sort =
+            query.sort ||
+            "name_asc";
+
+          shops
+            .filter(
+              (item) =>
+                item.isActive,
+            )
+            .slice(0, 8)
+            .forEach(
+              (item) => {
+                const key =
+                  catalogCacheKey(
+                    item.slug,
+                    sort,
+                  );
+
+                if (
+                  catalogCacheRef.current.has(
+                    key,
+                  ) ||
+                  prefetchingRef.current.has(
+                    key,
+                  )
+                ) {
+                  return;
+                }
+
+                prefetchingRef.current.add(
+                  key,
+                );
+
+                void getShopProducts(
+                  item.slug,
+                  { sort },
+                )
+                  .then(
+                    (nextProducts) => {
+                      catalogCacheRef.current.set(
+                        key,
+                        {
+                          shop: item,
+                          products:
+                            nextProducts,
+                        },
+                      );
+
+                      warmProductImages(
+                        nextProducts,
+                      );
+                    },
+                  )
+                  .catch(() => {
+                    // Prefetch failure is non-fatal.
+                  })
+                  .finally(() => {
+                    prefetchingRef.current.delete(
+                      key,
+                    );
+                  });
+              },
+            );
+        },
+        90,
+      );
+
+    return () => {
+      window.clearTimeout(
+        timer,
+      );
+    };
+  }, [
+    shops,
+    query.sort,
+    productIdFromUrl,
+  ]);
 
   useEffect(() => {
     const resolvedShopSlug =
@@ -504,6 +706,65 @@ export default function App() {
     products,
   ]);
 
+  function prefetchShop(
+    targetShop: Shop,
+  ) {
+    const nextQuery:
+      ProductsQuery = {
+        sort:
+          query.sort ||
+          "name_asc",
+      };
+
+    const key =
+      catalogCacheKey(
+        targetShop.slug,
+        nextQuery.sort,
+      );
+
+    if (
+      catalogCacheRef.current.has(
+        key,
+      ) ||
+      prefetchingRef.current.has(
+        key,
+      )
+    ) {
+      return;
+    }
+
+    prefetchingRef.current.add(
+      key,
+    );
+
+    void getShopProducts(
+      targetShop.slug,
+      nextQuery,
+    )
+      .then((nextProducts) => {
+        catalogCacheRef.current.set(
+          key,
+          {
+            shop: targetShop,
+            products:
+              nextProducts,
+          },
+        );
+
+        warmProductImages(
+          nextProducts,
+        );
+      })
+      .catch(() => {
+        // Prefetch failure is non-fatal.
+      })
+      .finally(() => {
+        prefetchingRef.current.delete(
+          key,
+        );
+      });
+  }
+
   async function handleSwitchShop(
     nextShop: Shop,
   ) {
@@ -522,21 +783,42 @@ export default function App() {
           "name_asc",
       };
 
+    const key =
+      catalogCacheKey(
+        nextShop.slug,
+        nextQuery.sort,
+      );
+
     setCatalogPending(true);
 
     try {
-      const [
-        nextShopData,
-        nextProducts,
-      ] = await Promise.all([
-        getShop(
-          nextShop.slug,
-        ),
-        getShopProducts(
-          nextShop.slug,
-          nextQuery,
-        ),
-      ]);
+      let cached =
+        catalogCacheRef.current.get(
+          key,
+        );
+
+      if (!cached) {
+        const nextProducts =
+          await getShopProducts(
+            nextShop.slug,
+            nextQuery,
+          );
+
+        cached = {
+          shop: nextShop,
+          products:
+            nextProducts,
+        };
+
+        catalogCacheRef.current.set(
+          key,
+          cached,
+        );
+
+        warmProductImages(
+          nextProducts,
+        );
+      }
 
       skipShopLoadRef.current =
         nextShop.slug;
@@ -544,8 +826,10 @@ export default function App() {
       skipProductLoadRef.current =
         nextShop.slug;
 
-      setShop(nextShopData);
-      setProducts(nextProducts);
+      setShop(cached.shop);
+      setProducts(
+        cached.products,
+      );
       setError(false);
       setShopError(false);
       setQuery(nextQuery);
@@ -594,21 +878,42 @@ export default function App() {
       return;
     }
 
+    const key =
+      catalogCacheKey(
+        "swagystan",
+        nextQuery.sort,
+      );
+
     setCatalogPending(true);
 
     try {
-      const [
-        baseShopData,
-        baseProducts,
-      ] = await Promise.all([
-        getShop(
-          "swagystan",
-        ),
-        getShopProducts(
-          "swagystan",
-          nextQuery,
-        ),
-      ]);
+      let cached =
+        catalogCacheRef.current.get(
+          key,
+        );
+
+      if (!cached) {
+        const baseProducts =
+          await getShopProducts(
+            "swagystan",
+            nextQuery,
+          );
+
+        cached = {
+          shop: baseShop,
+          products:
+            baseProducts,
+        };
+
+        catalogCacheRef.current.set(
+          key,
+          cached,
+        );
+
+        warmProductImages(
+          baseProducts,
+        );
+      }
 
       skipShopLoadRef.current =
         "swagystan";
@@ -616,8 +921,10 @@ export default function App() {
       skipProductLoadRef.current =
         "swagystan";
 
-      setShop(baseShopData);
-      setProducts(baseProducts);
+      setShop(cached.shop);
+      setProducts(
+        cached.products,
+      );
       setError(false);
       setShopError(false);
       setQuery(nextQuery);
@@ -695,7 +1002,7 @@ export default function App() {
     activeShopSlug;
 
   const catalogTransition = {
-    duration: 0.26,
+    duration: 0.13,
     ease: [
       0.22,
       1,
@@ -862,6 +1169,9 @@ export default function App() {
           onSelect={
             handleSwitchShop
           }
+          onPrefetch={
+            prefetchShop
+          }
           pending={
             catalogPending
           }
@@ -870,75 +1180,52 @@ export default function App() {
           }
         />
 
-        <AnimatePresence
-          initial={false}
-          mode="wait"
-        >
-          <motion.div
-            key={`filters-${catalogKey}`}
-            className="shop-content-stage"
-            initial={{
-              opacity: 0,
-              y: 6,
-            }}
-            animate={{
-              opacity:
-                catalogPending
-                  ? 0.72
-                  : 1,
-              y: 0,
-            }}
-            exit={{
-              opacity: 0,
-              y: -4,
-            }}
-            transition={
-              catalogTransition
-            }
-          >
-            <Filters
-              categories={
-                categories
-              }
-              query={query}
-              onChange={(
-                nextQuery,
-              ) =>
-                setQuery(
-                  nextQuery,
-                )
-              }
-            />
-          </motion.div>
-        </AnimatePresence>
-      </div>
-
-      <AnimatePresence
-        initial={false}
-        mode="wait"
-      >
         <motion.div
-          key={`catalog-${catalogKey}`}
+          key={`filters-${catalogKey}`}
           className="shop-content-stage"
           initial={{
-            opacity: 0,
-            y: 8,
+            opacity: 0.9,
+            y: 2,
           }}
           animate={{
-            opacity:
-              catalogPending
-                ? 0.72
-                : 1,
+            opacity: 1,
             y: 0,
-          }}
-          exit={{
-            opacity: 0,
-            y: -6,
           }}
           transition={
             catalogTransition
           }
         >
+          <Filters
+            categories={
+              categories
+            }
+            query={query}
+            onChange={(
+              nextQuery,
+            ) =>
+              setQuery(
+                nextQuery,
+              )
+            }
+          />
+        </motion.div>
+      </div>
+
+      <motion.div
+        key={`catalog-${catalogKey}`}
+        className="shop-content-stage"
+        initial={{
+          opacity: 0.88,
+          y: 3,
+        }}
+        animate={{
+          opacity: 1,
+          y: 0,
+        }}
+        transition={
+          catalogTransition
+        }
+      >
           <main className="container">
           {loading ||
           shopLoading ? (
@@ -1025,7 +1312,6 @@ export default function App() {
             </div>
           </footer>
         </motion.div>
-      </AnimatePresence>
 
       {cartOpen && (
         <CartDrawer

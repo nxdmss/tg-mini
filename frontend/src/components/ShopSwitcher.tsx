@@ -24,13 +24,19 @@ type ShopSwitcherProps = {
     shop: Shop,
   ) => Promise<void>;
   onClear: () => Promise<void>;
+  onPrefetch: (
+    shop: Shop,
+  ) => void;
 };
 
-const nameSpring = {
-  type: "spring",
-  stiffness: 520,
-  damping: 46,
-  mass: 0.82,
+const nameMotion = {
+  duration: 0.18,
+  ease: [
+    0.22,
+    1,
+    0.36,
+    1,
+  ],
 } as const;
 
 export function ShopSwitcher({
@@ -41,30 +47,23 @@ export function ShopSwitcher({
   pending,
   onSelect,
   onClear,
+  onPrefetch,
 }: ShopSwitcherProps) {
-  const [
-    mode,
-    setMode,
-  ] = useState<
-    "rail" | "focus"
-  >(
-    selected
-      ? "focus"
-      : "rail",
-  );
+  const [mode, setMode] =
+    useState<
+      "rail" | "focus"
+    >(
+      selected
+        ? "focus"
+        : "rail",
+    );
 
-  const [
-    visualShop,
-    setVisualShop,
-  ] =
+  const [visualShop, setVisualShop] =
     useState<Shop | null>(
       shop,
     );
 
-  const [
-    pressedSlug,
-    setPressedSlug,
-  ] =
+  const [pressedSlug, setPressedSlug] =
     useState<string | null>(
       null,
     );
@@ -121,16 +120,9 @@ export function ShopSwitcher({
     setPressedSlug(
       nextShop.slug,
     );
-
     setVisualShop(
       nextShop,
     );
-
-    /*
-     * This single state change is what Motion needs:
-     * the same layoutId disappears from the rail and appears
-     * in the focused position. No manual coordinates or timers.
-     */
     setMode("focus");
 
     try {
@@ -138,16 +130,10 @@ export function ShopSwitcher({
         nextShop,
       );
     } catch {
-      /*
-       * If loading fails, return to the neutral rail instead of
-       * leaving the interface in a fake selected state.
-       */
       setMode("rail");
 
       if (shop) {
-        setVisualShop(
-          shop,
-        );
+        setVisualShop(shop);
       }
     } finally {
       setPressedSlug(null);
@@ -166,12 +152,6 @@ export function ShopSwitcher({
     setPressedSlug(
       visualShop.slug,
     );
-
-    /*
-     * The focused shared element now reappears in its original
-     * rail position with the same layoutId. Motion performs the
-     * reverse transition automatically.
-     */
     setMode("rail");
 
     try {
@@ -196,9 +176,7 @@ export function ShopSwitcher({
     );
   }
 
-  if (
-    activeShops.length === 0
-  ) {
+  if (activeShops.length === 0) {
     return null;
   }
 
@@ -220,34 +198,25 @@ export function ShopSwitcher({
           <div className="shop-switcher__stage">
             <motion.div
               className="shop-switcher__rail"
-              layout
-              layoutScroll
               initial={false}
               animate={{
                 opacity:
                   mode === "rail"
                     ? 1
                     : 0,
-                y:
+                transform:
                   mode === "rail"
-                    ? 0
-                    : 5,
+                    ? "translate3d(0,0,0)"
+                    : "translate3d(0,3px,0)",
               }}
               transition={{
-                opacity: {
-                  duration: 0.18,
-                },
-                layout:
-                  nameSpring,
-                y: {
-                  duration: 0.22,
-                  ease: [
-                    0.22,
-                    1,
-                    0.36,
-                    1,
-                  ],
-                },
+                duration: 0.12,
+                ease: [
+                  0.22,
+                  1,
+                  0.36,
+                  1,
+                ],
               }}
               style={{
                 pointerEvents:
@@ -268,24 +237,22 @@ export function ShopSwitcher({
                       item.slug;
 
                   return (
-                    <motion.button
+                    <button
                       type="button"
-                      key={
-                        item.id
-                      }
+                      key={item.id}
                       className="shop-switcher__rail-item"
-                      layout="position"
+                      onPointerEnter={() =>
+                        onPrefetch(item)
+                      }
+                      onPointerDown={() =>
+                        onPrefetch(item)
+                      }
                       onClick={() => {
                         void chooseShop(
                           item,
                         );
                       }}
-                      whileTap={{
-                        scale: 0.97,
-                      }}
-                      disabled={
-                        pending
-                      }
+                      disabled={pending}
                       aria-label={`Открыть магазин ${item.name}`}
                     >
                       {isMoving ? (
@@ -293,9 +260,7 @@ export function ShopSwitcher({
                           className="shop-switcher__rail-placeholder"
                           aria-hidden="true"
                         >
-                          {
-                            item.name
-                          }
+                          {item.name}
                         </span>
                       ) : (
                         <motion.span
@@ -303,50 +268,34 @@ export function ShopSwitcher({
                           layoutId={`shop-name-${item.slug}`}
                           transition={{
                             layout:
-                              nameSpring,
+                              nameMotion,
                           }}
                         >
-                          {
-                            item.name
-                          }
+                          {item.name}
                         </motion.span>
                       )}
-                    </motion.button>
+                    </button>
                   );
                 },
               )}
             </motion.div>
 
-            <AnimatePresence
-              initial={false}
-            >
-              {mode ===
-                "focus" && (
+            <AnimatePresence initial={false}>
+              {mode === "focus" && (
                 <motion.button
                   key={`focus-${focusShop.slug}`}
                   type="button"
                   className="shop-switcher__focus"
-                  initial={{
-                    opacity: 0,
-                  }}
-                  animate={{
-                    opacity: 1,
-                  }}
-                  exit={{
-                    opacity: 0,
-                  }}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
                   transition={{
-                    opacity: {
-                      duration:
-                        0.16,
-                    },
+                    duration: 0.08,
                   }}
                   onClick={() => {
                     void clearShop();
                   }}
-                  disabled={
-                    pending
-                  }
+                  disabled={pending}
                   aria-label={`Вернуть ${focusShop.name} в строку магазинов`}
                 >
                   <motion.span
@@ -354,99 +303,47 @@ export function ShopSwitcher({
                     layoutId={`shop-name-${focusShop.slug}`}
                     transition={{
                       layout:
-                        nameSpring,
+                        nameMotion,
                     }}
                   >
-                    {
-                      focusShop.name
-                    }
+                    {focusShop.name}
                   </motion.span>
                 </motion.button>
               )}
             </AnimatePresence>
           </div>
 
-          <AnimatePresence
-            initial={false}
-          >
-            {mode ===
-              "focus" &&
-              visualShop && (
-                <motion.div
-                  key={`details-${visualShop.slug}`}
-                  className="shop-switcher__details"
-                  initial={{
-                    opacity: 0,
-                    height: 0,
-                    y: -4,
-                  }}
-                  animate={{
-                    opacity: 1,
-                    height: "auto",
-                    y: 0,
-                  }}
-                  exit={{
-                    opacity: 0,
-                    height: 0,
-                    y: -3,
-                  }}
-                  transition={{
-                    duration:
-                      0.24,
-                    ease: [
-                      0.22,
-                      1,
-                      0.36,
-                      1,
-                    ],
-                  }}
-                >
-                  {visualShop.description && (
-                    <p className="shop-switcher__description">
-                      {
-                        visualShop.description
-                      }
-                    </p>
-                  )}
-
-                  <div className="shop-switcher__meta">
-                    {
-                      visualShop.productCount
-                    }{" "}
-                    товаров
-                  </div>
-                </motion.div>
-              )}
-          </AnimatePresence>
-        </LayoutGroup>
-
-        <AnimatePresence>
-          {pending && (
+          <div className="shop-switcher__details-slot">
             <motion.div
-              className="shop-switcher__progress"
-              initial={{
-                scaleX: 0,
-                opacity: 0,
-              }}
+              className="shop-switcher__details"
+              initial={false}
               animate={{
-                scaleX: 1,
-                opacity: 1,
-              }}
-              exit={{
-                opacity: 0,
+                opacity:
+                  mode === "focus"
+                    ? 1
+                    : 0,
+                transform:
+                  mode === "focus"
+                    ? "translate3d(0,0,0)"
+                    : "translate3d(0,-2px,0)",
               }}
               transition={{
-                duration: 0.32,
-                ease: [
-                  0.22,
-                  1,
-                  0.36,
-                  1,
-                ],
+                duration: 0.1,
               }}
-            />
-          )}
-        </AnimatePresence>
+              aria-hidden={
+                mode !== "focus"
+              }
+            >
+              <span className="shop-switcher__description">
+                {focusShop.description || ""}
+              </span>
+
+              <span className="shop-switcher__meta">
+                {focusShop.productCount} товаров
+              </span>
+            </motion.div>
+          </div>
+        </LayoutGroup>
       </div>
     </section>
   );
