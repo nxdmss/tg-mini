@@ -38,28 +38,21 @@ export function mountPiskaEgg() {
         "fixed",
       zIndex:
         "3",
+
+      /* fixed hiding place */
       left:
-        `${
-          12 +
-          Math.random() *
-            72
-        }%`,
+        "78%",
       top:
-        `${
-          20 +
-          Math.random() *
-            64
-        }%`,
+        "72%",
+
       transform:
-        `rotate(${
-          -6 +
-          Math.random() *
-            12
-        }deg)`,
+        "rotate(-3deg)",
+
       pointerEvents:
         "none",
       userSelect:
         "none",
+
       fontFamily:
         '"IBM Plex Mono", monospace',
       fontSize:
@@ -70,12 +63,16 @@ export function mountPiskaEgg() {
         "1",
       letterSpacing:
         "0.06em",
+
       opacity:
-        "0.065",
+        "0.06",
+
       color:
         "currentColor",
+
       mixBlendMode:
         "difference",
+
       whiteSpace:
         "nowrap",
     } satisfies Partial<
