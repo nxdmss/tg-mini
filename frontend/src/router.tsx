@@ -7,22 +7,26 @@ import {
 import App from "./App";
 import Admin from "./pages/Admin";
 
+import {
+  AdminGate,
+} from "./components/AdminGate";
+
 export default function Router() {
   return (
     <BrowserRouter>
       <Routes>
         <Route
           path="/admin"
-          element={<Admin />}
+          element={
+            <AdminGate>
+              <Admin />
+            </AdminGate>
+          }
         />
 
         {/*
-          ONE persistent storefront route.
-          App parses /, /catalog, /product/:id,
-          /shop/:slug and /shop/:slug/product/:id itself.
-
-          Because this Route never changes, React never destroys
-          the catalog when ProductDetail opens.
+          One persistent storefront route.
+          This preserves the seamless catalog/product behavior.
         */}
         <Route
           path="/*"
