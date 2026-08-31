@@ -1452,23 +1452,23 @@ export default function App() {
                     className="product-flow-item"
                     initial={{
                       opacity: 0,
-                      y: 10,
+                      y: 22,
                     }}
                     animate={{
                       opacity: 1,
                       y: 0,
                     }}
                     transition={{
-                      duration: 0.22,
+                      duration: 0.46,
                       delay:
                         Math.min(
-                          index * 0.018,
-                          0.12,
+                          index * 0.042,
+                          0.30,
                         ),
                       ease: [
-                        0.22,
+                        0.16,
                         1,
-                        0.36,
+                        0.3,
                         1,
                       ],
                     }}
