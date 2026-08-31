@@ -1,6 +1,7 @@
 .header__inner--store {
   min-width: 0;
   gap: 16px;
+  position: relative;
 }
 
 .header__actions {
@@ -167,6 +168,29 @@
   opacity: 1;
 }
 
+/* faint center label */
+.header__ghost-label {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+
+  transform: translate(-50%, -50%);
+
+  pointer-events: none;
+  user-select: none;
+
+  color: currentColor;
+  opacity: 0.12;
+
+  font-size: 9px;
+  font-weight: 500;
+  line-height: 1;
+
+  letter-spacing: 0.08em;
+  text-transform: lowercase;
+  white-space: nowrap;
+}
+
 @media (max-width: 520px) {
   .header__inner--store {
     gap: 8px;
@@ -198,6 +222,11 @@
 
   .brand__logo-image {
     height: 58px;
+  }
+
+  .header__ghost-label {
+    font-size: 8px;
+    opacity: 0.10;
   }
 }
 
