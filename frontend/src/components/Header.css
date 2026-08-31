@@ -7,50 +7,34 @@
 .header__actions {
   margin-left: auto;
   min-width: 0;
-
   display: flex;
   align-items: center;
   justify-content: flex-end;
-
   gap: 8px;
-
   flex-wrap: nowrap;
 }
 
 .header-action {
   height: 38px;
   min-height: 38px;
-
   padding: 0 14px;
-
   border: 1px solid var(--line-strong);
   border-radius: 999px;
-
   display: inline-flex;
   align-items: center;
   justify-content: center;
-
   gap: 7px;
-
   flex: 0 0 auto;
-
   background: var(--btn-glass-bg);
-
   backdrop-filter: var(--btn-glass-blur);
   -webkit-backdrop-filter: var(--btn-glass-blur);
-
   color: var(--text);
-
   font-size: 13px;
   font-weight: 500;
   line-height: 1;
-
   letter-spacing: 0.02em;
-
   text-decoration: none;
-
   white-space: nowrap;
-
   transition:
     border-color 0.16s ease,
     background 0.16s ease,
@@ -66,15 +50,10 @@
   width: auto;
   min-width: 0;
   min-height: 38px;
-
   padding: 0 14px;
-
   border-radius: 999px;
-
   position: static;
-
   background: var(--btn-glass-bg);
-
   font-size: 13px;
   font-weight: 500;
 }
@@ -82,20 +61,14 @@
 .header-action__badge {
   min-width: 19px;
   height: 19px;
-
   padding: 0 5px;
-
   border: 1px solid var(--line-strong);
   border-radius: 999px;
-
   display: inline-flex;
   align-items: center;
   justify-content: center;
-
   background: var(--btn-glass-bg-strong);
-
   color: var(--text);
-
   font-size: 10px;
   font-weight: 500;
   line-height: 1;
@@ -104,14 +77,10 @@
 .brand__logo {
   flex: 0 0 auto;
   cursor: default;
-
   min-width: 0;
-
   padding: 4px 0 0;
-
   display: inline-flex;
   align-items: center;
-
   background: transparent;
 }
 
@@ -124,26 +93,15 @@
 
 .brand__logo-image {
   grid-area: 1 / 1;
-
   display: block;
-
   width: auto;
   height: 64px;
-
   max-width: 100%;
-
   transform: translateZ(0);
   backface-visibility: hidden;
   will-change: opacity;
-
   transition:
-    opacity 120ms
-    cubic-bezier(
-      0.22,
-      1,
-      0.36,
-      1
-    );
+    opacity 120ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .brand__logo-image--base {
@@ -152,10 +110,7 @@
 
 .brand__logo-image--negative {
   opacity: 0;
-
-  filter:
-    brightness(0)
-    invert(1);
+  filter: brightness(0) invert(1);
 }
 
 .brand__logo--negative
@@ -168,24 +123,18 @@
   opacity: 1;
 }
 
-/* faint center label */
 .header__ghost-label {
   position: absolute;
   left: 50%;
   top: 50%;
-
   transform: translate(-50%, -50%);
-
   pointer-events: none;
   user-select: none;
-
   color: currentColor;
-  opacity: 0.12;
-
+  opacity: 0.075;
   font-size: 9px;
   font-weight: 500;
   line-height: 1;
-
   letter-spacing: 0.08em;
   text-transform: lowercase;
   white-space: nowrap;
@@ -204,19 +153,15 @@
   .header-cart {
     height: 36px;
     min-height: 36px;
-
     padding-left: 11px;
     padding-right: 11px;
-
     font-size: 12px;
   }
 
   .header-action__badge {
     min-width: 18px;
     height: 18px;
-
     padding: 0 4px;
-
     font-size: 9px;
   }
 
@@ -226,7 +171,7 @@
 
   .header__ghost-label {
     font-size: 8px;
-    opacity: 0.10;
+    opacity: 0.06;
   }
 }
 
@@ -235,7 +180,6 @@
   .header-cart {
     padding-left: 9px;
     padding-right: 9px;
-
     font-size: 11px;
   }
 
