@@ -1,0 +1,66 @@
+/*
+  ProductDetail is an app-like layer above a catalog that stays mounted.
+  Closing it reveals the exact same DOM, images and scroll position.
+*/
+
+.product-overlay-shell {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+
+  background: var(--bg);
+  color: var(--text);
+
+  -webkit-overflow-scrolling: touch;
+
+  animation:
+    product-overlay-enter
+    130ms
+    cubic-bezier(
+      0.22,
+      1,
+      0.36,
+      1
+    )
+    both;
+}
+
+@keyframes product-overlay-enter {
+  from {
+    opacity: 0;
+    transform:
+      translate3d(
+        0,
+        5px,
+        0
+      );
+  }
+
+  to {
+    opacity: 1;
+    transform:
+      translate3d(
+        0,
+        0,
+        0
+      );
+  }
+}
+
+.product-overlay-shell
+.product-page,
+.product-overlay-shell
+.product-route-state {
+  min-height: 100dvh;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .product-overlay-shell {
+    animation-duration:
+      1ms;
+  }
+}

@@ -6,8 +6,8 @@ import {
 } from "react";
 import type { CSSProperties } from "react";
 import {
+  useLocation,
   useNavigate,
-  useParams,
 } from "react-router-dom";
 
 import {
@@ -41,6 +41,7 @@ import { ShopSwitcher } from "./components/ShopSwitcher";
 
 import "./components/ShopTransitions.css";
 import "./components/ShopCommerceTheme.css";
+import "./components/ProductOverlay.css";
 
 import { consumeStartParam } from "./telegram";
 
@@ -51,10 +52,96 @@ import {
   stopPrankAudio,
 } from "./prank";
 
-type AppRouteParams = {
-  id?: string;
+type StorefrontRoute = {
   shopSlug?: string;
+  productId?: string;
+  valid: boolean;
 };
+
+function decodePathPart(
+  value: string,
+) {
+  try {
+    return decodeURIComponent(
+      value,
+    );
+  } catch {
+    return value;
+  }
+}
+
+function parseStorefrontRoute(
+  pathname: string,
+): StorefrontRoute {
+  const parts =
+    pathname
+      .split("/")
+      .filter(Boolean)
+      .map(
+        decodePathPart,
+      );
+
+  if (
+    parts.length === 0 ||
+    (
+      parts.length === 1 &&
+      parts[0] ===
+        "catalog"
+    )
+  ) {
+    return {
+      valid: true,
+    };
+  }
+
+  if (
+    parts.length === 2 &&
+    parts[0] ===
+      "product" &&
+    parts[1]
+  ) {
+    return {
+      valid: true,
+      productId:
+        parts[1],
+    };
+  }
+
+  if (
+    parts.length === 2 &&
+    parts[0] ===
+      "shop" &&
+    parts[1]
+  ) {
+    return {
+      valid: true,
+      shopSlug:
+        parts[1],
+    };
+  }
+
+  if (
+    parts.length === 4 &&
+    parts[0] ===
+      "shop" &&
+    parts[1] &&
+    parts[2] ===
+      "product" &&
+    parts[3]
+  ) {
+    return {
+      valid: true,
+      shopSlug:
+        parts[1],
+      productId:
+        parts[3],
+    };
+  }
+
+  return {
+    valid: false,
+  };
+}
 
 type ShopThemeStyle =
   CSSProperties & {
@@ -138,14 +225,46 @@ function warmProductImages(
 }
 
 export default function App() {
-  const {
-    id: productIdFromUrl,
-    shopSlug,
-  } =
-    useParams<AppRouteParams>();
+  const location =
+    useLocation();
 
   const navigate =
     useNavigate();
+
+  const storefrontRoute =
+    useMemo(
+      () =>
+        parseStorefrontRoute(
+          location.pathname,
+        ),
+      [
+        location.pathname,
+      ],
+    );
+
+  const productIdFromUrl =
+    storefrontRoute.productId;
+
+  const shopSlug =
+    storefrontRoute.shopSlug;
+
+  useEffect(() => {
+    if (
+      storefrontRoute.valid
+    ) {
+      return;
+    }
+
+    navigate(
+      "/",
+      {
+        replace: true,
+      },
+    );
+  }, [
+    storefrontRoute.valid,
+    navigate,
+  ]);
 
   const [
     products,
@@ -200,6 +319,9 @@ export default function App() {
     useRef<string | null>(
       null,
     );
+
+  const catalogScrollYRef =
+    useRef(0);
 
 
   const catalogCacheRef =
@@ -278,6 +400,46 @@ export default function App() {
       ? `/shop/${shopSlug}`
       : "/";
 
+  useEffect(() => {
+    if (
+      !isProductPage
+    ) {
+      return;
+    }
+
+    catalogScrollYRef.current =
+      window.scrollY;
+
+    const previousOverflow =
+      document.body.style
+        .overflow;
+
+    document.body.style.overflow =
+      "hidden";
+
+    return () => {
+      document.body.style.overflow =
+        previousOverflow;
+
+      const restoreY =
+        catalogScrollYRef.current;
+
+      window.requestAnimationFrame(
+        () => {
+          window.scrollTo({
+            top:
+              restoreY,
+            left: 0,
+            behavior:
+              "auto",
+          });
+        },
+      );
+    };
+  }, [
+    isProductPage,
+  ]);
+
   const selectedProduct =
     useMemo(() => {
       if (
@@ -342,7 +504,6 @@ export default function App() {
    */
   useEffect(() => {
     if (
-      productIdFromUrl ||
       loading ||
       !shop ||
       query.category ||
@@ -372,7 +533,6 @@ export default function App() {
       products,
     );
   }, [
-    productIdFromUrl,
     loading,
     shop,
     products,
@@ -389,7 +549,6 @@ export default function App() {
    */
   useEffect(() => {
     if (
-      productIdFromUrl ||
       shops.length === 0
     ) {
       return;
@@ -473,7 +632,6 @@ export default function App() {
   }, [
     shops,
     query.sort,
-    productIdFromUrl,
   ]);
 
   useEffect(() => {
@@ -546,12 +704,6 @@ export default function App() {
   }, [shop]);
 
   useEffect(() => {
-    if (
-      productIdFromUrl
-    ) {
-      return;
-    }
-
     const resolvedShopSlug =
       activeShopSlug;
 
@@ -611,17 +763,10 @@ export default function App() {
     };
   }, [
     query,
-    productIdFromUrl,
     activeShopSlug,
   ]);
 
   useEffect(() => {
-    if (
-      productIdFromUrl
-    ) {
-      return;
-    }
-
     let active = true;
 
     async function loadCategories() {
@@ -646,9 +791,7 @@ export default function App() {
     return () => {
       active = false;
     };
-  }, [
-    productIdFromUrl,
-  ]);
+  }, []);
 
   useEffect(() => {
     const startParam =
@@ -1090,45 +1233,27 @@ export default function App() {
     activeShopSlug;
 
 
-  if (isProductPage) {
-    if (
-      isShopRoute &&
-      shopError
-    ) {
-      return (
-        <div
-          className="app"
-          style={
-            shopThemeStyle
-          }
-        >
+  const productOverlay =
+    isProductPage ? (
+      <div className="product-overlay-shell">
+        {isShopRoute &&
+        shopError ? (
           <main className="product-route-state">
             <button
               type="button"
               className="product-route-state__back"
-              onClick={() =>
-                navigate("/")
+              onClick={
+                closeProduct
               }
             >
-              ←
+              ‹
             </button>
 
             <div className="product-route-state__text">
               МАГАЗИН НЕ НАЙДЕН
             </div>
           </main>
-        </div>
-      );
-    }
-
-    return (
-      <div
-        className="app"
-        style={
-          shopThemeStyle
-        }
-      >
-        {selectedProduct ? (
+        ) : selectedProduct ? (
           isPrankProduct(
             selectedProduct,
           ) ? (
@@ -1161,7 +1286,7 @@ export default function App() {
                 closeProduct
               }
             >
-              ←
+              ‹
             </button>
 
             <div className="product-route-state__text">
@@ -1175,21 +1300,12 @@ export default function App() {
             </div>
           </main>
         )}
-
-        {cartOpen && (
-          <CartDrawer
-            onClose={() =>
-              setCartOpen(
-                false,
-              )
-            }
-          />
-        )}
       </div>
-    );
-  }
+    ) : null;
+
 
   if (
+    !isProductPage &&
     isShopRoute &&
     shopError
   ) {
@@ -1386,6 +1502,8 @@ export default function App() {
             </div>
           </footer>
         </div>
+
+      {productOverlay}
 
       {cartOpen && (
         <CartDrawer

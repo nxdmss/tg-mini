@@ -1,6 +1,5 @@
 import {
   BrowserRouter,
-  Navigate,
   Route,
   Routes,
 } from "react-router-dom";
@@ -8,54 +7,26 @@ import {
 import App from "./App";
 import Admin from "./pages/Admin";
 
-function NotFound() {
-  return (
-    <Navigate
-      to="/"
-      replace
-    />
-  );
-}
-
 export default function Router() {
   return (
     <BrowserRouter>
       <Routes>
         <Route
-          path="/"
-          element={<App />}
-        />
-
-        <Route
-          path="/catalog"
-          element={<App />}
-        />
-
-        <Route
-          path="/product/:id"
-          element={<App />}
-        />
-
-        <Route
-          path="/shop/:shopSlug"
-          element={<App />}
-        />
-
-        <Route
-          path="/shop/:shopSlug/product/:id"
-          element={<App />}
-        />
-
-        <Route
           path="/admin"
           element={<Admin />}
         />
 
+        {/*
+          ONE persistent storefront route.
+          App parses /, /catalog, /product/:id,
+          /shop/:slug and /shop/:slug/product/:id itself.
+
+          Because this Route never changes, React never destroys
+          the catalog when ProductDetail opens.
+        */}
         <Route
-          path="*"
-          element={
-            <NotFound />
-          }
+          path="/*"
+          element={<App />}
         />
       </Routes>
     </BrowserRouter>
