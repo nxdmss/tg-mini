@@ -11,8 +11,10 @@ import "./index.css";
 import Router from "./router";
 import { CartProvider } from "./cart";
 import { initTelegram } from "./telegram";
+import { mountPiskaEgg } from "./piskaEgg";
 
 initTelegram();
+mountPiskaEgg();
 
 const rootElement =
   document.getElementById("root");
