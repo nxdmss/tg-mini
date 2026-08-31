@@ -1,6 +1,7 @@
 import {
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import type { CSSProperties } from "react";
@@ -8,6 +9,11 @@ import {
   useNavigate,
   useParams,
 } from "react-router-dom";
+
+import {
+  AnimatePresence,
+  motion,
+} from "motion/react";
 
 import {
   getCategories,
@@ -106,19 +112,20 @@ export default function App() {
     useState(false);
 
   const [
-    switchingTo,
-    setSwitchingTo,
+    catalogPending,
+    setCatalogPending,
   ] =
-    useState<Shop | null>(
+    useState(false);
+
+  const skipShopLoadRef =
+    useRef<string | null>(
       null,
     );
 
-  const [
-    shopTransition,
-    setShopTransition,
-  ] = useState<
-    "idle" | "out" | "in"
-  >("idle");
+  const skipProductLoadRef =
+    useRef<string | null>(
+      null,
+    );
 
   useEffect(() => {
     preloadPrankAssets();
@@ -243,6 +250,17 @@ export default function App() {
     const resolvedShopSlug =
       activeShopSlug;
 
+    if (
+      skipShopLoadRef.current ===
+      resolvedShopSlug
+    ) {
+      skipShopLoadRef.current =
+        null;
+
+      setShopLoading(false);
+      return;
+    }
+
     let active = true;
 
     async function loadShop() {
@@ -295,6 +313,17 @@ export default function App() {
     const resolvedShopSlug =
       activeShopSlug;
 
+    if (
+      skipProductLoadRef.current ===
+      resolvedShopSlug
+    ) {
+      skipProductLoadRef.current =
+        null;
+
+      setLoading(false);
+      return;
+    }
+
     let active = true;
 
     async function loadProducts() {
@@ -331,74 +360,6 @@ export default function App() {
   }, [
     query,
     productIdFromUrl,
-    activeShopSlug,
-  ]);
-
-  useEffect(() => {
-    if (
-      shopTransition !==
-        "out" ||
-      !switchingTo ||
-      shop?.slug !==
-        switchingTo.slug ||
-      shopLoading ||
-      loading
-    ) {
-      return;
-    }
-
-    setShopTransition(
-      "in",
-    );
-
-    const timer =
-      window.setTimeout(
-        () => {
-          setShopTransition(
-            "idle",
-          );
-
-          setSwitchingTo(
-            null,
-          );
-        },
-        520,
-      );
-
-    return () => {
-      window.clearTimeout(
-        timer,
-      );
-    };
-  }, [
-    shopTransition,
-    switchingTo,
-    shop,
-    shopLoading,
-    loading,
-  ]);
-
-  useEffect(() => {
-    if (
-      shopTransition ===
-        "out" &&
-      switchingTo &&
-      shopError &&
-      activeShopSlug ===
-        switchingTo.slug
-    ) {
-      setShopTransition(
-        "idle",
-      );
-
-      setSwitchingTo(
-        null,
-      );
-    }
-  }, [
-    shopTransition,
-    switchingTo,
-    shopError,
     activeShopSlug,
   ]);
 
@@ -543,79 +504,132 @@ export default function App() {
     products,
   ]);
 
-  function handleSwitchShop(
+  async function handleSwitchShop(
     nextShop: Shop,
   ) {
     if (
+      catalogPending ||
       shopSlug ===
-      nextShop.slug
+        nextShop.slug
     ) {
       return;
     }
 
-    setSwitchingTo(
-      nextShop,
-    );
+    const nextQuery:
+      ProductsQuery = {
+        sort:
+          query.sort ||
+          "name_asc",
+      };
 
-    setShopTransition(
-      "out",
-    );
+    setCatalogPending(true);
 
-    window.setTimeout(
-      () => {
-        setQuery(
-          (current) => ({
-            sort:
-              current.sort ||
-              "name_asc",
-          }),
-        );
+    try {
+      const [
+        nextShopData,
+        nextProducts,
+      ] = await Promise.all([
+        getShop(
+          nextShop.slug,
+        ),
+        getShopProducts(
+          nextShop.slug,
+          nextQuery,
+        ),
+      ]);
 
-        navigate(
-          `/shop/${nextShop.slug}`,
-        );
-      },
-      170,
-    );
+      skipShopLoadRef.current =
+        nextShop.slug;
+
+      skipProductLoadRef.current =
+        nextShop.slug;
+
+      setShop(nextShopData);
+      setProducts(nextProducts);
+      setError(false);
+      setShopError(false);
+      setQuery(nextQuery);
+
+      navigate(
+        `/shop/${nextShop.slug}`,
+      );
+    } catch {
+      throw new Error(
+        "SHOP_SWITCH_FAILED",
+      );
+    } finally {
+      setCatalogPending(false);
+    }
   }
 
-  function handleClearShop() {
+  async function handleClearShop() {
+    if (catalogPending) {
+      return;
+    }
+
     const baseShop =
       shops.find(
         (item) =>
           item.slug ===
           "swagystan",
-      ) ||
-      shop;
-
-    if (
-      baseShop &&
-      baseShop.slug !==
-      activeShopSlug
-    ) {
-      setSwitchingTo(
-        baseShop,
       );
 
-      setShopTransition(
-        "out",
-      );
+    if (!baseShop) {
+      return;
     }
 
-    window.setTimeout(
-      () => {
-        setQuery(
-          (current) => ({
-            sort:
-              current.sort ||
-              "name_asc",
-          }),
-        );
+    const nextQuery:
+      ProductsQuery = {
+        sort:
+          query.sort ||
+          "name_asc",
+      };
 
-        navigate("/");
-      },
-      80,
-    );
+    if (
+      activeShopSlug ===
+      "swagystan"
+    ) {
+      setQuery(nextQuery);
+      navigate("/");
+      return;
+    }
+
+    setCatalogPending(true);
+
+    try {
+      const [
+        baseShopData,
+        baseProducts,
+      ] = await Promise.all([
+        getShop(
+          "swagystan",
+        ),
+        getShopProducts(
+          "swagystan",
+          nextQuery,
+        ),
+      ]);
+
+      skipShopLoadRef.current =
+        "swagystan";
+
+      skipProductLoadRef.current =
+        "swagystan";
+
+      setShop(baseShopData);
+      setProducts(baseProducts);
+      setError(false);
+      setShopError(false);
+      setQuery(nextQuery);
+
+      navigate("/");
+    } catch {
+      throw new Error(
+        "SHOP_CLEAR_FAILED",
+      );
+    } finally {
+      setCatalogPending(false);
+    }
   }
 
   function openProduct(
@@ -659,34 +673,41 @@ export default function App() {
     );
   }
 
-  const themeShop =
-    switchingTo || shop;
-
   const shopThemeStyle:
     ShopThemeStyle =
-    themeShop
+    shop
       ? {
           "--bg":
-            themeShop.backgroundColor,
+            shop.backgroundColor,
           "--text":
-            themeShop.textColor,
+            shop.textColor,
           "--shop-accent":
-            themeShop.accentColor,
+            shop.accentColor,
           background:
-            themeShop.backgroundColor,
+            shop.backgroundColor,
           color:
-            themeShop.textColor,
+            shop.textColor,
         }
       : {};
 
-  const contentClass =
-    shopTransition ===
-    "out"
-      ? "shop-content-stage shop-content-stage--out"
-      : shopTransition ===
-          "in"
-        ? "shop-content-stage shop-content-stage--in"
-        : "shop-content-stage";
+  const catalogKey =
+    shop?.slug ||
+    activeShopSlug;
+
+  const catalogTransition = {
+    duration: 0.26,
+    ease: [
+      0.22,
+      1,
+      0.36,
+      1,
+    ] as [
+      number,
+      number,
+      number,
+      number,
+    ],
+  };
 
   if (isProductPage) {
     if (
@@ -841,38 +862,84 @@ export default function App() {
           onSelect={
             handleSwitchShop
           }
+          pending={
+            catalogPending
+          }
           onClear={
             handleClearShop
           }
         />
 
-        <div
-          className={
-            contentClass
-          }
+        <AnimatePresence
+          initial={false}
+          mode="wait"
         >
-          <Filters
-            categories={
-              categories
+          <motion.div
+            key={`filters-${catalogKey}`}
+            className="shop-content-stage"
+            initial={{
+              opacity: 0,
+              y: 6,
+            }}
+            animate={{
+              opacity:
+                catalogPending
+                  ? 0.72
+                  : 1,
+              y: 0,
+            }}
+            exit={{
+              opacity: 0,
+              y: -4,
+            }}
+            transition={
+              catalogTransition
             }
-            query={query}
-            onChange={(
-              nextQuery,
-            ) =>
-              setQuery(
+          >
+            <Filters
+              categories={
+                categories
+              }
+              query={query}
+              onChange={(
                 nextQuery,
-              )
-            }
-          />
-        </div>
+              ) =>
+                setQuery(
+                  nextQuery,
+                )
+              }
+            />
+          </motion.div>
+        </AnimatePresence>
       </div>
 
-      <div
-        className={
-          contentClass
-        }
+      <AnimatePresence
+        initial={false}
+        mode="wait"
       >
-        <main className="container">
+        <motion.div
+          key={`catalog-${catalogKey}`}
+          className="shop-content-stage"
+          initial={{
+            opacity: 0,
+            y: 8,
+          }}
+          animate={{
+            opacity:
+              catalogPending
+                ? 0.72
+                : 1,
+            y: 0,
+          }}
+          exit={{
+            opacity: 0,
+            y: -6,
+          }}
+          transition={
+            catalogTransition
+          }
+        >
+          <main className="container">
           {loading ||
           shopLoading ? (
             <div className="grid grid--skeleton">
@@ -949,15 +1016,16 @@ export default function App() {
           )}
         </main>
 
-        <footer className="footer">
-          <div className="container footer__inner">
-            <span className="footer__brand">
-              {shop?.name ||
-                "SWA6Y5TAN"}
-            </span>
-          </div>
-        </footer>
-      </div>
+          <footer className="footer">
+            <div className="container footer__inner">
+              <span className="footer__brand">
+                {shop?.name ||
+                  "SWA6Y5TAN"}
+              </span>
+            </div>
+          </footer>
+        </motion.div>
+      </AnimatePresence>
 
       {cartOpen && (
         <CartDrawer

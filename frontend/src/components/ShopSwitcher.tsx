@@ -1,9 +1,14 @@
 import {
   useEffect,
   useMemo,
-  useRef,
   useState,
 } from "react";
+
+import {
+  AnimatePresence,
+  LayoutGroup,
+  motion,
+} from "motion/react";
 
 import type { Shop } from "../shopApi";
 
@@ -14,180 +19,26 @@ type ShopSwitcherProps = {
   shops: Shop[];
   loading: boolean;
   selected: boolean;
-  onSelect: (shop: Shop) => void;
-  onClear: () => void;
+  pending: boolean;
+  onSelect: (
+    shop: Shop,
+  ) => Promise<void>;
+  onClear: () => Promise<void>;
 };
 
-type NameRefs = Record<
-  string,
-  HTMLSpanElement | null
->;
-
-function nextFrame() {
-  return new Promise<void>(
-    (resolve) => {
-      window.requestAnimationFrame(
-        () => {
-          window.requestAnimationFrame(
-            () => resolve(),
-          );
-        },
-      );
-    },
-  );
-}
-
-function wait(
-  duration: number,
-) {
-  return new Promise<void>(
-    (resolve) => {
-      window.setTimeout(
-        resolve,
-        duration,
-      );
-    },
-  );
-}
-
-function centerRailItemInstantly(
-  rail: HTMLDivElement | null,
-  target: HTMLElement | null,
-) {
-  if (!rail || !target) {
-    return;
-  }
-
-  const nextLeft =
-    target.offsetLeft -
-    (rail.clientWidth -
-      target.offsetWidth) /
-      2;
-
-  rail.scrollLeft =
-    Math.max(
-      0,
-      nextLeft,
-    );
-}
-
-async function flyName(
-  from: HTMLElement,
-  to: HTMLElement,
-  name: string,
-) {
-  const fromRect =
-    from.getBoundingClientRect();
-
-  const toRect =
-    to.getBoundingClientRect();
-
-  const fromStyle =
-    window.getComputedStyle(from);
-
-  const toStyle =
-    window.getComputedStyle(to);
-
-  const fromSize =
-    Number.parseFloat(
-      fromStyle.fontSize,
-    ) || 24;
-
-  const toSize =
-    Number.parseFloat(
-      toStyle.fontSize,
-    ) || fromSize;
-
-  const scale =
-    toSize / fromSize;
-
-  const dx =
-    toRect.left -
-    fromRect.left;
-
-  const dy =
-    toRect.top -
-    fromRect.top;
-
-  const ghost =
-    document.createElement("div");
-
-  ghost.className =
-    "shop-name-flight";
-
-  ghost.textContent = name;
-
-  Object.assign(
-    ghost.style,
-    {
-      left:
-        `${fromRect.left}px`,
-      top:
-        `${fromRect.top}px`,
-      width:
-        `${Math.max(
-          fromRect.width,
-          1,
-        )}px`,
-      fontFamily:
-        fromStyle.fontFamily,
-      fontWeight:
-        fromStyle.fontWeight,
-      fontSize:
-        fromStyle.fontSize,
-      lineHeight:
-        fromStyle.lineHeight,
-      letterSpacing:
-        fromStyle.letterSpacing,
-      color:
-        fromStyle.color,
-    },
-  );
-
-  document.body.appendChild(
-    ghost,
-  );
-
-  try {
-    const animation =
-      ghost.animate(
-        [
-          {
-            transform:
-              "translate3d(0, 0, 0) scale(1)",
-            opacity: 1,
-          },
-          {
-            offset: 0.82,
-            opacity: 1,
-          },
-          {
-            transform:
-              `translate3d(${dx}px, ${dy}px, 0) scale(${scale})`,
-            opacity: 1,
-          },
-        ],
-        {
-          duration: 520,
-          easing:
-            "cubic-bezier(0.22, 1, 0.36, 1)",
-          fill: "forwards",
-        },
-      );
-
-    await animation.finished;
-  } catch {
-    // Animation cancellation is harmless.
-  } finally {
-    ghost.remove();
-  }
-}
+const nameSpring = {
+  type: "spring",
+  stiffness: 520,
+  damping: 46,
+  mass: 0.82,
+} as const;
 
 export function ShopSwitcher({
   shop,
   shops,
   loading,
   selected,
+  pending,
   onSelect,
   onClear,
 }: ShopSwitcherProps) {
@@ -203,57 +54,20 @@ export function ShopSwitcher({
   );
 
   const [
-    displayShop,
-    setDisplayShop,
+    visualShop,
+    setVisualShop,
   ] =
     useState<Shop | null>(
       shop,
     );
 
   const [
-    flyingSlug,
-    setFlyingSlug,
+    pressedSlug,
+    setPressedSlug,
   ] =
     useState<string | null>(
       null,
     );
-
-  const [
-    pickedSlug,
-    setPickedSlug,
-  ] =
-    useState<string | null>(
-      null,
-    );
-
-  /*
-   * Important:
-   * While a new shop is being loaded App still temporarily has
-   * the previous shop object. We lock the intended slug so that
-   * the title can never jump:
-   *
-   * ZULF -> SWA6Y5TAN -> ZULF
-   */
-  const lockedSlugRef =
-    useRef<string | null>(
-      selected
-        ? shop?.slug ??
-          null
-        : null,
-    );
-
-  const mainNameRef =
-    useRef<HTMLSpanElement | null>(
-      null,
-    );
-
-  const railRef =
-    useRef<HTMLDivElement | null>(
-      null,
-    );
-
-  const railNameRefs =
-    useRef<NameRefs>({});
 
   const activeShops =
     useMemo(
@@ -266,339 +80,373 @@ export function ShopSwitcher({
     );
 
   useEffect(() => {
-    if (!shop) {
-      return;
-    }
-
-    const lockedSlug =
-      lockedSlugRef.current;
-
     if (
-      lockedSlug &&
-      shop.slug !==
-        lockedSlug
+      !shop ||
+      pending
     ) {
       return;
     }
 
-    setDisplayShop(shop);
-
-    if (
-      lockedSlug ===
-      shop.slug
-    ) {
-      lockedSlugRef.current =
-        null;
-    }
-  }, [shop]);
-
-  useEffect(() => {
-    if (flyingSlug) {
-      return;
-    }
-
-    if (selected) {
-      setMode("focus");
-      return;
-    }
-
-    lockedSlugRef.current =
-      null;
-
-    setPickedSlug(null);
-    setMode("rail");
+    setVisualShop(shop);
   }, [
-    selected,
-    flyingSlug,
+    shop,
+    pending,
   ]);
 
-  async function selectShop(
+  useEffect(() => {
+    if (pending) {
+      return;
+    }
+
+    setMode(
+      selected
+        ? "focus"
+        : "rail",
+    );
+  }, [
+    selected,
+    pending,
+  ]);
+
+  async function chooseShop(
     nextShop: Shop,
   ) {
     if (
-      flyingSlug ||
-      mode !== "rail"
+      pending ||
+      pressedSlug
     ) {
       return;
     }
 
-    const from =
-      railNameRefs.current[
-        nextShop.slug
-      ];
+    setPressedSlug(
+      nextShop.slug,
+    );
 
-    /*
-     * Freeze the selected shop immediately.
-     * Any stale shop response is ignored until this slug arrives.
-     */
-    lockedSlugRef.current =
-      nextShop.slug;
-
-    setDisplayShop(
+    setVisualShop(
       nextShop,
     );
 
-    setPickedSlug(
-      nextShop.slug,
-    );
-
-    setFlyingSlug(
-      nextShop.slug,
-    );
-
-    await nextFrame();
-
-    const to =
-      mainNameRef.current;
-
+    /*
+     * This single state change is what Motion needs:
+     * the same layoutId disappears from the rail and appears
+     * in the focused position. No manual coordinates or timers.
+     */
     setMode("focus");
 
-    /*
-     * Start loading the real route while the name is still flying.
-     * The old shop object can no longer overwrite displayShop.
-     */
-    window.setTimeout(
-      () => {
-        onSelect(nextShop);
-      },
-      90,
-    );
-
-    if (
-      from &&
-      to
-    ) {
-      await flyName(
-        from,
-        to,
-        nextShop.name,
+    try {
+      await onSelect(
+        nextShop,
       );
-    } else {
-      await wait(500);
-    }
+    } catch {
+      /*
+       * If loading fails, return to the neutral rail instead of
+       * leaving the interface in a fake selected state.
+       */
+      setMode("rail");
 
-    setFlyingSlug(null);
-    setPickedSlug(null);
+      if (shop) {
+        setVisualShop(
+          shop,
+        );
+      }
+    } finally {
+      setPressedSlug(null);
+    }
   }
 
   async function clearShop() {
     if (
-      !displayShop ||
-      flyingSlug ||
-      mode !== "focus"
+      pending ||
+      !visualShop ||
+      pressedSlug
     ) {
       return;
     }
 
-    const target =
-      railNameRefs.current[
-        displayShop.slug
-      ];
+    setPressedSlug(
+      visualShop.slug,
+    );
 
     /*
-     * The rail is hidden here, so reposition it without smooth-scroll.
-     * This avoids mobile layout/scroll fighting with the flight animation.
+     * The focused shared element now reappears in its original
+     * rail position with the same layoutId. Motion performs the
+     * reverse transition automatically.
      */
-    centerRailItemInstantly(
-      railRef.current,
-      target,
-    );
-
-    await nextFrame();
-
-    const from =
-      mainNameRef.current;
-
-    const to =
-      railNameRefs.current[
-        displayShop.slug
-      ];
-
-    setFlyingSlug(
-      displayShop.slug,
-    );
-
     setMode("rail");
 
-    if (
-      from &&
-      to
-    ) {
-      await flyName(
-        from,
-        to,
-        displayShop.name,
-      );
-    } else {
-      await wait(500);
+    try {
+      await onClear();
+    } catch {
+      setMode("focus");
+    } finally {
+      setPressedSlug(null);
     }
-
-    setFlyingSlug(null);
-    setPickedSlug(null);
-
-    /*
-     * Only after the visible title has safely returned to the rail
-     * do we restore the neutral base state.
-     */
-    onClear();
-
-    window.setTimeout(
-      () => {
-        if (
-          railRef.current
-        ) {
-          railRef.current.scrollTo({
-            left: 0,
-            behavior:
-              "smooth",
-          });
-        }
-      },
-      120,
-    );
   }
 
   if (
     loading &&
-    !displayShop
+    activeShops.length === 0
   ) {
     return (
-      <section className="shop-motion shop-motion--loading">
+      <section className="shop-switcher">
         <div className="container">
-          <div className="shop-motion__skeleton" />
+          <div className="shop-switcher__skeleton" />
         </div>
       </section>
     );
   }
 
-  if (!displayShop) {
+  if (
+    activeShops.length === 0
+  ) {
     return null;
   }
 
+  const focusShop =
+    visualShop ||
+    shop ||
+    activeShops[0];
+
   return (
     <section
-      className={`shop-motion ${
-        mode === "rail"
-          ? "is-choosing"
-          : "is-focused"
+      className={`shop-switcher ${
+        pending
+          ? "is-pending"
+          : ""
       }`}
     >
-      <div className="container shop-motion__inner">
-        <div className="shop-motion__stage">
-          <button
-            type="button"
-            className="shop-focus"
-            onClick={() => {
-              void clearShop();
-            }}
-            aria-hidden={
-              mode !== "focus"
-            }
-            tabIndex={
-              mode === "focus"
-                ? 0
-                : -1
-            }
-            aria-label={`Вернуть ${displayShop.name} в список магазинов`}
-          >
-            <span
-              ref={
-                mainNameRef
+      <div className="container shop-switcher__inner">
+        <LayoutGroup id="swag-shop-switcher">
+          <div className="shop-switcher__stage">
+            <motion.div
+              className="shop-switcher__rail"
+              layout
+              layoutScroll
+              initial={false}
+              animate={{
+                opacity:
+                  mode === "rail"
+                    ? 1
+                    : 0,
+                y:
+                  mode === "rail"
+                    ? 0
+                    : 5,
+              }}
+              transition={{
+                opacity: {
+                  duration: 0.18,
+                },
+                layout:
+                  nameSpring,
+                y: {
+                  duration: 0.22,
+                  ease: [
+                    0.22,
+                    1,
+                    0.36,
+                    1,
+                  ],
+                },
+              }}
+              style={{
+                pointerEvents:
+                  mode === "rail" &&
+                  !pending
+                    ? "auto"
+                    : "none",
+              }}
+              aria-hidden={
+                mode !== "rail"
               }
-              className={`shop-focus__name ${
-                flyingSlug ===
-                displayShop.slug
-                  ? "is-flying"
-                  : ""
-              }`}
-            >
-              {
-                displayShop.name
-              }
-            </span>
-          </button>
-
-          <div
-            className="shop-rail-wrap"
-            aria-hidden={
-              mode !== "rail"
-            }
-          >
-            <div
-              ref={railRef}
-              className="shop-rail"
             >
               {activeShops.map(
-                (item) => (
-                  <button
-                    type="button"
-                    key={
-                      item.id
-                    }
-                    className={`shop-rail__item ${
-                      pickedSlug ===
-                      item.slug
-                        ? "is-picked"
-                        : ""
-                    }`}
-                    onClick={() => {
-                      void selectShop(
-                        item,
-                      );
-                    }}
-                    tabIndex={
-                      mode === "rail"
-                        ? 0
-                        : -1
-                    }
-                  >
-                    <span
-                      ref={(
-                        node,
-                      ) => {
-                        railNameRefs.current[
-                          item.slug
-                        ] = node;
-                      }}
-                      className={`shop-rail__name ${
-                        flyingSlug ===
-                        item.slug
-                          ? "is-flying"
-                          : ""
-                      }`}
-                    >
-                      {
-                        item.name
+                (item) => {
+                  const isMoving =
+                    mode === "focus" &&
+                    focusShop.slug ===
+                      item.slug;
+
+                  return (
+                    <motion.button
+                      type="button"
+                      key={
+                        item.id
                       }
-                    </span>
-                  </button>
-                ),
+                      className="shop-switcher__rail-item"
+                      layout="position"
+                      onClick={() => {
+                        void chooseShop(
+                          item,
+                        );
+                      }}
+                      whileTap={{
+                        scale: 0.97,
+                      }}
+                      disabled={
+                        pending
+                      }
+                      aria-label={`Открыть магазин ${item.name}`}
+                    >
+                      {isMoving ? (
+                        <span
+                          className="shop-switcher__rail-placeholder"
+                          aria-hidden="true"
+                        >
+                          {
+                            item.name
+                          }
+                        </span>
+                      ) : (
+                        <motion.span
+                          className="shop-switcher__name shop-switcher__name--rail"
+                          layoutId={`shop-name-${item.slug}`}
+                          transition={{
+                            layout:
+                              nameSpring,
+                          }}
+                        >
+                          {
+                            item.name
+                          }
+                        </motion.span>
+                      )}
+                    </motion.button>
+                  );
+                },
               )}
-            </div>
-          </div>
-        </div>
+            </motion.div>
 
-        <div
-          className={`shop-motion__details ${
-            mode === "rail"
-              ? "is-hidden"
-              : ""
-          }`}
-        >
-          {displayShop.description && (
-            <p className="shop-motion__description">
-              {
-                displayShop.description
-              }
-            </p>
+            <AnimatePresence
+              initial={false}
+            >
+              {mode ===
+                "focus" && (
+                <motion.button
+                  key={`focus-${focusShop.slug}`}
+                  type="button"
+                  className="shop-switcher__focus"
+                  initial={{
+                    opacity: 0,
+                  }}
+                  animate={{
+                    opacity: 1,
+                  }}
+                  exit={{
+                    opacity: 0,
+                  }}
+                  transition={{
+                    opacity: {
+                      duration:
+                        0.16,
+                    },
+                  }}
+                  onClick={() => {
+                    void clearShop();
+                  }}
+                  disabled={
+                    pending
+                  }
+                  aria-label={`Вернуть ${focusShop.name} в строку магазинов`}
+                >
+                  <motion.span
+                    className="shop-switcher__name shop-switcher__name--focus"
+                    layoutId={`shop-name-${focusShop.slug}`}
+                    transition={{
+                      layout:
+                        nameSpring,
+                    }}
+                  >
+                    {
+                      focusShop.name
+                    }
+                  </motion.span>
+                </motion.button>
+              )}
+            </AnimatePresence>
+          </div>
+
+          <AnimatePresence
+            initial={false}
+          >
+            {mode ===
+              "focus" &&
+              visualShop && (
+                <motion.div
+                  key={`details-${visualShop.slug}`}
+                  className="shop-switcher__details"
+                  initial={{
+                    opacity: 0,
+                    height: 0,
+                    y: -4,
+                  }}
+                  animate={{
+                    opacity: 1,
+                    height: "auto",
+                    y: 0,
+                  }}
+                  exit={{
+                    opacity: 0,
+                    height: 0,
+                    y: -3,
+                  }}
+                  transition={{
+                    duration:
+                      0.24,
+                    ease: [
+                      0.22,
+                      1,
+                      0.36,
+                      1,
+                    ],
+                  }}
+                >
+                  {visualShop.description && (
+                    <p className="shop-switcher__description">
+                      {
+                        visualShop.description
+                      }
+                    </p>
+                  )}
+
+                  <div className="shop-switcher__meta">
+                    {
+                      visualShop.productCount
+                    }{" "}
+                    товаров
+                  </div>
+                </motion.div>
+              )}
+          </AnimatePresence>
+        </LayoutGroup>
+
+        <AnimatePresence>
+          {pending && (
+            <motion.div
+              className="shop-switcher__progress"
+              initial={{
+                scaleX: 0,
+                opacity: 0,
+              }}
+              animate={{
+                scaleX: 1,
+                opacity: 1,
+              }}
+              exit={{
+                opacity: 0,
+              }}
+              transition={{
+                duration: 0.32,
+                ease: [
+                  0.22,
+                  1,
+                  0.36,
+                  1,
+                ],
+              }}
+            />
           )}
-
-          <div className="shop-motion__meta">
-            {
-              displayShop.productCount
-            } товаров
-          </div>
-        </div>
+        </AnimatePresence>
       </div>
     </section>
   );

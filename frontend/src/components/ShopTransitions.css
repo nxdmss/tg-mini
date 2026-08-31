@@ -1,136 +1,27 @@
 .app {
   transition:
-    background-color 480ms cubic-bezier(0.22, 1, 0.36, 1),
-    color 360ms ease;
-}
-
-.store-top,
-.footer {
-  transition:
-    background-color 480ms cubic-bezier(0.22, 1, 0.36, 1),
-    color 360ms ease;
+    background-color 380ms ease,
+    color 280ms ease;
 }
 
 .shop-content-stage {
-  opacity: 1;
-  transform:
-    translate3d(
-      0,
-      0,
-      0
-    );
+  will-change: opacity, transform;
   backface-visibility: hidden;
-  transition:
-    opacity 220ms ease,
-    transform 420ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.shop-content-stage--out {
-  opacity: 0;
-  transform:
-    translate3d(
-      0,
-      8px,
-      0
-    );
-  pointer-events: none;
-  will-change: opacity, transform;
-}
-
-.shop-content-stage--in {
-  animation:
-    shop-content-enter
-    460ms
-    cubic-bezier(0.22, 1, 0.36, 1)
-    both;
-  will-change: opacity, transform;
-}
-
-@keyframes shop-content-enter {
-  from {
-    opacity: 0;
-    transform:
-      translate3d(
-        0,
-        8px,
-        0
-      );
-  }
-
-  to {
-    opacity: 1;
-    transform:
-      translate3d(
-        0,
-        0,
-        0
-      );
-  }
-}
-
+.shop-content-stage
 .grid:not(.grid--skeleton)
 .card {
-  animation:
-    shop-card-soft-in
-    430ms
-    cubic-bezier(0.22, 1, 0.36, 1)
-    both;
-}
-
-.grid:not(.grid--skeleton)
-.card:nth-child(2) {
-  animation-delay: 18ms;
-}
-
-.grid:not(.grid--skeleton)
-.card:nth-child(3) {
-  animation-delay: 36ms;
-}
-
-.grid:not(.grid--skeleton)
-.card:nth-child(4) {
-  animation-delay: 54ms;
-}
-
-.grid:not(.grid--skeleton)
-.card:nth-child(n + 5) {
-  animation-delay: 68ms;
-}
-
-@keyframes shop-card-soft-in {
-  from {
-    opacity: 0;
-    transform:
-      translate3d(
-        0,
-        7px,
-        0
-      );
-  }
-
-  to {
-    opacity: 1;
-    transform:
-      translate3d(
-        0,
-        0,
-        0
-      );
-  }
+  /*
+   * ProductCard already has its own CSS entrance animation.
+   * Disable it during store transitions so CSS and Motion don't
+   * animate the same transform at the same time.
+   */
+  animation: none !important;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .app,
-  .store-top,
-  .footer,
-  .shop-content-stage {
+  .app {
     transition-duration: 1ms !important;
-  }
-
-  .shop-content-stage--in,
-  .grid:not(.grid--skeleton)
-  .card {
-    animation-duration: 1ms !important;
-    animation-delay: 0ms !important;
   }
 }

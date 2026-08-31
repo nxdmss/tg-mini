@@ -1,98 +1,40 @@
-.shop-motion {
+.shop-switcher {
   position: relative;
   padding: 4px 0 2px;
   color: var(--text);
 }
 
-.shop-motion__inner {
+.shop-switcher__inner {
   position: relative;
 }
 
-.shop-motion__stage {
+.shop-switcher__stage {
   position: relative;
-  min-height: clamp(43px, 9vw, 68px);
-  display: flex;
-  align-items: center;
-  overflow: hidden;
-  contain: layout paint;
-}
-
-.shop-focus {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  width: 100%;
-  padding: 0 0 6px;
+  min-height: clamp(44px, 9vw, 69px);
   display: flex;
   align-items: flex-end;
-  text-align: left;
-  opacity: 1;
-  visibility: visible;
-  transform: translate3d(0, 0, 0);
-  will-change: transform, opacity;
-  backface-visibility: hidden;
-  transition:
-    opacity 180ms ease,
-    transform 420ms cubic-bezier(0.22, 1, 0.36, 1),
-    visibility 0s linear 0s;
-}
-
-.shop-focus__name {
-  display: inline-block;
-  max-width: 100%;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: clamp(31px, 8.2vw, 62px);
-  line-height: 0.93;
-  font-weight: 820;
-  letter-spacing: -0.055em;
-  text-transform: uppercase;
-  transform: translateZ(0);
-  transform-origin: left center;
-  backface-visibility: hidden;
-  transition:
-    opacity 100ms linear;
 }
 
-.shop-focus__name.is-flying {
-  opacity: 0;
-}
-
-.shop-rail-wrap {
+.shop-switcher__rail {
   width: 100%;
   min-width: 0;
-  opacity: 0;
-  visibility: hidden;
-  transform: translate3d(0, 7px, 0);
-  will-change: transform, opacity;
-  backface-visibility: hidden;
-  transition:
-    opacity 220ms ease,
-    transform 420ms cubic-bezier(0.22, 1, 0.36, 1),
-    visibility 0s linear 220ms;
-}
-
-.shop-rail {
   display: flex;
   align-items: center;
   gap: clamp(18px, 5vw, 42px);
-  width: 100%;
-  min-width: 0;
   padding: 5px 1px 8px;
   overflow-x: auto;
   overflow-y: hidden;
-  overscroll-behavior-x: contain;
   scrollbar-width: none;
+  overscroll-behavior-x: contain;
   -webkit-overflow-scrolling: touch;
 }
 
-.shop-rail::-webkit-scrollbar {
+.shop-switcher__rail::-webkit-scrollbar {
   display: none;
 }
 
-.shop-rail__item {
-  position: relative;
+.shop-switcher__rail-item {
   flex: 0 0 auto;
   min-height: 40px;
   padding: 4px 0;
@@ -101,108 +43,71 @@
   display: inline-flex;
   align-items: center;
   background: transparent;
-  color: currentColor;
+  color: inherit;
   white-space: nowrap;
-  transform: translate3d(0, 0, 0);
-  backface-visibility: hidden;
-  transition:
-    transform 180ms ease,
-    opacity 160ms ease;
 }
 
-.shop-rail__item::before,
-.shop-rail__item::after {
+.shop-switcher__rail-item:disabled,
+.shop-switcher__focus:disabled {
+  cursor: default;
+}
+
+.shop-switcher__rail-item::before,
+.shop-switcher__rail-item::after {
   display: none !important;
   content: none !important;
 }
 
-.shop-rail__item.is-picked {
-  transform:
-    translate3d(
-      0,
-      -1px,
-      0
-    )
-    scale(1.025);
+.shop-switcher__focus {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  min-width: 0;
+  padding: 0 0 6px;
+  display: flex;
+  align-items: flex-end;
+  background: transparent;
+  color: inherit;
+  text-align: left;
 }
 
-.shop-rail__name {
+.shop-switcher__name,
+.shop-switcher__rail-placeholder {
   display: inline-block;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transform-origin: left center;
+  backface-visibility: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+.shop-switcher__name--rail,
+.shop-switcher__rail-placeholder {
   font-size: clamp(17px, 4.6vw, 25px);
   line-height: 1;
   font-weight: 820;
   letter-spacing: -0.045em;
-  text-transform: uppercase;
-  transform: translateZ(0);
-  backface-visibility: hidden;
-  transition:
-    opacity 100ms linear;
 }
 
-.shop-rail__name.is-flying {
-  opacity: 0;
-}
-
-.shop-motion.is-choosing
-.shop-focus {
-  opacity: 0;
+.shop-switcher__rail-placeholder {
   visibility: hidden;
-  transform:
-    translate3d(
-      -7px,
-      0,
-      0
-    );
-  transition:
-    opacity 160ms ease,
-    transform 360ms cubic-bezier(0.22, 1, 0.36, 1),
-    visibility 0s linear 160ms;
 }
 
-.shop-motion.is-choosing
-.shop-rail-wrap {
-  opacity: 1;
-  visibility: visible;
-  transform:
-    translate3d(
-      0,
-      0,
-      0
-    );
-  transition:
-    opacity 240ms ease 35ms,
-    transform 420ms cubic-bezier(0.22, 1, 0.36, 1) 15ms,
-    visibility 0s linear 0s;
-}
-
-.shop-motion__details {
+.shop-switcher__name--focus {
+  max-width: 100%;
   overflow: hidden;
-  max-height: 150px;
-  opacity: 1;
-  transform:
-    translate3d(
-      0,
-      0,
-      0
-    );
-  transition:
-    max-height 360ms cubic-bezier(0.22, 1, 0.36, 1),
-    opacity 190ms ease,
-    transform 360ms cubic-bezier(0.22, 1, 0.36, 1);
+  text-overflow: ellipsis;
+  font-size: clamp(31px, 8.2vw, 62px);
+  line-height: 0.93;
+  font-weight: 820;
+  letter-spacing: -0.055em;
 }
 
-.shop-motion__details.is-hidden {
-  max-height: 0;
-  opacity: 0;
-  transform:
-    translate3d(
-      0,
-      -4px,
-      0
-    );
+.shop-switcher__details {
+  overflow: hidden;
 }
 
-.shop-motion__description {
+.shop-switcher__description {
   max-width: 680px;
   margin: 7px 0 0;
   font-size: 11px;
@@ -211,8 +116,9 @@
   opacity: 0.7;
 }
 
-.shop-motion__meta {
+.shop-switcher__meta {
   margin-top: 5px;
+  padding-bottom: 2px;
   font-size: 9px;
   line-height: 1;
   font-weight: 700;
@@ -220,62 +126,50 @@
   opacity: 0.48;
 }
 
-.shop-motion__skeleton {
+.shop-switcher__progress {
+  position: absolute;
+  left: 19px;
+  right: 19px;
+  bottom: 0;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.28;
+  transform-origin: left center;
+  pointer-events: none;
+}
+
+.shop-switcher__skeleton {
   width: min(340px, 75%);
-  height: 45px;
+  height: 44px;
   background: var(--text);
   opacity: 0.07;
-  animation:
-    shop-motion-pulse
-    900ms ease-in-out
-    infinite alternate;
 }
 
-@keyframes shop-motion-pulse {
-  to {
-    opacity: 0.14;
-  }
-}
-
-.shop-name-flight {
-  position: fixed;
-  z-index: 300;
-  margin: 0;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  pointer-events: none;
-  white-space: nowrap;
-  text-transform: uppercase;
-  transform-origin: left top;
-  will-change: transform;
-  backface-visibility: hidden;
-  -webkit-font-smoothing: antialiased;
+.shop-switcher.is-pending {
+  cursor: progress;
 }
 
 @media (min-width: 700px) {
-  .shop-motion {
+  .shop-switcher {
     padding-top: 8px;
   }
 
-  .shop-motion__description {
+  .shop-switcher__description {
     font-size: 12px;
   }
 
-  .shop-motion__meta {
+  .shop-switcher__meta {
     font-size: 10px;
+  }
+
+  .shop-switcher__progress {
+    left: 29.5px;
+    right: 29.5px;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .shop-focus,
-  .shop-rail-wrap,
-  .shop-rail__item,
-  .shop-motion__details {
-    transition-duration: 1ms !important;
-  }
-
-  .shop-motion__skeleton {
-    animation-duration: 1ms !important;
+  .shop-switcher__rail {
+    scroll-behavior: auto;
   }
 }
