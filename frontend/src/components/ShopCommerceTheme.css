@@ -459,6 +459,42 @@
 
 
 /* =========================================================
+   CART BACK ARROW = PRODUCT PAGE BACK ARROW
+   ========================================================= */
+
+.checkout-modal__header
+.checkout-icon-btn:first-child {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+
+  padding: 0;
+
+  display: grid;
+  place-items: center;
+
+  font-size: 0;
+  line-height: 1;
+
+  color: #000;
+}
+
+.checkout-modal__header
+.checkout-icon-btn:first-child::before {
+  content: "‹";
+
+  display: block;
+
+  font-size: 38px;
+  line-height: 1;
+  font-weight: 900;
+
+  transform:
+    translateY(-1px);
+}
+
+
+/* =========================================================
    MOTION / PERFORMANCE
    ========================================================= */
 

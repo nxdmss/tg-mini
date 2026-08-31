@@ -7,6 +7,10 @@ import {
 } from "react";
 
 import {
+  useNavigate,
+} from "react-router-dom";
+
+import {
   createBrand,
   createCategory,
   deleteBrand,
@@ -147,6 +151,9 @@ function formatDate(value?: string) {
 }
 
 export default function Admin() {
+  const navigate =
+    useNavigate();
+
   const [activeTab, setActiveTab] =
     useState<TabKey>("products");
 
@@ -1197,6 +1204,19 @@ export default function Admin() {
     <div className="admin-page">
       <div className="container admin">
         <header className="admin-header">
+          <button
+            type="button"
+            className="admin-back"
+            onClick={() =>
+              navigate("/")
+            }
+          >
+            <span aria-hidden="true">
+              ‹
+            </span>
+            НАЗАД
+          </button>
+
           <div className="admin-header__eyebrow">
             ADMIN
           </div>

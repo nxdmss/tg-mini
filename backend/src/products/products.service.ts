@@ -215,6 +215,10 @@ export class ProductsService {
               data.sizes || []
             ).map((size) => ({
               size,
+              stock:
+                data.inStock === false
+                  ? 0
+                  : 1,
             })),
           },
         },
@@ -260,6 +264,51 @@ export class ProductsService {
             data.imagesOrder,
           )
         : undefined;
+
+    const currentStockState =
+      data.sizes !== undefined
+        ? await this.prisma.product.findUnique({
+            where: {
+              id,
+            },
+            select: {
+              inStock: true,
+              sizes: {
+                select: {
+                  size: true,
+                  stock: true,
+                },
+              },
+            },
+          })
+        : null;
+
+    const existingStockBySize =
+      new Map(
+        (
+          currentStockState?.sizes ??
+          []
+        ).map((item) => [
+          item.size,
+          item.stock,
+        ]),
+      );
+
+    const legacyBrokenStock =
+      Boolean(
+        currentStockState &&
+          currentStockState.inStock &&
+          currentStockState.sizes.length > 0 &&
+          currentStockState.sizes.every(
+            (item) =>
+              item.stock === 0,
+          ),
+      );
+
+    const nextInStock =
+      data.inStock ??
+      currentStockState?.inStock ??
+      true;
 
     const product =
       await this.prisma.product.update({
@@ -326,9 +375,28 @@ export class ProductsService {
                   deleteMany: {},
                   create:
                     data.sizes.map(
-                      (size) => ({
-                        size,
-                      }),
+                      (size) => {
+                        const previousStock =
+                          existingStockBySize.get(
+                            size,
+                          );
+
+                        const stock =
+                          previousStock ===
+                          undefined
+                            ? nextInStock
+                              ? 1
+                              : 0
+                            : legacyBrokenStock &&
+                                nextInStock
+                              ? 1
+                              : previousStock;
+
+                        return {
+                          size,
+                          stock,
+                        };
+                      },
                     ),
                 }
               : undefined,
