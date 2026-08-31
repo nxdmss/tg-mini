@@ -1,0 +1,493 @@
+/*
+  SWAG / SHOP COMMERCE THEME
+
+  SHOP UI:
+  - catalog cards
+  - filters
+  - product detail
+
+  SWAG CORE:
+  - cart button
+  - add-to-cart CTA
+  - cart drawer
+  - checkout / order flow
+
+  This file intentionally loads after the existing component styles.
+*/
+
+/* =========================================================
+   SHOP SURFACE
+   ========================================================= */
+
+.app {
+  --shop-muted:
+    color-mix(
+      in srgb,
+      var(--text) 58%,
+      transparent
+    );
+
+  --shop-soft:
+    color-mix(
+      in srgb,
+      var(--text) 18%,
+      transparent
+    );
+
+  --shop-line:
+    color-mix(
+      in srgb,
+      var(--text) 30%,
+      transparent
+    );
+}
+
+
+/* =========================================================
+   MAIN CATALOG CONTROLS FOLLOW SHOP THEME
+   ========================================================= */
+
+.app .search-strip::after {
+  background: var(--text);
+  opacity: 0.5;
+}
+
+.app .search-strip__input {
+  color: var(--text);
+  caret-color: var(--text);
+}
+
+.app .search-strip__input::placeholder {
+  color: var(--shop-muted);
+}
+
+.app .chip,
+.app .sort-menu__item,
+.app .sort-btn {
+  color: var(--text) !important;
+}
+
+.app .chip--active,
+.app .sort-menu__item--active {
+  color: var(--text) !important;
+  text-decoration-color: currentColor;
+}
+
+.app .sort-menu {
+  color: var(--text);
+  background: var(--bg);
+  border-color: var(--shop-line);
+}
+
+
+/* =========================================================
+   PRODUCT CARDS FOLLOW SHOP THEME
+   ========================================================= */
+
+.app .card {
+  color: var(--text);
+}
+
+.app .card__body,
+.app .card__name,
+.app .card__price {
+  color: var(--text);
+}
+
+.app .card__brand,
+.app .card__category {
+  color: var(--shop-muted);
+}
+
+.app .card__media {
+  color: var(--text);
+}
+
+.app .media-fallback {
+  color: var(--shop-muted);
+
+  background:
+    color-mix(
+      in srgb,
+      var(--text) 6%,
+      var(--bg)
+    );
+}
+
+.app .tag-out {
+  border-color:
+    color-mix(
+      in srgb,
+      var(--text) 28%,
+      transparent
+    );
+}
+
+
+/* =========================================================
+   PRODUCT DETAIL = CONTINUATION OF CURRENT SHOP
+   ========================================================= */
+
+.app .product-page {
+  background: var(--bg);
+  color: var(--text);
+
+  transition:
+    background-color 140ms ease,
+    color 120ms ease;
+}
+
+.app .product-page__header {
+  color: var(--text);
+}
+
+.app .product-page__back,
+.app .product-page__arrow {
+  color: var(--text);
+}
+
+.app .product-page__image-empty {
+  color: var(--shop-muted);
+}
+
+.app .product-page__dot {
+  background:
+    color-mix(
+      in srgb,
+      var(--text) 18%,
+      transparent
+    );
+}
+
+.app .product-page__dot--active {
+  background: var(--text);
+}
+
+.app .product-page__name,
+.app .product-page__price,
+.app .product-page__sizes-title {
+  color: var(--text);
+}
+
+.app .product-page__description {
+  color: var(--shop-muted);
+}
+
+.app .product-page__size {
+  color: var(--text);
+}
+
+.app .product-page__size--active {
+  color: var(--bg);
+  background: var(--text);
+
+  text-decoration: none;
+
+  transform: translateZ(0);
+
+  transition:
+    background-color 110ms ease,
+    color 110ms ease,
+    opacity 110ms ease;
+}
+
+.app .product-page__size:disabled {
+  color: var(--text);
+  opacity: 0.22;
+}
+
+.app .product-route-state {
+  background: var(--bg);
+  color: var(--text);
+}
+
+.app .product-route-state__back,
+.app .product-route-state__text {
+  color: var(--text);
+}
+
+
+/* =========================================================
+   SWAG CORE ACTIONS
+   Cart / conversion controls do NOT inherit store colors.
+   ========================================================= */
+
+.app .header .header-cart {
+  min-height: 40px;
+
+  padding:
+    0
+    12px;
+
+  border:
+    1px solid
+    #000 !important;
+
+  border-radius:
+    0 !important;
+
+  background:
+    #fff !important;
+
+  color:
+    #000 !important;
+
+  box-shadow:
+    none !important;
+
+  backdrop-filter:
+    none !important;
+
+  -webkit-backdrop-filter:
+    none !important;
+
+  transition:
+    transform 100ms ease,
+    opacity 100ms ease;
+}
+
+.app .header .header-cart:active {
+  transform:
+    scale(0.97);
+}
+
+.app .header .header-action__badge {
+  color:
+    #000 !important;
+
+  border-color:
+    #000 !important;
+
+  background:
+    transparent !important;
+}
+
+.app .product-page__cart {
+  min-height: 38px;
+
+  padding:
+    0
+    10px;
+
+  border:
+    1px solid
+    #000;
+
+  background:
+    #fff;
+
+  color:
+    #000;
+
+  font-weight:
+    900;
+
+  transition:
+    transform 100ms ease,
+    opacity 100ms ease;
+}
+
+.app .product-page__cart:active {
+  transform:
+    scale(0.97);
+}
+
+.app .product-page__cart span {
+  color: #000;
+}
+
+
+/*
+  Add-to-cart is a SWAG CORE action too:
+  shop-themed product page around it,
+  fixed black/white purchase action inside it.
+*/
+.app .product-page__add {
+  width:
+    min(
+      360px,
+      100%
+    );
+
+  min-height:
+    54px;
+
+  border:
+    1px solid
+    #000;
+
+  border-radius:
+    0;
+
+  background:
+    #fff;
+
+  color:
+    #000;
+
+  transform:
+    translateZ(0);
+
+  transition:
+    background-color 100ms ease,
+    color 100ms ease,
+    transform 100ms ease,
+    opacity 100ms ease;
+}
+
+.app .product-page__add:active:not(:disabled) {
+  transform:
+    scale(0.985);
+}
+
+.app .product-page__add:disabled {
+  background:
+    #fff;
+
+  color:
+    #000;
+
+  opacity:
+    0.36;
+}
+
+
+/* =========================================================
+   CART + CHECKOUT = PERMANENT SWAG CORE THEME
+   ========================================================= */
+
+.checkout-modal {
+  --bg:
+    #ffffff;
+
+  --surface:
+    #ffffff;
+
+  --surface-strong:
+    #ffffff;
+
+  --text:
+    #000000;
+
+  --text-secondary:
+    #18181c;
+
+  --text-muted:
+    #333338;
+
+  --line:
+    rgba(
+      0,
+      0,
+      0,
+      0.18
+    );
+
+  --line-strong:
+    rgba(
+      0,
+      0,
+      0,
+      0.72
+    );
+
+  --shop-accent:
+    #000000;
+
+  color-scheme:
+    light;
+
+  background:
+    #fff !important;
+
+  color:
+    #000 !important;
+}
+
+.checkout-modal,
+.checkout-modal button,
+.checkout-modal input,
+.checkout-modal textarea,
+.checkout-modal select,
+.checkout-modal label {
+  color:
+    #000;
+}
+
+.checkout-modal input,
+.checkout-modal textarea,
+.checkout-modal select {
+  background:
+    #fff;
+}
+
+.checkout-modal .checkout-submit-btn {
+  background:
+    #000 !important;
+
+  color:
+    #fff !important;
+
+  border-color:
+    #000 !important;
+}
+
+.checkout-modal .checkout-submit-btn:disabled {
+  opacity:
+    0.34;
+}
+
+.checkout-modal .checkout-switch-btn {
+  background:
+    #fff;
+
+  color:
+    #000;
+}
+
+.checkout-modal .checkout-switch-btn--active {
+  background:
+    #000;
+
+  color:
+    #fff;
+}
+
+.checkout-modal .checkout-input::placeholder {
+  color:
+    rgba(
+      0,
+      0,
+      0,
+      0.4
+    );
+}
+
+
+/* =========================================================
+   MOTION / PERFORMANCE
+   ========================================================= */
+
+.app .card,
+.app .product-page,
+.app .product-page__size,
+.app .product-page__add,
+.app .product-page__cart,
+.app .header .header-cart {
+  backface-visibility:
+    hidden;
+
+  -webkit-font-smoothing:
+    antialiased;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app .product-page,
+  .app .product-page__size,
+  .app .product-page__add,
+  .app .product-page__cart,
+  .app .header .header-cart {
+    transition-duration:
+      1ms !important;
+  }
+}

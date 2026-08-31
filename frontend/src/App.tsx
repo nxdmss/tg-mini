@@ -40,6 +40,7 @@ import { PrankProduct } from "./components/PrankProduct";
 import { ShopSwitcher } from "./components/ShopSwitcher";
 
 import "./components/ShopTransitions.css";
+import "./components/ShopCommerceTheme.css";
 
 import { consumeStartParam } from "./telegram";
 
