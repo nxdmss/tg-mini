@@ -798,9 +798,14 @@ export default function App() {
   ) {
     if (
       catalogPending ||
-      shopSlug ===
+      activeShopSlug ===
         nextShop.slug
     ) {
+      /*
+       * The base route "/" already IS SWA6Y5TAN.
+       * Selecting SWA6Y5TAN there is a visual ShopSwitcher action only:
+       * no route change, no products state replacement, no network request.
+       */
       return;
     }
 
@@ -901,8 +906,11 @@ export default function App() {
       activeShopSlug ===
       "swagystan"
     ) {
-      setQuery(nextQuery);
-      navigate("/");
+      /*
+       * We are already displaying the base SWA6Y5TAN catalog.
+       * Do not create a new query object and do not navigate: both would
+       * retrigger effects / card entrance animations for no data change.
+       */
       return;
     }
 
