@@ -1,12 +1,9 @@
-html {
-  scrollbar-gutter: stable;
-}
-
 .app {
   overflow-x: clip;
+
   transition:
-    background-color 0.14s linear,
-    color 0.12s linear;
+    background-color 130ms linear,
+    color 110ms linear;
 }
 
 .shop-content-stage {
@@ -14,14 +11,43 @@ html {
   transform: translateZ(0);
 }
 
+/*
+ * ProductCard still has the old CSS entrance animation in index.css.
+ * Motion now owns catalog entrance, so disable the duplicate animation.
+ */
 .shop-content-stage
 .grid:not(.grid--skeleton)
 .card {
   animation: none !important;
 }
 
+.product-flow-item {
+  min-width: 0;
+  height: 100%;
+
+  transform:
+    translateZ(0);
+
+  backface-visibility:
+    hidden;
+
+  will-change:
+    transform,
+    opacity;
+}
+
+.product-flow-item > .card {
+  height: 100%;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .app {
-    transition-duration: 1ms !important;
+    transition-duration:
+      1ms !important;
+  }
+
+  .product-flow-item {
+    will-change:
+      auto;
   }
 }
