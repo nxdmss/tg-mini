@@ -480,14 +480,26 @@ export default function App() {
     const resolvedShopSlug =
       activeShopSlug;
 
-    if (
-      skipShopLoadRef.current ===
-      resolvedShopSlug
-    ) {
-      skipShopLoadRef.current =
-        null;
+    const preparedShopSlug =
+      skipShopLoadRef.current;
 
-      setShopLoading(false);
+    if (preparedShopSlug) {
+      /*
+       * During an atomic shop switch state is committed just before
+       * React Router exposes the new URL. Ignore the OLD route completely
+       * in that tiny window. When the target slug arrives, consume the
+       * prepared flag and keep the already committed shop.
+       */
+      if (
+        preparedShopSlug ===
+        resolvedShopSlug
+      ) {
+        skipShopLoadRef.current =
+          null;
+
+        setShopLoading(false);
+      }
+
       return;
     }
 
@@ -543,14 +555,24 @@ export default function App() {
     const resolvedShopSlug =
       activeShopSlug;
 
-    if (
-      skipProductLoadRef.current ===
-      resolvedShopSlug
-    ) {
-      skipProductLoadRef.current =
-        null;
+    const preparedProductSlug =
+      skipProductLoadRef.current;
 
-      setLoading(false);
+    if (preparedProductSlug) {
+      /*
+       * Same protection for products: never let the outgoing route set
+       * loading=true for one frame after the next catalog is already ready.
+       */
+      if (
+        preparedProductSlug ===
+        resolvedShopSlug
+      ) {
+        skipProductLoadRef.current =
+          null;
+
+        setLoading(false);
+      }
+
       return;
     }
 
@@ -865,7 +887,22 @@ export default function App() {
       );
       setError(false);
       setShopError(false);
-      setQuery(nextQuery);
+      setQuery(
+        (current) => {
+          const alreadyNeutral =
+            !current.category &&
+            !current.brand &&
+            !current.search &&
+            current.inStock ===
+              undefined &&
+            current.sort ===
+              nextQuery.sort;
+
+          return alreadyNeutral
+            ? current
+            : nextQuery;
+        },
+      );
 
       navigate(
         `/shop/${nextShop.slug}`,
@@ -963,7 +1000,22 @@ export default function App() {
       );
       setError(false);
       setShopError(false);
-      setQuery(nextQuery);
+      setQuery(
+        (current) => {
+          const alreadyNeutral =
+            !current.category &&
+            !current.brand &&
+            !current.search &&
+            current.inStock ===
+              undefined &&
+            current.sort ===
+              nextQuery.sort;
+
+          return alreadyNeutral
+            ? current
+            : nextQuery;
+        },
+      );
 
       navigate("/");
     } catch {
@@ -1284,20 +1336,18 @@ export default function App() {
                     className="product-flow-item"
                     initial={{
                       opacity: 0,
-                      y: 16,
-                      scale: 0.988,
+                      y: 10,
                     }}
                     animate={{
                       opacity: 1,
                       y: 0,
-                      scale: 1,
                     }}
                     transition={{
-                      duration: 0.26,
+                      duration: 0.22,
                       delay:
                         Math.min(
-                          index * 0.022,
-                          0.16,
+                          index * 0.018,
+                          0.12,
                         ),
                       ease: [
                         0.22,

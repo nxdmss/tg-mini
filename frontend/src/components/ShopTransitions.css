@@ -2,8 +2,9 @@
   overflow-x: clip;
 
   transition:
-    background-color 130ms linear,
-    color 110ms linear;
+    background-color 170ms
+      cubic-bezier(0.22, 1, 0.36, 1),
+    color 130ms ease;
 }
 
 .shop-content-stage {
@@ -24,16 +25,6 @@
 .product-flow-item {
   min-width: 0;
   height: 100%;
-
-  transform:
-    translateZ(0);
-
-  backface-visibility:
-    hidden;
-
-  will-change:
-    transform,
-    opacity;
 }
 
 .product-flow-item > .card {
@@ -46,8 +37,4 @@
       1ms !important;
   }
 
-  .product-flow-item {
-    will-change:
-      auto;
-  }
 }
