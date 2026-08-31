@@ -23,6 +23,15 @@ import {
   getShopProducts,
   getShops,
 } from "./shopApi";
+
+import {
+  areCatalogScenesReady,
+  ensureCatalogScene,
+  getCatalogScene,
+  primeCatalogScenes,
+  setCatalogScene,
+  warmSceneImages,
+} from "./catalogSceneCache";
 import type { Shop } from "./shopApi";
 
 import type {
@@ -63,52 +72,6 @@ type ShopThemeStyle =
     "--shop-accent"?: string;
   };
 
-
-type CachedCatalog = {
-  shop: Shop;
-  products: Product[];
-};
-
-function catalogCacheKey(
-  slug: string,
-  sort:
-    | ProductsQuery["sort"]
-    | undefined,
-) {
-  return `${slug}::${
-    sort || "name_asc"
-  }`;
-}
-
-function warmProductImages(
-  products: Product[],
-) {
-  if (
-    typeof window ===
-    "undefined"
-  ) {
-    return;
-  }
-
-  products
-    .slice(0, 8)
-    .forEach((product) => {
-      const url =
-        product.images?.[0]?.url;
-
-      if (!url) {
-        return;
-      }
-
-      const image =
-        new Image();
-
-      image.decoding =
-        "async";
-
-      image.src = url;
-    });
-}
 
 export default function App() {
   const {
@@ -164,6 +127,12 @@ export default function App() {
   ] =
     useState(false);
 
+  const [
+    scenesReady,
+    setScenesReady,
+  ] =
+    useState(false);
+
   const skipShopLoadRef =
     useRef<string | null>(
       null,
@@ -175,20 +144,6 @@ export default function App() {
     );
 
 
-  const catalogCacheRef =
-    useRef<
-      Map<
-        string,
-        CachedCatalog
-      >
-    >(
-      new Map(),
-    );
-
-  const prefetchingRef =
-    useRef<Set<string>>(
-      new Set(),
-    );
 
   useEffect(() => {
     preloadPrankAssets();
@@ -310,8 +265,57 @@ export default function App() {
   }, []);
 
   /*
-   * Cache the neutral, unfiltered catalog scene. Store switching
-   * resets search/category/brand and preserves only sorting.
+   * Keep every neutral catalog scene ready in memory before the user
+   * switches stores. This is the "game scene preload":
+   * data + every product image are warmed in advance.
+   */
+  useEffect(() => {
+    if (
+      productIdFromUrl ||
+      shops.length === 0
+    ) {
+      return;
+    }
+
+    const sort =
+      query.sort ||
+      "name_asc";
+
+    let active = true;
+
+    const alreadyReady =
+      areCatalogScenesReady(
+        shops,
+        sort,
+      );
+
+    setScenesReady(
+      alreadyReady,
+    );
+
+    void primeCatalogScenes(
+      shops,
+      sort,
+    ).then(() => {
+      if (active) {
+        setScenesReady(
+          true,
+        );
+      }
+    });
+
+    return () => {
+      active = false;
+    };
+  }, [
+    shops,
+    query.sort,
+    productIdFromUrl,
+  ]);
+
+  /*
+   * Whenever a normal network load completes (for example first ever
+   * visit), immediately promote that catalog into the scene cache too.
    */
   useEffect(() => {
     if (
@@ -327,21 +331,15 @@ export default function App() {
       return;
     }
 
-    const key =
-      catalogCacheKey(
-        shop.slug,
-        query.sort,
-      );
-
-    catalogCacheRef.current.set(
-      key,
+    setCatalogScene(
       {
         shop,
         products,
       },
+      query.sort,
     );
 
-    warmProductImages(
+    void warmSceneImages(
       products,
     );
   }, [
@@ -356,99 +354,6 @@ export default function App() {
     query.inStock,
   ]);
 
-  /*
-   * Preload the first stores so a click normally never waits on network.
-   * Refs are updated only, so this causes no React re-render.
-   */
-  useEffect(() => {
-    if (
-      productIdFromUrl ||
-      shops.length === 0
-    ) {
-      return;
-    }
-
-    const timer =
-      window.setTimeout(
-        () => {
-          const sort =
-            query.sort ||
-            "name_asc";
-
-          shops
-            .filter(
-              (item) =>
-                item.isActive,
-            )
-            .slice(0, 8)
-            .forEach(
-              (item) => {
-                const key =
-                  catalogCacheKey(
-                    item.slug,
-                    sort,
-                  );
-
-                if (
-                  catalogCacheRef.current.has(
-                    key,
-                  ) ||
-                  prefetchingRef.current.has(
-                    key,
-                  )
-                ) {
-                  return;
-                }
-
-                prefetchingRef.current.add(
-                  key,
-                );
-
-                void getShopProducts(
-                  item.slug,
-                  { sort },
-                )
-                  .then(
-                    (nextProducts) => {
-                      catalogCacheRef.current.set(
-                        key,
-                        {
-                          shop: item,
-                          products:
-                            nextProducts,
-                        },
-                      );
-
-                      warmProductImages(
-                        nextProducts,
-                      );
-                    },
-                  )
-                  .catch(() => {
-                    // Prefetch failure is non-fatal.
-                  })
-                  .finally(() => {
-                    prefetchingRef.current.delete(
-                      key,
-                    );
-                  });
-              },
-            );
-        },
-        90,
-      );
-
-    return () => {
-      window.clearTimeout(
-        timer,
-      );
-    };
-  }, [
-    shops,
-    query.sort,
-    productIdFromUrl,
-  ]);
-
   useEffect(() => {
     const resolvedShopSlug =
       activeShopSlug;
@@ -461,6 +366,21 @@ export default function App() {
         null;
 
       setShopLoading(false);
+      return;
+    }
+
+    const cachedScene =
+      getCatalogScene(
+        resolvedShopSlug,
+        query.sort,
+      );
+
+    if (cachedScene) {
+      setShop(
+        cachedScene.shop,
+      );
+      setShopLoading(false);
+      setShopError(false);
       return;
     }
 
@@ -498,6 +418,7 @@ export default function App() {
     };
   }, [
     activeShopSlug,
+    query.sort,
   ]);
 
   useEffect(() => {
@@ -524,6 +445,33 @@ export default function App() {
         null;
 
       setLoading(false);
+      return;
+    }
+
+    const isNeutralQuery =
+      !query.category &&
+      !query.brand &&
+      !query.search &&
+      query.inStock ===
+        undefined;
+
+    const cachedScene =
+      isNeutralQuery
+        ? getCatalogScene(
+            resolvedShopSlug,
+            query.sort,
+          )
+        : null;
+
+    if (cachedScene) {
+      setProducts(
+        cachedScene.products,
+      );
+      setShop(
+        cachedScene.shop,
+      );
+      setLoading(false);
+      setError(false);
       return;
     }
 
@@ -710,60 +658,18 @@ export default function App() {
   function prefetchShop(
     targetShop: Shop,
   ) {
-    const nextQuery:
-      ProductsQuery = {
-        sort:
-          query.sort ||
-          "name_asc",
-      };
+    const sort =
+      query.sort ||
+      "name_asc";
 
-    const key =
-      catalogCacheKey(
-        targetShop.slug,
-        nextQuery.sort,
-      );
-
-    if (
-      catalogCacheRef.current.has(
-        key,
-      ) ||
-      prefetchingRef.current.has(
-        key,
-      )
-    ) {
-      return;
-    }
-
-    prefetchingRef.current.add(
-      key,
+    void ensureCatalogScene(
+      targetShop,
+      sort,
+      {
+        warmImages:
+          true,
+      },
     );
-
-    void getShopProducts(
-      targetShop.slug,
-      nextQuery,
-    )
-      .then((nextProducts) => {
-        catalogCacheRef.current.set(
-          key,
-          {
-            shop: targetShop,
-            products:
-              nextProducts,
-          },
-        );
-
-        warmProductImages(
-          nextProducts,
-        );
-      })
-      .catch(() => {
-        // Prefetch failure is non-fatal.
-      })
-      .finally(() => {
-        prefetchingRef.current.delete(
-          key,
-        );
-      });
   }
 
   async function handleSwitchShop(
@@ -784,67 +690,56 @@ export default function App() {
           "name_asc",
       };
 
-    const key =
-      catalogCacheKey(
+    /*
+     * Normal path: this is already in RAM, so no network and no loader.
+     * Fallback exists only for a failed/unfinished initial preload.
+     */
+    let scene =
+      getCatalogScene(
         nextShop.slug,
         nextQuery.sort,
       );
 
-    setCatalogPending(true);
+    if (!scene) {
+      setCatalogPending(
+        true,
+      );
 
-    try {
-      let cached =
-        catalogCacheRef.current.get(
-          key,
-        );
-
-      if (!cached) {
-        const nextProducts =
-          await getShopProducts(
-            nextShop.slug,
-            nextQuery,
+      try {
+        scene =
+          await ensureCatalogScene(
+            nextShop,
+            nextQuery.sort,
+            {
+              warmImages:
+                true,
+            },
           );
-
-        cached = {
-          shop: nextShop,
-          products:
-            nextProducts,
-        };
-
-        catalogCacheRef.current.set(
-          key,
-          cached,
-        );
-
-        warmProductImages(
-          nextProducts,
+      } finally {
+        setCatalogPending(
+          false,
         );
       }
-
-      skipShopLoadRef.current =
-        nextShop.slug;
-
-      skipProductLoadRef.current =
-        nextShop.slug;
-
-      setShop(cached.shop);
-      setProducts(
-        cached.products,
-      );
-      setError(false);
-      setShopError(false);
-      setQuery(nextQuery);
-
-      navigate(
-        `/shop/${nextShop.slug}`,
-      );
-    } catch {
-      throw new Error(
-        "SHOP_SWITCH_FAILED",
-      );
-    } finally {
-      setCatalogPending(false);
     }
+
+    skipShopLoadRef.current =
+      nextShop.slug;
+
+    skipProductLoadRef.current =
+      nextShop.slug;
+
+    setShop(scene.shop);
+    setProducts(
+      scene.products,
+    );
+    setError(false);
+    setShopError(false);
+    setLoading(false);
+    setQuery(nextQuery);
+
+    navigate(
+      `/shop/${nextShop.slug}`,
+    );
   }
 
   async function handleClearShop() {
@@ -879,65 +774,50 @@ export default function App() {
       return;
     }
 
-    const key =
-      catalogCacheKey(
+    let scene =
+      getCatalogScene(
         "swagystan",
         nextQuery.sort,
       );
 
-    setCatalogPending(true);
+    if (!scene) {
+      setCatalogPending(
+        true,
+      );
 
-    try {
-      let cached =
-        catalogCacheRef.current.get(
-          key,
-        );
-
-      if (!cached) {
-        const baseProducts =
-          await getShopProducts(
-            "swagystan",
-            nextQuery,
+      try {
+        scene =
+          await ensureCatalogScene(
+            baseShop,
+            nextQuery.sort,
+            {
+              warmImages:
+                true,
+            },
           );
-
-        cached = {
-          shop: baseShop,
-          products:
-            baseProducts,
-        };
-
-        catalogCacheRef.current.set(
-          key,
-          cached,
-        );
-
-        warmProductImages(
-          baseProducts,
+      } finally {
+        setCatalogPending(
+          false,
         );
       }
-
-      skipShopLoadRef.current =
-        "swagystan";
-
-      skipProductLoadRef.current =
-        "swagystan";
-
-      setShop(cached.shop);
-      setProducts(
-        cached.products,
-      );
-      setError(false);
-      setShopError(false);
-      setQuery(nextQuery);
-
-      navigate("/");
-    } catch {
-      throw new Error(
-        "SHOP_CLEAR_FAILED",
-      );
-    } finally {
-      setCatalogPending(false);
     }
+
+    skipShopLoadRef.current =
+      "swagystan";
+
+    skipProductLoadRef.current =
+      "swagystan";
+
+    setShop(scene.shop);
+    setProducts(
+      scene.products,
+    );
+    setError(false);
+    setShopError(false);
+    setLoading(false);
+    setQuery(nextQuery);
+
+    navigate("/");
   }
 
   function openProduct(
@@ -1178,7 +1058,8 @@ export default function App() {
             prefetchShop
           }
           pending={
-            catalogPending
+            catalogPending ||
+            !scenesReady
           }
           onClear={
             handleClearShop
