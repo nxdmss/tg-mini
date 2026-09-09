@@ -4,19 +4,68 @@ import {
   ForbiddenException,
   Injectable,
 } from '@nestjs/common';
-import { TelegramAuthService } from './telegram-auth.service';
 
 @Injectable()
-export class AdminGuard implements CanActivate {
-  constructor(private readonly auth: TelegramAuthService) {}
+export class AdminGuard
+  implements CanActivate
+{
+  canActivate(
+    context: ExecutionContext,
+  ): boolean {
+    const request =
+      context.switchToHttp().getRequest();
 
-  async canActivate(context: ExecutionContext): Promise<boolean> {
-    const request = context.switchToHttp().getRequest();
+    const telegramId =
+      String(
+        request.user?.telegramId ??
+          '',
+      ).trim();
 
-    const user = request.user; // 👈 ВАЖНО (не telegramUser)
+    /*
+     * Support both env names:
+     *
+     * OLD:
+     * ADMIN_TELEGRAM_ID=123456789
+     *
+     * NEW:
+     * ADMIN_TELEGRAM_IDS=123456789,987654321
+     *
+     * Fail CLOSED if neither is configured.
+     */
+    const rawIds = [
+      process.env
+        .ADMIN_TELEGRAM_ID,
+      process.env
+        .ADMIN_TELEGRAM_IDS,
+    ]
+      .filter(
+        (
+          value,
+        ): value is string =>
+          Boolean(value),
+      )
+      .join(',');
 
-    if (!this.auth.isAdmin(user)) {
-      throw new ForbiddenException('Admin role is required');
+    const allowedIds =
+      new Set(
+        rawIds
+          .split(',')
+          .map((id) =>
+            id.trim(),
+          )
+          .filter(Boolean),
+      );
+
+    if (
+      !telegramId ||
+      allowedIds.size === 0 ||
+      !allowedIds.has(
+        telegramId,
+      )
+    ) {
+      throw new ForbiddenException(
+        'Admin access denied',
+      );
     }
 
     return true;

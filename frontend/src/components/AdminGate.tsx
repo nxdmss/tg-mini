@@ -9,8 +9,8 @@ import {
 } from "react-router-dom";
 
 import {
-  getAdminShops,
-} from "../shopAdminApi";
+  checkAdminAccess,
+} from "../adminAccessApi";
 
 type AccessState =
   | "checking"
@@ -33,13 +33,7 @@ export function AdminGate({
   useEffect(() => {
     let active = true;
 
-    /*
-     * IMPORTANT:
-     * Never cache admin access in module/global state.
-     * Every mount of /admin must be verified against backend again,
-     * because Telegram account/session can change while the webview lives.
-     */
-    void getAdminShops()
+    void checkAdminAccess()
       .then(() => {
         if (active) {
           setAccess(
