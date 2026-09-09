@@ -17,52 +17,6 @@ type AccessState =
   | "allowed"
   | "denied";
 
-let cachedAccess:
-  AccessState = "checking";
-
-let accessPromise:
-  Promise<boolean> | null =
-    null;
-
-async function verifyAdmin() {
-  if (
-    cachedAccess ===
-    "allowed"
-  ) {
-    return true;
-  }
-
-  if (
-    cachedAccess ===
-    "denied"
-  ) {
-    return false;
-  }
-
-  if (!accessPromise) {
-    accessPromise =
-      getAdminShops()
-        .then(() => {
-          cachedAccess =
-            "allowed";
-
-          return true;
-        })
-        .catch(() => {
-          cachedAccess =
-            "denied";
-
-          return false;
-        })
-        .finally(() => {
-          accessPromise =
-            null;
-        });
-  }
-
-  return accessPromise;
-}
-
 export function AdminGate({
   children,
 }: {
@@ -73,37 +27,38 @@ export function AdminGate({
     setAccess,
   ] =
     useState<AccessState>(
-      cachedAccess,
+      "checking",
     );
 
   useEffect(() => {
-    if (
-      access !==
-      "checking"
-    ) {
-      return;
-    }
-
     let active = true;
 
-    void verifyAdmin().then(
-      (allowed) => {
-        if (!active) {
-          return;
+    /*
+     * IMPORTANT:
+     * Never cache admin access in module/global state.
+     * Every mount of /admin must be verified against backend again,
+     * because Telegram account/session can change while the webview lives.
+     */
+    void getAdminShops()
+      .then(() => {
+        if (active) {
+          setAccess(
+            "allowed",
+          );
         }
-
-        setAccess(
-          allowed
-            ? "allowed"
-            : "denied",
-        );
-      },
-    );
+      })
+      .catch(() => {
+        if (active) {
+          setAccess(
+            "denied",
+          );
+        }
+      });
 
     return () => {
       active = false;
     };
-  }, [access]);
+  }, []);
 
   if (
     access ===
