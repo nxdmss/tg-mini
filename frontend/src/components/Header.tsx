@@ -88,14 +88,6 @@ export function Header({
             />
           </span>
         </button>
-
-        <span
-          className="header__ghost-label"
-          aria-hidden="true"
-        >
-          jopa
-        </span>
-
         <div className="header__actions">
           <button
             type="button"

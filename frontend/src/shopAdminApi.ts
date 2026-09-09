@@ -1,8 +1,6 @@
-import {
-  api,
-  getAccessToken,
-} from "./api";
-import { getTelegramInitData } from "./telegram";
+import { api } from "./api";
+import { getTelegramAdminHeaders } from "./adminAuth";
+import { clearShopApiCache } from "./shopApi";
 
 export type AdminShop = {
   id: string;
@@ -28,50 +26,20 @@ export type ShopPayload = {
   isActive: boolean;
 };
 
-function adminAuthHeaders() {
-  const initData = getTelegramInitData();
-
-  if (initData) {
-    return {
-      "x-telegram-init-data": initData,
-    };
-  }
-
-  const accessToken = getAccessToken();
-
-  if (accessToken) {
-    return {
-      Authorization: `Bearer ${accessToken}`,
-    };
-  }
-
-  return {};
-}
-
-export async function getAdminShops(): Promise<
-  AdminShop[]
-> {
-  const res = await api.get<AdminShop[]>(
-    "/shops/admin/all",
-    {
-      headers: adminAuthHeaders(),
-    },
-  );
+export async function getAdminShops(): Promise<AdminShop[]> {
+  const res = await api.get<AdminShop[]>("/shops/admin/all", {
+    headers: getTelegramAdminHeaders(),
+  });
 
   return res.data;
 }
 
-export async function createShop(
-  payload: ShopPayload,
-): Promise<AdminShop> {
-  const res = await api.post<AdminShop>(
-    "/shops",
-    payload,
-    {
-      headers: adminAuthHeaders(),
-    },
-  );
+export async function createShop(payload: ShopPayload): Promise<AdminShop> {
+  const res = await api.post<AdminShop>("/shops", payload, {
+    headers: getTelegramAdminHeaders(),
+  });
 
+  clearShopApiCache();
   return res.data;
 }
 
@@ -79,24 +47,18 @@ export async function updateShop(
   id: string,
   payload: ShopPayload,
 ): Promise<AdminShop> {
-  const res = await api.patch<AdminShop>(
-    `/shops/${id}`,
-    payload,
-    {
-      headers: adminAuthHeaders(),
-    },
-  );
+  const res = await api.patch<AdminShop>(`/shops/${id}`, payload, {
+    headers: getTelegramAdminHeaders(),
+  });
 
+  clearShopApiCache();
   return res.data;
 }
 
-export async function deleteShop(
-  id: string,
-): Promise<void> {
-  await api.delete(
-    `/shops/${id}`,
-    {
-      headers: adminAuthHeaders(),
-    },
-  );
+export async function deleteShop(id: string): Promise<void> {
+  await api.delete(`/shops/${id}`, {
+    headers: getTelegramAdminHeaders(),
+  });
+
+  clearShopApiCache();
 }

@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  Header,
   Param,
   Patch,
   Post,
@@ -9,62 +10,41 @@ import {
   UseGuards,
 } from '@nestjs/common';
 
-import { OrdersService } from './orders.service';
-
-import { CreateOrderDto } from './create-order.dto';
-
-import { UpdateOrderStatusDto } from './update-order-status.dto';
-
+import { TelegramAdminGuard } from '../auth/telegram-admin.guard';
 import { TelegramAuthGuard } from '../auth/telegram-auth.guard';
-
-import { AdminGuard } from '../auth/admin.guard';
+import { CreateOrderDto } from './create-order.dto';
+import { OrdersService } from './orders.service';
+import { UpdateOrderStatusDto } from './update-order-status.dto';
 
 @Controller('orders')
 export class OrdersController {
-  constructor(
-    private readonly ordersService: OrdersService,
-  ) {}
+  constructor(private readonly ordersService: OrdersService) {}
 
   @Post()
-  create(
-    @Body() body: CreateOrderDto,
-  ) {
-    return this.ordersService.create(
-      body,
-    );
+  create(@Body() body: CreateOrderDto) {
+    return this.ordersService.create(body);
   }
 
   @Get('me')
+  @Header('Cache-Control', 'no-store')
   @UseGuards(TelegramAuthGuard)
-  findMine(
-    @Req() req: any,
-  ) {
-    return this.ordersService.findMine(
-      req.user,
-    );
+  findMine(@Req() req: any) {
+    return this.ordersService.findMine(req.user);
   }
 
   @Get('admin')
-  @UseGuards(
-    TelegramAuthGuard,
-    AdminGuard,
-  )
+  @Header('Cache-Control', 'no-store')
+  @UseGuards(TelegramAdminGuard)
   findAllForAdmin() {
     return this.ordersService.findAllForAdmin();
   }
 
   @Patch('admin/:id/status')
-  @UseGuards(
-    TelegramAuthGuard,
-    AdminGuard,
-  )
+  @UseGuards(TelegramAdminGuard)
   updateStatus(
     @Param('id') id: string,
     @Body() body: UpdateOrderStatusDto,
   ) {
-    return this.ordersService.updateStatus(
-      id,
-      body.status,
-    );
+    return this.ordersService.updateStatus(id, body.status);
   }
 }

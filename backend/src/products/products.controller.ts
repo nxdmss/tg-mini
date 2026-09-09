@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  Header,
   Param,
   Patch,
   Post,
@@ -12,15 +13,17 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
-import { ProductsService } from './products.service';
+
+import { TelegramAdminGuard } from '../auth/telegram-admin.guard';
+import { PrismaService } from '../prisma/prisma.service';
 import { CreateProductDto } from './create-product.dto';
+import { ProductsService } from './products.service';
 import { QueryProductsDto } from './query-products.dto';
 import { UpdateProductDto } from './update-product.dto';
 import { UpdateProductShopDto } from './update-product-shop.dto';
 import { UpdateProductStockDto } from './update-product-stock.dto';
-import { TelegramAuthGuard } from '../auth/telegram-auth.guard';
-import { AdminGuard } from '../auth/admin.guard';
-import { PrismaService } from '../prisma/prisma.service';
+
+const PUBLIC_REVALIDATE = 'public, max-age=0, must-revalidate';
 
 @Controller('products')
 export class ProductsController {
@@ -30,17 +33,19 @@ export class ProductsController {
   ) {}
 
   @Get()
+  @Header('Cache-Control', PUBLIC_REVALIDATE)
   findAll(@Query() query: QueryProductsDto) {
     return this.productsService.findAll(query);
   }
 
   @Get(':id')
+  @Header('Cache-Control', PUBLIC_REVALIDATE)
   findOne(@Param('id') id: string) {
     return this.productsService.findOne(id);
   }
 
   @Post()
-  @UseGuards(TelegramAuthGuard, AdminGuard)
+  @UseGuards(TelegramAdminGuard)
   @UseInterceptors(FilesInterceptor('images', 10))
   create(
     @Body() body: CreateProductDto,
@@ -50,7 +55,7 @@ export class ProductsController {
   }
 
   @Patch(':id/stock')
-  @UseGuards(TelegramAuthGuard, AdminGuard)
+  @UseGuards(TelegramAdminGuard)
   async updateStock(
     @Param('id') id: string,
     @Body() body: UpdateProductStockDto,
@@ -93,7 +98,7 @@ export class ProductsController {
   }
 
   @Patch(':id/shop')
-  @UseGuards(TelegramAuthGuard, AdminGuard)
+  @UseGuards(TelegramAdminGuard)
   moveToShop(
     @Param('id') id: string,
     @Body() body: UpdateProductShopDto,
@@ -102,7 +107,7 @@ export class ProductsController {
   }
 
   @Patch(':id')
-  @UseGuards(TelegramAuthGuard, AdminGuard)
+  @UseGuards(TelegramAdminGuard)
   @UseInterceptors(FilesInterceptor('images', 10))
   update(
     @Param('id') id: string,
@@ -113,7 +118,7 @@ export class ProductsController {
   }
 
   @Delete(':id')
-  @UseGuards(TelegramAuthGuard, AdminGuard)
+  @UseGuards(TelegramAdminGuard)
   remove(@Param('id') id: string) {
     return this.productsService.remove(id);
   }
