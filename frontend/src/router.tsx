@@ -1,15 +1,30 @@
 import {
+  lazy,
+  Suspense,
+} from "react";
+
+import {
   BrowserRouter,
   Route,
   Routes,
 } from "react-router-dom";
 
 import App from "./App";
-import Admin from "./pages/Admin";
 
 import {
   AdminGate,
 } from "./components/AdminGate";
+
+/*
+ * Admin and its large CSS/API graph are not part of the storefront startup.
+ * The chunk is requested only after AdminGate has allowed access.
+ */
+const Admin = lazy(
+  () =>
+    import(
+      "./pages/Admin"
+    ),
+);
 
 export default function Router() {
   return (
@@ -19,15 +34,25 @@ export default function Router() {
           path="/admin"
           element={
             <AdminGate>
-              <Admin />
+              <Suspense
+                fallback={
+                  <div
+                    style={{
+                      minHeight:
+                        "100dvh",
+                      background:
+                        "#fff",
+                    }}
+                  />
+                }
+              >
+                <Admin />
+              </Suspense>
             </AdminGate>
           }
         />
 
-        {/*
-          One persistent storefront route.
-          This preserves the seamless catalog/product behavior.
-        */}
+        {/* Keep one persistent storefront instance. */}
         <Route
           path="/*"
           element={<App />}

@@ -6,8 +6,59 @@ export function formatPrice(value: number): string {
   }).format(value);
 }
 
-export function getProductPreviewImage(product: { images: Array<{ url: string }> }) {
-  return product.images[0]?.url;
+function optimizeCloudinaryPreview(
+  url: string,
+) {
+  if (
+    !url.includes(
+      "res.cloudinary.com",
+    ) ||
+    !url.includes(
+      "/image/upload/",
+    )
+  ) {
+    return url;
+  }
+
+  /*
+   * Product cards never need the original multi-megapixel upload.
+   * Cloudinary generates a cached, browser-native format preview instead.
+   */
+  const width =
+    typeof window !==
+      "undefined" &&
+    window.innerWidth >= 768
+      ? 960
+      : 720;
+
+  const transformation =
+    `f_auto,q_auto:good,c_limit,w_${width}`;
+
+  if (
+    url.includes(
+      `/image/upload/${transformation}/`,
+    )
+  ) {
+    return url;
+  }
+
+  return url.replace(
+    "/image/upload/",
+    `/image/upload/${transformation}/`,
+  );
+}
+
+export function getProductPreviewImage(product: {
+  images: Array<{ url: string }>;
+}) {
+  const url =
+    product.images[0]?.url;
+
+  return url
+    ? optimizeCloudinaryPreview(
+        url,
+      )
+    : undefined;
 }
 
 /** Telegram Direct Link: opens Mini App straight on the product. */

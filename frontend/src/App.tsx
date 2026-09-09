@@ -1,4 +1,6 @@
 import {
+  lazy,
+  Suspense,
   useEffect,
   useMemo,
   useRef,
@@ -33,24 +35,61 @@ import type {
 
 import { Header } from "./components/Header";
 import { ProductCard } from "./components/ProductCard";
-import { ProductDetail } from "./components/ProductDetail";
-import { CartDrawer } from "./components/CartDrawer";
 import { Filters } from "./components/Filters";
-import { PrankProduct } from "./components/PrankProduct";
 import { ShopSwitcher } from "./components/ShopSwitcher";
 
 import "./components/ShopTransitions.css";
 import "./components/ShopCommerceTheme.css";
 import "./components/ProductOverlay.css";
 
+import {
+  getProductPreviewImage,
+} from "./utils";
+
 import { consumeStartParam } from "./telegram";
 
 import {
   isPrankProduct,
   playPrankLaugh,
-  preloadPrankAssets,
   stopPrankAudio,
 } from "./prank";
+
+const loadProductDetail = () =>
+  import(
+    "./components/ProductDetail"
+  );
+
+const ProductDetail = lazy(
+  async () => ({
+    default:
+      (await loadProductDetail())
+        .ProductDetail,
+  }),
+);
+
+const loadCartDrawer = () =>
+  import(
+    "./components/CartDrawer"
+  );
+
+const CartDrawer = lazy(
+  async () => ({
+    default:
+      (await loadCartDrawer())
+        .CartDrawer,
+  }),
+);
+
+const PrankProduct = lazy(
+  async () => ({
+    default:
+      (
+        await import(
+          "./components/PrankProduct"
+        )
+      ).PrankProduct,
+  }),
+);
 
 type StorefrontRoute = {
   shopSlug?: string;
@@ -167,8 +206,49 @@ function catalogCacheKey(
   }`;
 }
 
+type NetworkNavigator =
+  Navigator & {
+    connection?: {
+      saveData?: boolean;
+      effectiveType?: string;
+    };
+  };
+
+function getConnectionInfo() {
+  if (
+    typeof navigator ===
+    "undefined"
+  ) {
+    return undefined;
+  }
+
+  return (
+    navigator as
+      NetworkNavigator
+  ).connection;
+}
+
+function canBackgroundPrefetch() {
+  const connection =
+    getConnectionInfo();
+
+  if (
+    connection?.saveData
+  ) {
+    return false;
+  }
+
+  return !(
+    connection?.effectiveType ===
+      "slow-2g" ||
+    connection?.effectiveType ===
+      "2g"
+  );
+}
+
 function warmProductImages(
   products: Product[],
+  limit = 6,
 ) {
   if (
     typeof window ===
@@ -177,51 +257,70 @@ function warmProductImages(
     return;
   }
 
+  const connection =
+    getConnectionInfo();
+
+  if (connection?.saveData) {
+    return;
+  }
+
+  const safeLimit =
+    connection?.effectiveType ===
+      "slow-2g" ||
+    connection?.effectiveType ===
+      "2g"
+      ? Math.min(limit, 1)
+      : limit;
+
   /*
-   * Only warm the image that is actually used by the catalog card.
-   * No sessionStorage, no scene cache, no route-state replacement.
-   * Browser HTTP cache handles the bytes; decode() prepares rendering.
+   * Warm only the cards likely to appear first.
+   * Importantly, use the SAME optimized preview URL that ProductCard uses,
+   * so background warming never downloads the full original photo.
    */
-  products.forEach(
-    (product) => {
-      const url =
-        product.images?.[0]?.url;
+  products
+    .slice(0, safeLimit)
+    .forEach(
+      (product) => {
+        const url =
+          getProductPreviewImage(
+            product,
+          );
 
-      if (!url) {
-        return;
-      }
+        if (!url) {
+          return;
+        }
 
-      const image =
-        new Image();
+        const image =
+          new Image();
 
-      image.decoding =
-        "async";
+        image.decoding =
+          "async";
 
-      image.src = url;
+        image.src = url;
 
-      const decode =
-        () => {
-          if (
-            typeof image.decode ===
-            "function"
-          ) {
-            void image
-              .decode()
-              .catch(
-                () =>
-                  undefined,
-              );
-          }
-        };
+        const decode =
+          () => {
+            if (
+              typeof image.decode ===
+              "function"
+            ) {
+              void image
+                .decode()
+                .catch(
+                  () =>
+                    undefined,
+                );
+            }
+          };
 
-      if (image.complete) {
-        decode();
-      } else {
-        image.onload =
-          decode;
-      }
-    },
-  );
+        if (image.complete) {
+          decode();
+        } else {
+          image.onload =
+            decode;
+        }
+      },
+    );
 }
 
 export default function App() {
@@ -339,10 +438,6 @@ export default function App() {
       new Set(),
     );
 
-  useEffect(() => {
-    preloadPrankAssets();
-  }, []);
-
   const [
     query,
     setQuery,
@@ -382,6 +477,41 @@ export default function App() {
     setCartOpen,
   ] =
     useState(false);
+
+  /*
+   * Keep ProductDetail and Cart code out of the critical startup bundle.
+   * Warm those chunks only after the first page has had time to paint.
+   */
+  useEffect(() => {
+    if (loading) {
+      return;
+    }
+
+    const productTimer =
+      window.setTimeout(
+        () => {
+          void loadProductDetail();
+        },
+        120,
+      );
+
+    const cartTimer =
+      window.setTimeout(
+        () => {
+          void loadCartDrawer();
+        },
+        900,
+      );
+
+    return () => {
+      window.clearTimeout(
+        productTimer,
+      );
+      window.clearTimeout(
+        cartTimer,
+      );
+    };
+  }, [loading]);
 
   const isProductPage =
     Boolean(
@@ -531,6 +661,7 @@ export default function App() {
 
     warmProductImages(
       products,
+      6,
     );
   }, [
     loading,
@@ -549,7 +680,8 @@ export default function App() {
    */
   useEffect(() => {
     if (
-      shops.length === 0
+      shops.length === 0 ||
+      !canBackgroundPrefetch()
     ) {
       return;
     }
@@ -564,9 +696,11 @@ export default function App() {
           shops
             .filter(
               (item) =>
-                item.isActive,
+                item.isActive &&
+                item.slug !==
+                  activeShopSlug,
             )
-            .slice(0, 8)
+            .slice(0, 2)
             .forEach(
               (item) => {
                 const key =
@@ -607,6 +741,7 @@ export default function App() {
 
                       warmProductImages(
                         nextProducts,
+                        2,
                       );
                     },
                   )
@@ -621,7 +756,7 @@ export default function App() {
               },
             );
         },
-        20,
+        1200,
       );
 
     return () => {
@@ -632,6 +767,7 @@ export default function App() {
   }, [
     shops,
     query.sort,
+    activeShopSlug,
   ]);
 
   useEffect(() => {
@@ -946,6 +1082,7 @@ export default function App() {
 
         warmProductImages(
           nextProducts,
+          4,
         );
       })
       .catch(() => {
@@ -1015,6 +1152,7 @@ export default function App() {
 
         warmProductImages(
           nextProducts,
+          6,
         );
       }
 
@@ -1128,6 +1266,7 @@ export default function App() {
 
         warmProductImages(
           baseProducts,
+          6,
         );
       }
 
@@ -1236,6 +1375,15 @@ export default function App() {
   const productOverlay =
     isProductPage ? (
       <div className="product-overlay-shell">
+        <Suspense
+          fallback={
+            <main className="product-route-state">
+              <div className="product-route-state__text">
+                ЗАГРУЗКА
+              </div>
+            </main>
+          }
+        >
         {isShopRoute &&
         shopError ? (
           <main className="product-route-state">
@@ -1300,6 +1448,7 @@ export default function App() {
             </div>
           </main>
         )}
+        </Suspense>
       </div>
     ) : null;
 
@@ -1506,13 +1655,15 @@ export default function App() {
       {productOverlay}
 
       {cartOpen && (
-        <CartDrawer
-          onClose={() =>
-            setCartOpen(
-              false,
-            )
-          }
-        />
+        <Suspense fallback={null}>
+          <CartDrawer
+            onClose={() =>
+              setCartOpen(
+                false,
+              )
+            }
+          />
+        </Suspense>
       )}
     </div>
   );
