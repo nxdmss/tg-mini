@@ -1,16 +1,14 @@
-SWAGYSTAN DMC5 — BIGGER / THINNER
+SWAGYSTAN DMC5 — EVEN BIGGER
 
 Только один файл на замену:
 frontend\src\brandRuntime.ts
 
 Изменено:
-- слово ещё больше;
+- слово заметно больше;
+- чуть шире;
 - чуть выше;
-- чуть длиннее;
-- stroke почти убран;
-- тень слабее;
-- визуально текст тоньше и легче;
-- DMC5-шрифт и Zulfia не тронуты.
+- тонкий stroke сохранён;
+- Zulfia не трогается.
 
 Распаковать в:
 C:\Users\umarc\tg-mini
