@@ -238,17 +238,11 @@ html.store-home-mode
  * One Home photo. No captions, borders, labels or product UI.
  */
 .shop-switcher__home-media {
-  width: min(72vw, 560px);
-  height: min(58svh, 700px);
-  min-height: 320px;
-  flex: 0 1 auto;
+  width: min(88vw, 920px);
+  aspect-ratio: 16 / 9;
+  flex: 0 0 auto;
   overflow: hidden;
-  background:
-    color-mix(
-      in srgb,
-      var(--text) 4%,
-      var(--bg)
-    );
+  background: transparent;
 }
 
 .shop-switcher__home-media img,
@@ -259,7 +253,7 @@ html.store-home-mode
 }
 
 .shop-switcher__home-media img {
-  object-fit: cover;
+  object-fit: contain;
   object-position: center;
 }
 
@@ -324,9 +318,8 @@ html.store-home-mode
   }
 
   .shop-switcher__home-media {
-    width: min(78vw, 420px);
-    height: min(56svh, 590px);
-    min-height: 300px;
+    width: min(92vw, 520px);
+    aspect-ratio: 16 / 9;
   }
 
   .shop-switcher.is-selected

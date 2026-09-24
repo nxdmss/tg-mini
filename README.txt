@@ -1,17 +1,22 @@
-CLEAN HOME — EAGLE.JPG
+HOME EAGLE.JPG — 16:9 FIX
 
-Твоя фотография должна лежать здесь:
+Исправлено специально под фотографию 16:9.
+
+Фото:
 C:\Users\umarc\tg-mini\frontend\public\eagle.JPG
 
-Код теперь использует:
- /eagle.JPG
+Что изменено:
+- контейнер Home-фото теперь имеет aspect-ratio: 16 / 9;
+- убрана фиксированная высокая вертикальная высота;
+- object-fit: cover заменён на object-fit: contain;
+- eagle.JPG показывается целиком без обрезки;
+- фото стало шире и аккуратно центрируется;
+- остальной Home и логика магазинов не менялись.
 
-Остальной Home не изменён.
-
-Заменяются:
-frontend\src\components\ShopSwitcher.tsx
+Заменить:
 frontend\src\components\ShopSwitcher.css
-frontend\src\brandRuntime.ts
+
+ZIP также содержит остальные файлы текущей Home-версии для удобства.
 
 Проверка:
 cd C:\Users\umarc\tg-mini\frontend
