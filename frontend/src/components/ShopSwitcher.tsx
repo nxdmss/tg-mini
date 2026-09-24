@@ -499,7 +499,7 @@ export function ShopSwitcher({
                   }}
                 >
                   <img
-                    src="/eagle.jpg"
+                    src="/eagle.JPG"
                     alt=""
                     aria-hidden="true"
                     loading="eager"
