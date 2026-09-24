@@ -60,18 +60,18 @@ function installBrandStyles() {
         "Didot",
         "Times New Roman",
         serif !important;
-      font-size: 2.24em !important;
+      font-size: 2.08em !important;
       font-weight: 400 !important;
       font-style: normal !important;
       line-height: 0.66 !important;
-      letter-spacing: -0.022em !important;
+      letter-spacing: -0.072em !important;
       text-transform: none !important;
       white-space: nowrap;
       transform:
         skewX(-7deg)
-        scaleX(1.26)
-        scaleY(1.34)
-        translateY(-0.12em);
+        scaleX(1.18)
+        scaleY(1.30)
+        translateY(-0.105em);
       transform-origin: left center;
       -webkit-text-stroke: 0.08px currentColor;
       paint-order: stroke fill;
@@ -120,19 +120,176 @@ function installBrandStyles() {
       );
     }
 
+
+    /*
+     * Store selector — editorial diagonal composition.
+     * Keeps the original buttons/click handlers; only layout changes.
+     */
+    .brand-store-deck {
+      position: relative !important;
+      display: grid !important;
+      grid-template-columns: repeat(12, minmax(0, 1fr)) !important;
+      grid-template-rows: auto auto !important;
+      width: 100% !important;
+      max-width: 1120px;
+      margin: 0 auto !important;
+      padding: 18px 0 30px !important;
+      gap: 0 !important;
+      overflow: visible !important;
+      align-items: center !important;
+    }
+
+    .brand-store-deck::before {
+      content: "";
+      position: absolute;
+      left: 8%;
+      right: 8%;
+      top: 50%;
+      height: 1px;
+      background: currentColor;
+      opacity: 0.14;
+      transform: rotate(-4deg);
+      transform-origin: center;
+      pointer-events: none;
+    }
+
+    .brand-store-slot {
+      min-width: 0 !important;
+      width: auto !important;
+      position: relative !important;
+      z-index: 1;
+    }
+
+    .brand-store-slot--swagystan {
+      grid-column: 1 / 10 !important;
+      grid-row: 1 !important;
+      justify-self: stretch !important;
+    }
+
+    .brand-store-slot--zulfia {
+      grid-column: 7 / 13 !important;
+      grid-row: 2 !important;
+      justify-self: stretch !important;
+      margin-top: -8px !important;
+    }
+
+    .brand-store-card {
+      position: relative !important;
+      display: flex !important;
+      width: 100% !important;
+      min-height: 72px !important;
+      box-sizing: border-box !important;
+      border: 0 !important;
+      border-radius: 0 !important;
+      background: transparent !important;
+      color: inherit !important;
+      box-shadow: none !important;
+      overflow: visible !important;
+      isolation: isolate;
+      transition:
+        opacity 160ms ease,
+        transform 180ms cubic-bezier(0.16, 1, 0.3, 1) !important;
+    }
+
+    .brand-store-card--swagystan {
+      justify-content: flex-start !important;
+      align-items: center !important;
+      padding: 18px 46px 16px 18px !important;
+      border-top: 1px solid currentColor !important;
+      text-align: left !important;
+    }
+
+    .brand-store-card--zulfia {
+      justify-content: flex-end !important;
+      align-items: center !important;
+      padding: 12px 16px 15px 34px !important;
+      border-bottom: 1px solid currentColor !important;
+      text-align: right !important;
+    }
+
+    .brand-store-card::after {
+      position: absolute;
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 8px;
+      font-weight: 500;
+      line-height: 1;
+      letter-spacing: 0.16em;
+      opacity: 0.38;
+      pointer-events: none;
+    }
+
+    .brand-store-card--swagystan::after {
+      content: "01 / STORE";
+      top: 9px;
+      right: 2px;
+    }
+
+    .brand-store-card--zulfia::after {
+      content: "02 / STORE";
+      bottom: 7px;
+      left: 2px;
+    }
+
+    .brand-store-card:hover,
+    .brand-store-card:focus-visible {
+      transform: translateY(-2px) !important;
+    }
+
+    .brand-store-card:active {
+      transform: translateY(0) scale(0.99) !important;
+    }
+
     @media (max-width: 700px) {
       .brand-zulfia {
         font-size: 0.95em !important;
       }
 
       .brand-swagystan {
-        font-size: 2.42em !important;
-        letter-spacing: -0.012em !important;
+        font-size: 2.22em !important;
+        letter-spacing: -0.064em !important;
         transform:
           skewX(-6deg)
-          scaleX(1.24)
-          scaleY(1.30)
-          translateY(-0.105em);
+          scaleX(1.16)
+          scaleY(1.27)
+          translateY(-0.09em);
+      }
+
+
+      .brand-store-deck {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        padding: 14px 0 24px !important;
+      }
+
+      .brand-store-deck::before {
+        left: 12%;
+        right: 12%;
+        top: 52%;
+        transform: rotate(-7deg);
+      }
+
+      .brand-store-slot--swagystan {
+        width: 92% !important;
+        align-self: flex-start !important;
+      }
+
+      .brand-store-slot--zulfia {
+        width: 64% !important;
+        align-self: flex-end !important;
+        margin-top: -6px !important;
+      }
+
+      .brand-store-card {
+        min-height: 62px !important;
+      }
+
+      .brand-store-card--swagystan {
+        padding: 16px 26px 13px 10px !important;
+      }
+
+      .brand-store-card--zulfia {
+        padding: 10px 10px 12px 18px !important;
       }
     }
   `;
@@ -270,6 +427,155 @@ function normalizeElement(root: ParentNode) {
   nodes.forEach(normalizeTextNode);
 }
 
+
+function directBranch(
+  ancestor: HTMLElement,
+  element: HTMLElement,
+) {
+  let current: HTMLElement = element;
+
+  while (
+    current.parentElement &&
+    current.parentElement !== ancestor
+  ) {
+    current = current.parentElement;
+  }
+
+  return current;
+}
+
+function lowestCommonAncestor(
+  first: HTMLElement,
+  second: HTMLElement,
+) {
+  const ancestors = new Set<HTMLElement>();
+  let current: HTMLElement | null = first;
+
+  while (current) {
+    ancestors.add(current);
+    current = current.parentElement;
+  }
+
+  current = second;
+
+  while (current) {
+    if (ancestors.has(current)) {
+      return current;
+    }
+
+    current = current.parentElement;
+  }
+
+  return null;
+}
+
+function brandButton(
+  brandElement: HTMLElement,
+) {
+  return brandElement.closest<HTMLElement>(
+    'button, a, [role="button"]',
+  );
+}
+
+function decorateShopDeck() {
+  const swagBrands = [
+    ...document.querySelectorAll<HTMLElement>(
+      ".brand-swagystan",
+    ),
+  ];
+
+  const zulfiaBrands = [
+    ...document.querySelectorAll<HTMLElement>(
+      ".brand-zulfia",
+    ),
+  ];
+
+  for (const swagBrand of swagBrands) {
+    const swagButton = brandButton(swagBrand);
+
+    if (!swagButton) {
+      continue;
+    }
+
+    for (const zulfiaBrand of zulfiaBrands) {
+      const zulfiaButton = brandButton(zulfiaBrand);
+
+      if (
+        !zulfiaButton ||
+        zulfiaButton === swagButton
+      ) {
+        continue;
+      }
+
+      const deck = lowestCommonAncestor(
+        swagButton,
+        zulfiaButton,
+      );
+
+      if (
+        !deck ||
+        deck === document.body ||
+        deck === document.documentElement
+      ) {
+        continue;
+      }
+
+      const interactiveCount =
+        deck.querySelectorAll(
+          'button, a, [role="button"]',
+        ).length;
+
+      /*
+       * A real shop switcher is a compact control.
+       * This keeps product/admin areas from being decorated accidentally.
+       */
+      if (
+        interactiveCount < 2 ||
+        interactiveCount > 8
+      ) {
+        continue;
+      }
+
+      const swagSlot = directBranch(
+        deck,
+        swagButton,
+      );
+      const zulfiaSlot = directBranch(
+        deck,
+        zulfiaButton,
+      );
+
+      if (swagSlot === zulfiaSlot) {
+        continue;
+      }
+
+      deck.classList.add(
+        "brand-store-deck",
+      );
+
+      swagSlot.classList.add(
+        "brand-store-slot",
+        "brand-store-slot--swagystan",
+      );
+      zulfiaSlot.classList.add(
+        "brand-store-slot",
+        "brand-store-slot--zulfia",
+      );
+
+      swagButton.classList.add(
+        "brand-store-card",
+        "brand-store-card--swagystan",
+      );
+      zulfiaButton.classList.add(
+        "brand-store-card",
+        "brand-store-card--zulfia",
+      );
+
+      return;
+    }
+  }
+}
+
 function normalizeDocumentTitle() {
   document.title = normalizeText(document.title)
     .replace(/swagystan/gi, "SWAGYSTAN");
@@ -279,6 +585,7 @@ function run() {
   installBrandStyles();
   normalizeDocumentTitle();
   normalizeElement(document.body);
+  decorateShopDeck();
 
   const observer = new MutationObserver((mutations) => {
     for (const mutation of mutations) {
@@ -300,6 +607,7 @@ function run() {
     }
 
     normalizeDocumentTitle();
+    decorateShopDeck();
   });
 
   observer.observe(document.body, {
