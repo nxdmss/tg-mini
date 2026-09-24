@@ -1498,6 +1498,9 @@ export default function App() {
             shop?.slug ===
             "zulf"
           }
+          homeHeroLogo={
+            !shopSlug
+          }
         />
 
         <ShopSwitcher

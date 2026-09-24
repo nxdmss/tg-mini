@@ -176,3 +176,27 @@
     transition-duration: 1ms;
   }
 }
+
+
+.brand__logo {
+  transition:
+    transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.brand__logo--home {
+  position: fixed;
+  left: 50%;
+  top: 18px;
+  z-index: 30;
+  transform: translateX(-50%);
+}
+
+.brand__logo--home .brand__logo-mark {
+  justify-items: center;
+}
+
+@media (max-width: 520px) {
+  .brand__logo--home {
+    top: 12px;
+  }
+}

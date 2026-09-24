@@ -1,5 +1,7 @@
 import { useRef } from "react";
 
+import { motion } from "motion/react";
+
 import { useNavigate } from "react-router-dom";
 
 import { useCart } from "../cart";
@@ -14,12 +16,14 @@ type HeaderProps = {
   onCartClick: () => void;
   homePath?: string;
   logoNegative?: boolean;
+  homeHeroLogo?: boolean;
 };
 
 export function Header({
   onCartClick,
   homePath = "/",
   logoNegative = false,
+  homeHeroLogo = false,
 }: HeaderProps) {
   const { count } = useCart();
 
@@ -64,7 +68,7 @@ export function Header({
     <header className="header">
       <div className="container header__inner header__inner--store">
         <button
-          className={`brand__logo ${
+          className={`brand__logo ${homeHeroLogo ? "brand__logo--home" : ""} ${
             logoNegative
               ? "brand__logo--negative"
               : ""
@@ -73,7 +77,8 @@ export function Header({
           onClick={handleLogoClick}
           aria-label="SWA6Y5TAN"
         >
-          <span className="brand__logo-mark">
+          <motion.span\n            layoutId="swag-main-logo"\n            transition={{\n              layout: {\n                duration: 0.7,\n                ease: [0.16, 1, 0.3, 1],\n              },\n            }}\n            className="brand__logo-mark"
+          >
             <img
               className="brand__logo-image brand__logo-image--base"
               src="/logo.png"
