@@ -1,20 +1,19 @@
-DMC5 FONT SETUP
+DMC5 FONT — IMPORTANT
 
-Скачай Dmc5 Font By Kalina Ann по ссылке:
-https://online-fonts.com/fonts/dmc5-font-kalina-ann-0
+Этот шрифт использует lowercase-глифы.
+Поэтому код специально рендерит слово как:
+swagystan
 
-Положи скачанный файл В ЭТУ ПАПКУ и переименуй по расширению:
+НЕ меняй это на SWAGYSTAN и НЕ добавляй text-transform: uppercase,
+иначе браузер может перейти на fallback-шрифт.
 
-если .ttf:
+Файл шрифта должен лежать здесь с ОДНИМ из имён:
+
 dmc5-kalina-ann.ttf
-
-если .otf:
 dmc5-kalina-ann.otf
-
-если .woff:
 dmc5-kalina-ann.woff
-
-если .woff2:
 dmc5-kalina-ann.woff2
 
-Код автоматически попробует все четыре варианта.
+Не меняй реальное расширение файла.
+Если скачался .otf — оставь .otf.
+Если скачался .ttf — оставь .ttf.

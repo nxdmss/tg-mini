@@ -1,5 +1,5 @@
 const ZULF_RE = /\bZULF\b/gi;
-const SWAG_RE = /\bSWA6Y5TAN\b/g;
+const SWAG_RE = /\b(?:SWA6Y5TAN|SWAGYSTAN)\b/gi;
 
 const STYLE_ID = "swagystan-brand-runtime-style";
 
@@ -65,7 +65,7 @@ function installBrandStyles() {
       font-style: normal !important;
       line-height: 0.98 !important;
       letter-spacing: 0.035em !important;
-      text-transform: uppercase !important;
+      text-transform: none !important;
       white-space: nowrap;
       transform:
         skewX(-7deg)
@@ -143,7 +143,7 @@ function installBrandStyles() {
 function normalizeText(value: string) {
   return value
     .replace(ZULF_RE, "Zulfia")
-    .replace(SWAG_RE, "SWAGYSTAN");
+    .replace(SWAG_RE, "swagystan");
 }
 
 function classForText(value: string) {
@@ -153,7 +153,7 @@ function classForText(value: string) {
     return "brand-zulfia";
   }
 
-  if (/^(SWAGYSTAN|SWA6Y5TAN)$/i.test(normalized)) {
+  if (/^(swagystan|SWA6Y5TAN)$/i.test(normalized)) {
     return "brand-swagystan";
   }
 
@@ -217,7 +217,7 @@ function normalizeTextNode(node: Text) {
       parent.classList.remove("brand-swagystan");
     } else {
       parent.classList.remove("brand-zulfia");
-      parent.setAttribute("data-brand-word", "SWAGYSTAN");
+      parent.setAttribute("data-brand-word", "swagystan");
     }
   }
 }
@@ -248,7 +248,7 @@ function normalizeElement(root: ParentNode) {
         element.classList.remove("brand-swagystan");
       } else {
         element.classList.remove("brand-zulfia");
-        element.setAttribute("data-brand-word", "SWAGYSTAN");
+        element.setAttribute("data-brand-word", "swagystan");
       }
     }
   });
@@ -271,7 +271,8 @@ function normalizeElement(root: ParentNode) {
 }
 
 function normalizeDocumentTitle() {
-  document.title = normalizeText(document.title);
+  document.title = normalizeText(document.title)
+    .replace(/swagystan/gi, "SWAGYSTAN");
 }
 
 function run() {
