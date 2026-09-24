@@ -14,10 +14,7 @@ import {
   useNavigate,
 } from "react-router-dom";
 
-import {
-  getShopProducts,
-  type Shop,
-} from "../shopApi";
+import type { Shop } from "../shopApi";
 
 import "./ShopSwitcher.css";
 
@@ -139,11 +136,6 @@ export function ShopSwitcher({
       null,
     );
 
-  const [homeImage, setHomeImage] =
-    useState<string | null>(
-      null,
-    );
-
   const activeShops =
     useMemo(
       () =>
@@ -203,61 +195,6 @@ export function ShopSwitcher({
     };
   }, [
     selected,
-  ]);
-
-  /*
-   * Reuse one real SWAGYSTAN catalog image as the single Home editorial photo.
-   * shopApi dedupes/caches the request, so this does not add a second network hit
-   * when App is already warming the same catalog.
-   */
-  useEffect(() => {
-    if (
-      selected ||
-      homeImage
-    ) {
-      return;
-    }
-
-    let active = true;
-
-    void getShopProducts(
-      "swagystan",
-      {
-        sort: "name_asc",
-      },
-    )
-      .then(
-        (products) => {
-          if (!active) {
-            return;
-          }
-
-          const product =
-            products.find(
-              (item) =>
-                Boolean(
-                  item.images?.[0]?.url,
-                ),
-            );
-
-          setHomeImage(
-            product?.images?.[0]?.url ??
-              null,
-          );
-        },
-      )
-      .catch(() => {
-        if (active) {
-          setHomeImage(null);
-        }
-      });
-
-    return () => {
-      active = false;
-    };
-  }, [
-    selected,
-    homeImage,
   ]);
 
   async function chooseShop(
@@ -561,18 +498,14 @@ export function ShopSwitcher({
                     ],
                   }}
                 >
-                  {homeImage ? (
-                    <img
-                      src={homeImage}
-                      alt=""
-                      aria-hidden="true"
-                      loading="eager"
-                      fetchPriority="high"
-                      decoding="async"
-                    />
-                  ) : (
-                    <div className="shop-switcher__home-media-placeholder" />
-                  )}
+                  <img
+                    src="/eagle.jpg"
+                    alt=""
+                    aria-hidden="true"
+                    loading="eager"
+                    fetchPriority="high"
+                    decoding="async"
+                  />
                 </motion.div>
               )}
           </AnimatePresence>
