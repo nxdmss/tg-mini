@@ -8,6 +8,44 @@ type ShopHeroProps = {
   onOpenSwitcher: () => void;
 };
 
+function displayShopName(
+  shop: Shop,
+) {
+  if (shop.slug === "zulf") {
+    return "Zulfia";
+  }
+
+  if (
+    shop.slug === "swagystan" ||
+    /^(SWA6Y5TAN|SWAGYSTAN)$/i.test(
+      shop.name,
+    )
+  ) {
+    return "swagystan";
+  }
+
+  return shop.name;
+}
+
+function accessibleShopName(
+  shop: Shop,
+) {
+  if (shop.slug === "zulf") {
+    return "Zulfia";
+  }
+
+  if (
+    shop.slug === "swagystan" ||
+    /^(SWA6Y5TAN|SWAGYSTAN)$/i.test(
+      shop.name,
+    )
+  ) {
+    return "SWAGYSTAN";
+  }
+
+  return shop.name;
+}
+
 export function ShopHero({
   shop,
   loading,
@@ -27,6 +65,15 @@ export function ShopHero({
     return null;
   }
 
+  const isZulfia =
+    shop.slug === "zulf";
+
+  const isSwagystan =
+    shop.slug === "swagystan" ||
+    /^(SWA6Y5TAN|SWAGYSTAN)$/i.test(
+      shop.name,
+    );
+
   return (
     <section className="shop-identity">
       <div className="container shop-identity__inner">
@@ -34,7 +81,9 @@ export function ShopHero({
           type="button"
           className="shop-identity__switch"
           onClick={onOpenSwitcher}
-          aria-label={`Сменить магазин. Сейчас $<span className={shop.slug === "zulf" ? "shop-name--zulfia" : undefined}>{shop.slug === "zulf" ? "Zulfia" : shop.name}</span>`}
+          aria-label={`Сменить магазин. Сейчас ${accessibleShopName(
+            shop,
+          )}`}
         >
           <span className="shop-identity__eyebrow">
             МАГАЗИН / НАЖМИ ЧТОБЫ СМЕНИТЬ
@@ -42,10 +91,25 @@ export function ShopHero({
 
           <span className="shop-identity__title-row">
             <span className="shop-identity__name">
-              <span className={shop.slug === "zulf" ? "shop-name--zulfia" : undefined}>{shop.slug === "zulf" ? "Zulfia" : shop.name}</span>
+              <span
+                className={
+                  isZulfia
+                    ? "brand-zulfia"
+                    : isSwagystan
+                      ? "brand-swagystan"
+                      : undefined
+                }
+              >
+                {displayShopName(
+                  shop,
+                )}
+              </span>
             </span>
 
-            <span className="shop-identity__arrow" aria-hidden="true">
+            <span
+              className="shop-identity__arrow"
+              aria-hidden="true"
+            >
               ↓
             </span>
           </span>

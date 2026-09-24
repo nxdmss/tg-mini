@@ -39,6 +39,67 @@ const nameMotion = {
   ],
 } as const;
 
+function displayShopName(
+  shop: Shop,
+) {
+  if (shop.slug === "zulf") {
+    return "Zulfia";
+  }
+
+  if (
+    shop.slug === "swagystan" ||
+    /^(SWA6Y5TAN|SWAGYSTAN)$/i.test(
+      shop.name,
+    )
+  ) {
+    /*
+     * The DMC5 font uses lowercase glyph mapping.
+     * Visually this is the SWAGYSTAN wordmark.
+     */
+    return "swagystan";
+  }
+
+  return shop.name;
+}
+
+function accessibleShopName(
+  shop: Shop,
+) {
+  if (shop.slug === "zulf") {
+    return "Zulfia";
+  }
+
+  if (
+    shop.slug === "swagystan" ||
+    /^(SWA6Y5TAN|SWAGYSTAN)$/i.test(
+      shop.name,
+    )
+  ) {
+    return "SWAGYSTAN";
+  }
+
+  return shop.name;
+}
+
+function brandClass(
+  shop: Shop,
+) {
+  if (shop.slug === "zulf") {
+    return "shop-switcher__brand shop-switcher__brand--zulfia";
+  }
+
+  if (
+    shop.slug === "swagystan" ||
+    /^(SWA6Y5TAN|SWAGYSTAN)$/i.test(
+      shop.name,
+    )
+  ) {
+    return "shop-switcher__brand shop-switcher__brand--swagystan";
+  }
+
+  return "shop-switcher__brand";
+}
+
 export function ShopSwitcher({
   shop,
   shops,
@@ -204,10 +265,10 @@ export function ShopSwitcher({
                   mode === "rail"
                     ? 1
                     : 0,
-                transform:
+                y:
                   mode === "rail"
-                    ? "translate3d(0,0,0)"
-                    : "translate3d(0,3px,0)",
+                    ? 0
+                    : 4,
               }}
               transition={{
                 duration: 0.12,
@@ -230,7 +291,10 @@ export function ShopSwitcher({
               }
             >
               {activeShops.map(
-                (item) => {
+                (
+                  item,
+                  index,
+                ) => {
                   const isMoving =
                     mode === "focus" &&
                     focusShop.slug ===
@@ -253,27 +317,60 @@ export function ShopSwitcher({
                         );
                       }}
                       disabled={pending}
-                      aria-label={`Открыть магазин $<span className={item.slug === "zulf" ? "shop-name--zulfia" : undefined}>{item.slug === "zulf" ? "Zulfia" : item.name}</span>`}
+                      aria-label={`Открыть магазин ${accessibleShopName(
+                        item,
+                      )}`}
                     >
-                      {isMoving ? (
-                        <span
-                          className="shop-switcher__rail-placeholder"
-                          aria-hidden="true"
-                        >
-                          <span className={item.slug === "zulf" ? "shop-name--zulfia" : undefined}>{item.slug === "zulf" ? "Zulfia" : item.name}</span>
-                        </span>
-                      ) : (
-                        <motion.span
-                          className="shop-switcher__name shop-switcher__name--rail"
-                          layoutId={`shop-name-${item.slug}`}
-                          transition={{
-                            layout:
-                              nameMotion,
-                          }}
-                        >
-                          <span className={item.slug === "zulf" ? "shop-name--zulfia" : undefined}>{item.slug === "zulf" ? "Zulfia" : item.name}</span>
-                        </motion.span>
-                      )}
+                      <span className="shop-switcher__index">
+                        {String(
+                          index + 1,
+                        ).padStart(
+                          2,
+                          "0",
+                        )}
+                      </span>
+
+                      <span className="shop-switcher__rail-main">
+                        {isMoving ? (
+                          <span
+                            className="shop-switcher__rail-placeholder"
+                            aria-hidden="true"
+                          >
+                            <span
+                              className={brandClass(
+                                item,
+                              )}
+                            >
+                              {displayShopName(
+                                item,
+                              )}
+                            </span>
+                          </span>
+                        ) : (
+                          <motion.span
+                            className="shop-switcher__name shop-switcher__name--rail"
+                            layoutId={`shop-name-${item.slug}`}
+                            transition={{
+                              layout:
+                                nameMotion,
+                            }}
+                          >
+                            <span
+                              className={brandClass(
+                                item,
+                              )}
+                            >
+                              {displayShopName(
+                                item,
+                              )}
+                            </span>
+                          </motion.span>
+                        )}
+                      </span>
+
+                      <span className="shop-switcher__count">
+                        {item.productCount}
+                      </span>
                     </button>
                   );
                 },
@@ -286,9 +383,15 @@ export function ShopSwitcher({
                   key={`focus-${focusShop.slug}`}
                   type="button"
                   className="shop-switcher__focus"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
+                  initial={{
+                    opacity: 0,
+                  }}
+                  animate={{
+                    opacity: 1,
+                  }}
+                  exit={{
+                    opacity: 0,
+                  }}
                   transition={{
                     duration: 0.08,
                   }}
@@ -296,8 +399,14 @@ export function ShopSwitcher({
                     void clearShop();
                   }}
                   disabled={pending}
-                  aria-label={`Вернуть ${focusShop.name} в строку магазинов`}
+                  aria-label={`Вернуть ${accessibleShopName(
+                    focusShop,
+                  )} к списку магазинов`}
                 >
+                  <span className="shop-switcher__focus-kicker">
+                    STORE / НАЗАД К МАГАЗИНАМ
+                  </span>
+
                   <motion.span
                     className="shop-switcher__name shop-switcher__name--focus"
                     layoutId={`shop-name-${focusShop.slug}`}
@@ -306,7 +415,15 @@ export function ShopSwitcher({
                         nameMotion,
                     }}
                   >
-                    {focusShop.name}
+                    <span
+                      className={brandClass(
+                        focusShop,
+                      )}
+                    >
+                      {displayShopName(
+                        focusShop,
+                      )}
+                    </span>
                   </motion.span>
                 </motion.button>
               )}
@@ -322,10 +439,10 @@ export function ShopSwitcher({
                   mode === "focus"
                     ? 1
                     : 0,
-                transform:
+                y:
                   mode === "focus"
-                    ? "translate3d(0,0,0)"
-                    : "translate3d(0,-2px,0)",
+                    ? 0
+                    : -2,
               }}
               transition={{
                 duration: 0.1,
