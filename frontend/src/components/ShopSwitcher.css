@@ -10,40 +10,85 @@
   font-display: swap;
 }
 
+/*
+ * HOME
+ * Only the two brand names + one centered editorial image.
+ */
+html.store-home-mode,
+html.store-home-mode body,
+html.store-home-mode #root,
+html.store-home-mode .app {
+  min-height: 100%;
+}
+
+html.store-home-mode .app {
+  min-height: 100svh;
+}
+
+html.store-home-mode .store-top {
+  min-height: 100svh;
+}
+
+html.store-home-mode
+.store-top > .header,
+html.store-home-mode
+.store-top > .shop-content-stage,
+html.store-home-mode
+.app > .shop-content-stage {
+  display: none !important;
+}
+
 .shop-switcher {
   position: relative;
-  padding: 8px 0 5px;
   color: var(--text);
 }
 
-.shop-switcher__panel {
+.shop-switcher__inner {
   position: relative;
-  min-width: 0;
-  padding:
-    clamp(12px, 2.8vw, 18px)
-    clamp(13px, 3vw, 20px)
-    clamp(11px, 2.6vw, 17px);
-  background: var(--surface);
-  overflow: hidden;
 }
 
-.shop-switcher__label {
-  margin-bottom: 9px;
-  font-family:
-    "IBM Plex Mono",
-    monospace;
-  font-size: 7px;
-  font-weight: 600;
-  line-height: 1;
-  letter-spacing: 0.14em;
-  opacity: 0.32;
+.shop-switcher.is-home {
+  min-height: 100svh;
+  display: flex;
+  align-items: center;
+  padding:
+    max(24px, env(safe-area-inset-top))
+    0
+    max(24px, env(safe-area-inset-bottom));
+}
+
+.shop-switcher.is-home
+.shop-switcher__inner {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .shop-switcher__stage {
   position: relative;
-  height: clamp(40px, 8vw, 54px);
 }
 
+.shop-switcher.is-home
+.shop-switcher__stage {
+  width: 100%;
+  height: 52px;
+  flex: 0 0 auto;
+  margin-bottom: clamp(22px, 4.5vh, 42px);
+}
+
+.shop-switcher.is-selected {
+  padding: 5px 0 1px;
+}
+
+.shop-switcher.is-selected
+.shop-switcher__stage {
+  height: clamp(48px, 8vw, 68px);
+}
+
+/*
+ * Bare brand names.
+ */
 .shop-switcher__rail,
 .shop-switcher__focus {
   position: absolute;
@@ -53,23 +98,25 @@
 .shop-switcher__rail {
   display: flex;
   align-items: center;
-  gap: clamp(18px, 6vw, 54px);
-  min-width: 0;
+  justify-content: center;
+  gap: clamp(28px, 7vw, 68px);
+}
+
+.shop-switcher__rail-item,
+.shop-switcher__focus {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: inherit;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .shop-switcher__rail-item {
   flex: 0 0 auto;
-  min-width: 0;
-  padding: 4px 0;
-  border: 0;
-  border-radius: 0;
   display: inline-flex;
   align-items: center;
-  background: transparent;
-  color: inherit;
-  text-align: left;
-  white-space: nowrap;
-  -webkit-tap-highlight-color: transparent;
+  justify-content: center;
   transition:
     opacity 140ms ease,
     transform 160ms cubic-bezier(0.16, 1, 0.3, 1);
@@ -82,7 +129,7 @@
 }
 
 .shop-switcher__rail-item:active {
-  transform: scale(0.98);
+  transform: scale(0.97);
 }
 
 .shop-switcher__rail-item:disabled,
@@ -93,9 +140,8 @@
 .shop-switcher__name,
 .shop-switcher__rail-placeholder {
   display: inline-block;
-  min-width: 0;
   white-space: nowrap;
-  transform-origin: left center;
+  transform-origin: center;
   backface-visibility: hidden;
   -webkit-font-smoothing: antialiased;
   text-rendering: geometricPrecision;
@@ -103,10 +149,10 @@
 
 .shop-switcher__name--rail,
 .shop-switcher__rail-placeholder {
-  font-size: clamp(15px, 4.2vw, 22px);
+  font-size: clamp(18px, 4.8vw, 28px);
   line-height: 1;
   font-weight: 700;
-  letter-spacing: -0.045em;
+  letter-spacing: -0.05em;
 }
 
 .shop-switcher__rail-placeholder {
@@ -125,18 +171,19 @@
     "Didot",
     "Times New Roman",
     serif !important;
-  font-size: 1.08em !important;
+  font-size: 1.16em !important;
   font-weight: 400 !important;
   font-style: normal !important;
-  line-height: 0.82 !important;
-  letter-spacing: -0.11em !important;
+  line-height: 0.8 !important;
+  letter-spacing: -0.105em !important;
   text-transform: none !important;
   transform:
     skewX(-5deg)
-    scaleX(1.04)
-    scaleY(1.08);
-  transform-origin: left center;
-  -webkit-text-stroke: 0.025px currentColor;
+    scaleX(1.06)
+    scaleY(1.1);
+  transform-origin: center;
+  -webkit-text-stroke:
+    0.025px currentColor;
 }
 
 .shop-switcher__brand--zulfia {
@@ -146,45 +193,40 @@
     "Brush Script MT",
     "URW Chancery L",
     cursive !important;
-  font-size: 1.04em !important;
+  font-size: 1.02em !important;
   font-weight: 400 !important;
   font-style: normal !important;
   line-height: 0.9 !important;
-  letter-spacing: -0.01em !important;
+  letter-spacing: -0.012em !important;
   text-transform: none !important;
-  transform: translateY(0.035em);
-  transform-origin: left center;
+  transform: translateY(0.025em);
+  transform-origin: center;
 }
 
+/*
+ * Selected shop: one name, centered.
+ */
 .shop-switcher__focus {
   width: 100%;
-  min-width: 0;
-  padding: 0;
-  border: 0;
-  border-radius: 0;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  background: transparent;
-  color: inherit;
-  text-align: left;
-  -webkit-tap-highlight-color: transparent;
+  justify-content: center;
 }
 
 .shop-switcher__name--focus {
-  min-width: 0;
+  max-width: 100%;
   overflow: visible;
-  font-size: clamp(23px, 6vw, 36px);
+  font-size: clamp(28px, 7.2vw, 48px);
   line-height: 0.9;
   font-weight: 700;
-  letter-spacing: -0.05em;
+  letter-spacing: -0.055em;
+  text-align: center;
 }
 
 .shop-switcher__name--focus
 .shop-switcher__brand--swagystan {
   font-size: 1.08em !important;
-  letter-spacing: -0.115em !important;
+  letter-spacing: -0.11em !important;
 }
 
 .shop-switcher__name--focus
@@ -192,44 +234,49 @@
   font-size: 1em !important;
 }
 
-.shop-switcher__focus-meta {
-  flex: 0 0 auto;
-  padding-top: 2px;
-  font-family:
-    "IBM Plex Mono",
-    monospace;
-  font-size: 8px;
-  font-weight: 600;
-  line-height: 1;
-  letter-spacing: 0.03em;
-  white-space: nowrap;
-  opacity: 0.34;
-}
-
-.shop-switcher__details-slot {
-  position: relative;
-  height: 14px;
-  margin-top: 3px;
+/*
+ * One Home photo. No captions, borders, labels or product UI.
+ */
+.shop-switcher__home-media {
+  width: min(72vw, 560px);
+  height: min(58svh, 700px);
+  min-height: 320px;
+  flex: 0 1 auto;
   overflow: hidden;
+  background:
+    color-mix(
+      in srgb,
+      var(--text) 4%,
+      var(--bg)
+    );
 }
 
-.shop-switcher__details {
-  position: absolute;
-  inset: 0;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: 8px;
-  line-height: 1.2;
-  font-weight: 500;
-  opacity: 0.38;
-  pointer-events: none;
+.shop-switcher__home-media img,
+.shop-switcher__home-media-placeholder {
+  width: 100%;
+  height: 100%;
+  display: block;
 }
 
-.shop-switcher__panel--skeleton {
-  height: 82px;
-  opacity: 0.5;
+.shop-switcher__home-media img {
+  object-fit: cover;
+  object-position: center;
+}
+
+.shop-switcher__home-media-placeholder {
+  background:
+    color-mix(
+      in srgb,
+      var(--text) 4%,
+      var(--bg)
+    );
+}
+
+.shop-switcher__stage--loading {
+  width: min(260px, 70vw);
+  height: 34px;
+  opacity: 0.06;
+  background: var(--text);
 }
 
 .shop-switcher.is-pending
@@ -241,51 +288,54 @@
 
 @media (hover: hover) {
   .shop-switcher__rail-item:hover {
-    opacity: 0.58;
+    opacity: 0.55;
   }
 }
 
 @media (max-width: 520px) {
-  .shop-switcher {
-    padding-top: 6px;
+  .shop-switcher.is-home {
+    justify-content: center;
+    padding-left: 0;
+    padding-right: 0;
   }
 
-  .shop-switcher__panel {
-    padding: 12px 13px 10px;
-  }
-
-  .shop-switcher__label {
-    margin-bottom: 8px;
-  }
-
+  .shop-switcher.is-home
   .shop-switcher__stage {
-    height: 42px;
+    height: 46px;
+    margin-bottom: 24px;
   }
 
   .shop-switcher__rail {
-    gap: 22px;
+    gap: 28px;
   }
 
   .shop-switcher__name--rail,
   .shop-switcher__rail-placeholder {
-    font-size: 17px;
+    font-size: 19px;
   }
 
   .shop-switcher__brand--swagystan {
-    font-size: 1.05em !important;
-    letter-spacing: -0.115em !important;
+    font-size: 1.12em !important;
+    letter-spacing: -0.11em !important;
   }
 
   .shop-switcher__brand--zulfia {
     font-size: 1em !important;
   }
 
-  .shop-switcher__name--focus {
-    font-size: clamp(24px, 7vw, 31px);
+  .shop-switcher__home-media {
+    width: min(78vw, 420px);
+    height: min(56svh, 590px);
+    min-height: 300px;
   }
 
-  .shop-switcher__focus-meta {
-    font-size: 7px;
+  .shop-switcher.is-selected
+  .shop-switcher__stage {
+    height: 52px;
+  }
+
+  .shop-switcher__name--focus {
+    font-size: clamp(29px, 9vw, 40px);
   }
 }
 

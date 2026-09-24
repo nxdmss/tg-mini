@@ -1,5 +1,8 @@
-const ZULF_RE = /\bZULF\b/gi;
-const SWAG_RE = /\b(?:SWA6Y5TAN|SWAGYSTAN)\b/gi;
+const ZULF_RE =
+  /\bZULF\b/gi;
+
+const SWAG_RE =
+  /\b(?:SWA6Y5TAN|SWAGYSTAN)\b/gi;
 
 const STYLE_ID =
   "swagystan-brand-runtime-style";
@@ -21,8 +24,11 @@ function installBrandStyles() {
   style.id = STYLE_ID;
 
   /*
-   * This runtime is ONLY a typography/text safety net.
-   * It must never change application layout or move controls.
+   * Typography/text safety net only.
+   * Never changes layout.
+   *
+   * ShopSwitcher has its own intentionally sized brand styles,
+   * so runtime branding must not stack on top of it.
    */
   style.textContent = `
     @font-face {
@@ -191,7 +197,12 @@ function normalizeTextNode(
   const parent =
     node.parentElement;
 
-  if (!parent) {
+  if (
+    !parent ||
+    parent.closest(
+      ".shop-switcher",
+    )
+  ) {
     return;
   }
 
