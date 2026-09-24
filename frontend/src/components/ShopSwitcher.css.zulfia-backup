@@ -178,29 +178,3 @@
     scroll-behavior: auto;
   }
 }
-
-/* ZULFIA BRAND */
-.shop-name--zulfia {
-  display: inline-block;
-  font-family:
-    "Snell Roundhand",
-    "Segoe Script",
-    "Brush Script MT",
-    "URW Chancery L",
-    cursive;
-  font-size: 1.38em;
-  font-weight: 400;
-  font-style: normal;
-  line-height: 0.9;
-  letter-spacing: 0.01em;
-  text-transform: none !important;
-  white-space: nowrap;
-  transform: translateY(0.03em);
-  transform-origin: center;
-}
-
-@media (max-width: 700px) {
-  .shop-name--zulfia {
-    font-size: 1.32em;
-  }
-}

@@ -253,14 +253,14 @@ export function ShopSwitcher({
                         );
                       }}
                       disabled={pending}
-                      aria-label={`Открыть магазин $<span className={item.slug === "zulf" ? "shop-name--zulfia" : undefined}>{item.slug === "zulf" ? "Zulfia" : item.name}</span>`}
+                      aria-label={`Открыть магазин ${item.name}`}
                     >
                       {isMoving ? (
                         <span
                           className="shop-switcher__rail-placeholder"
                           aria-hidden="true"
                         >
-                          <span className={item.slug === "zulf" ? "shop-name--zulfia" : undefined}>{item.slug === "zulf" ? "Zulfia" : item.name}</span>
+                          {item.name}
                         </span>
                       ) : (
                         <motion.span
@@ -271,7 +271,7 @@ export function ShopSwitcher({
                               nameMotion,
                           }}
                         >
-                          <span className={item.slug === "zulf" ? "shop-name--zulfia" : undefined}>{item.slug === "zulf" ? "Zulfia" : item.name}</span>
+                          {item.name}
                         </motion.span>
                       )}
                     </button>

@@ -79,9 +79,9 @@ export function MarketplaceHome({
                         openingSlug,
                       )
                     }
-                    aria-label={`Открыть магазин $<span className={shop.slug === "zulf" ? "shop-name--zulfia" : undefined}>{shop.slug === "zulf" ? "Zulfia" : shop.name}</span>`}
+                    aria-label={`Открыть магазин ${shop.name}`}
                   >
-                    <span className={shop.slug === "zulf" ? "shop-name--zulfia" : undefined}>{shop.slug === "zulf" ? "Zulfia" : shop.name}</span>
+                    {shop.name}
                   </button>
                 );
               },

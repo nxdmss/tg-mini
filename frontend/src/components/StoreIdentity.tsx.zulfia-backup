@@ -32,7 +32,7 @@ export function StoreIdentity({
         </button>
 
         <h1 className="store-identity__name">
-          <span className={shop.slug === "zulf" ? "shop-name--zulfia" : undefined}>{shop.slug === "zulf" ? "Zulfia" : shop.name}</span>
+          {shop.name}
         </h1>
 
         <div className="store-identity__bottom">

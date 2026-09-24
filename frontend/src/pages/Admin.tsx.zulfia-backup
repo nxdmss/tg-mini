@@ -1153,7 +1153,7 @@ export default function Admin() {
     }
 
     const ok = window.confirm(
-      `Удалить магазин "$<span className={shop.slug === "zulf" ? "shop-name--zulfia" : undefined}>{shop.slug === "zulf" ? "Zulfia" : shop.name}</span>"? Товары из базы не удалятся.`,
+      `Удалить магазин "${shop.name}"? Товары из базы не удалятся.`,
     );
 
     if (!ok) {
@@ -1373,7 +1373,7 @@ export default function Admin() {
                                 !shop.isActive
                               }
                             >
-                              <span className={shop.slug === "zulf" ? "shop-name--zulfia" : undefined}>{shop.slug === "zulf" ? "Zulfia" : shop.name}</span>
+                              {shop.name}
                               {!shop.isActive
                                 ? " — ВЫКЛ"
                                 : ""}
@@ -1769,7 +1769,7 @@ export default function Admin() {
                               )
                             }
                           >
-                            <span className={shop.slug === "zulf" ? "shop-name--zulfia" : undefined}>{shop.slug === "zulf" ? "Zulfia" : shop.name}</span>
+                            {shop.name}
                           </div>
                         ))}
                     </div>
@@ -1896,7 +1896,7 @@ export default function Admin() {
                                       key={shop.id}
                                       value={shop.id}
                                     >
-                                      <span className={shop.slug === "zulf" ? "shop-name--zulfia" : undefined}>{shop.slug === "zulf" ? "Zulfia" : shop.name}</span>
+                                      {shop.name}
                                     </option>
                                   ))}
                               </select>
@@ -2227,7 +2227,9 @@ export default function Admin() {
                           <div className="admin-shop-item__top">
                             <div>
                               <h3>
-                                <span className={shop.slug === "zulf" ? "shop-name--zulfia" : undefined}>{shop.slug === "zulf" ? "Zulfia" : shop.name}</span>
+                                {
+                                  shop.name
+                                }
                               </h3>
 
                               <div className="admin-shop-path">

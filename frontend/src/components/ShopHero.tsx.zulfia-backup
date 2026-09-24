@@ -34,7 +34,7 @@ export function ShopHero({
           type="button"
           className="shop-identity__switch"
           onClick={onOpenSwitcher}
-          aria-label={`Сменить магазин. Сейчас $<span className={shop.slug === "zulf" ? "shop-name--zulfia" : undefined}>{shop.slug === "zulf" ? "Zulfia" : shop.name}</span>`}
+          aria-label={`Сменить магазин. Сейчас ${shop.name}`}
         >
           <span className="shop-identity__eyebrow">
             МАГАЗИН / НАЖМИ ЧТОБЫ СМЕНИТЬ
@@ -42,7 +42,7 @@ export function ShopHero({
 
           <span className="shop-identity__title-row">
             <span className="shop-identity__name">
-              <span className={shop.slug === "zulf" ? "shop-name--zulfia" : undefined}>{shop.slug === "zulf" ? "Zulfia" : shop.name}</span>
+              {shop.name}
             </span>
 
             <span className="shop-identity__arrow" aria-hidden="true">
