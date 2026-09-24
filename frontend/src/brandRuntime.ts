@@ -36,39 +36,47 @@ function installBrandStyles() {
     }
 
     /*
-     * SWAGYSTAN — razor / demon-action wordmark.
-     * Intentionally ugly-sharp: high-contrast serifs, hard italic,
-     * compressed width, tall silhouette and sliced duplicate layers.
+     * SWAGYSTAN — DMC5 / Kalina Ann direction.
+     * Wider, airier and more alive than the previous compressed version.
      */
+    @font-face {
+      font-family: "SWAGYSTAN DMC5";
+      src:
+        url("/fonts/dmc5-kalina-ann.woff2") format("woff2"),
+        url("/fonts/dmc5-kalina-ann.woff") format("woff"),
+        url("/fonts/dmc5-kalina-ann.ttf") format("truetype"),
+        url("/fonts/dmc5-kalina-ann.otf") format("opentype");
+      font-style: normal;
+      font-weight: 400;
+      font-display: swap;
+    }
+
     .brand-swagystan {
       position: relative !important;
       display: inline-block !important;
       font-family:
-        "Bodoni 72 Smallcaps",
+        "SWAGYSTAN DMC5",
         "Bodoni 72",
         "Didot",
-        "Bodoni MT",
         "Times New Roman",
         serif !important;
-      font-size: 1.14em !important;
-      font-weight: 900 !important;
-      font-style: italic !important;
-      line-height: 0.82 !important;
-      letter-spacing: -0.045em !important;
+      font-size: 1.16em !important;
+      font-weight: 400 !important;
+      font-style: normal !important;
+      line-height: 0.98 !important;
+      letter-spacing: 0.035em !important;
       text-transform: uppercase !important;
       white-space: nowrap;
       transform:
-        skewX(-17deg)
-        scaleX(0.9)
-        scaleY(1.24)
-        translateY(-0.015em);
-      transform-origin: center;
-      -webkit-text-stroke: 0.65px currentColor;
+        skewX(-7deg)
+        scaleX(1.08)
+        scaleY(1.03)
+        translateY(-0.01em);
+      transform-origin: left center;
+      -webkit-text-stroke: 0.22px currentColor;
       paint-order: stroke fill;
       text-shadow:
-        0.02em 0 0 currentColor,
-        -0.018em 0 0 currentColor,
-        0 -0.018em 0 currentColor;
+        0.012em 0.008em 0 currentColor;
       isolation: isolate;
     }
 
@@ -80,45 +88,36 @@ function installBrandStyles() {
       color: currentColor;
       pointer-events: none;
       user-select: none;
-      -webkit-text-stroke: 0.35px currentColor;
+      opacity: 0.14;
+      z-index: -1;
     }
 
-    /* Upper torn blade-slice. */
     .brand-swagystan::before {
-      transform: translate(-0.045em, -0.035em);
+      transform: translate(-0.016em, -0.012em);
       clip-path: polygon(
         0 0,
         100% 0,
-        100% 42%,
-        88% 38%,
-        74% 47%,
-        61% 38%,
-        48% 46%,
-        34% 37%,
-        19% 46%,
-        0 39%
+        100% 47%,
+        78% 43%,
+        58% 48%,
+        37% 43%,
+        17% 48%,
+        0 44%
       );
-      opacity: 0.48;
-      z-index: -1;
     }
 
-    /* Lower opposing slice makes the word feel cut / weapon-like. */
     .brand-swagystan::after {
-      transform: translate(0.055em, 0.035em);
+      transform: translate(0.018em, 0.014em);
       clip-path: polygon(
-        0 58%,
-        18% 53%,
-        31% 62%,
-        46% 54%,
-        60% 63%,
-        75% 54%,
-        89% 62%,
-        100% 57%,
+        0 56%,
+        19% 52%,
+        39% 57%,
+        59% 52%,
+        79% 57%,
+        100% 53%,
         100% 100%,
         0 100%
       );
-      opacity: 0.38;
-      z-index: -1;
     }
 
     @media (max-width: 700px) {
@@ -127,13 +126,13 @@ function installBrandStyles() {
       }
 
       .brand-swagystan {
-        font-size: 1.08em !important;
-        letter-spacing: -0.05em !important;
+        font-size: 1.12em !important;
+        letter-spacing: 0.03em !important;
         transform:
-          skewX(-16deg)
-          scaleX(0.88)
-          scaleY(1.2)
-          translateY(-0.01em);
+          skewX(-6deg)
+          scaleX(1.06)
+          scaleY(1.02)
+          translateY(-0.005em);
       }
     }
   `;

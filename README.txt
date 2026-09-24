@@ -1,21 +1,19 @@
-SWAGYSTAN RAZOR FONT FIX
+SWAGYSTAN DMC5 — WIDE / LIVE
 
-Только один файл на замену:
-frontend/src/brandRuntime.ts
+Что изменено:
+- настоящий DMC5 font hook;
+- SWAGYSTAN шире;
+- больше воздуха между буквами;
+- нет прежнего сильного сжатия;
+- меньше вертикального вытягивания;
+- наклон мягче;
+- рваные слои гораздо слабее;
+- Zulfia не меняется.
 
-Что меняется:
-- Zulfia вообще не трогается.
-- SWAGYSTAN становится гораздо более острым, злым и рваным.
-- Без Google Fonts и без npm install.
-- Используются встроенные serif-шрифты + агрессивная CSS-обработка.
-- Добавлены рваные blade-slices через pseudo-elements.
-
-Распаковать в:
-C:\Users\umarc\tg-mini
-
-Потом:
-cd C:\Users\umarc\tg-mini\frontend
-npm run dev -- --host 0.0.0.0
-
-Если нравится:
-npm run build
+Установка:
+1. Распакуй ZIP в C:\Users\umarc\tg-mini с заменой файлов.
+2. Скачай Dmc5 Font By Kalina Ann с указанной ссылки.
+3. Положи файл в frontend\public\fonts и переименуй как написано в README_DMC5.txt.
+4. Запусти:
+   cd C:\Users\umarc\tg-mini\frontend
+   npm run dev -- --host 0.0.0.0
