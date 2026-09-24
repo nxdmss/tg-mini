@@ -36,36 +36,89 @@ function installBrandStyles() {
     }
 
     /*
-     * SWAGYSTAN — sharp gothic / action-game wordmark direction.
-     * Inspired by early-2000s gothic action typography,
-     * without copying a game logo.
-     *
-     * Copperplate is available on Apple platforms and gives
-     * the sharp, aggressive serif silhouette we need.
+     * SWAGYSTAN — razor / demon-action wordmark.
+     * Intentionally ugly-sharp: high-contrast serifs, hard italic,
+     * compressed width, tall silhouette and sliced duplicate layers.
      */
     .brand-swagystan {
+      position: relative !important;
       display: inline-block !important;
       font-family:
-        "Copperplate",
-        "Copperplate Gothic Bold",
-        "Hoefler Text",
+        "Bodoni 72 Smallcaps",
+        "Bodoni 72",
+        "Didot",
+        "Bodoni MT",
         "Times New Roman",
         serif !important;
-      font-size: 1.04em !important;
-      font-weight: 800 !important;
+      font-size: 1.14em !important;
+      font-weight: 900 !important;
       font-style: italic !important;
-      line-height: 0.94 !important;
-      letter-spacing: 0.075em !important;
+      line-height: 0.82 !important;
+      letter-spacing: -0.045em !important;
       text-transform: uppercase !important;
       white-space: nowrap;
       transform:
-        skewX(-8deg)
-        scaleY(1.08);
+        skewX(-17deg)
+        scaleX(0.9)
+        scaleY(1.24)
+        translateY(-0.015em);
       transform-origin: center;
-      -webkit-text-stroke: 0.3px currentColor;
+      -webkit-text-stroke: 0.65px currentColor;
+      paint-order: stroke fill;
       text-shadow:
-        0.018em 0 currentColor,
-        -0.012em -0.012em 0 currentColor;
+        0.02em 0 0 currentColor,
+        -0.018em 0 0 currentColor,
+        0 -0.018em 0 currentColor;
+      isolation: isolate;
+    }
+
+    .brand-swagystan::before,
+    .brand-swagystan::after {
+      content: attr(data-brand-word);
+      position: absolute;
+      inset: 0;
+      color: currentColor;
+      pointer-events: none;
+      user-select: none;
+      -webkit-text-stroke: 0.35px currentColor;
+    }
+
+    /* Upper torn blade-slice. */
+    .brand-swagystan::before {
+      transform: translate(-0.045em, -0.035em);
+      clip-path: polygon(
+        0 0,
+        100% 0,
+        100% 42%,
+        88% 38%,
+        74% 47%,
+        61% 38%,
+        48% 46%,
+        34% 37%,
+        19% 46%,
+        0 39%
+      );
+      opacity: 0.48;
+      z-index: -1;
+    }
+
+    /* Lower opposing slice makes the word feel cut / weapon-like. */
+    .brand-swagystan::after {
+      transform: translate(0.055em, 0.035em);
+      clip-path: polygon(
+        0 58%,
+        18% 53%,
+        31% 62%,
+        46% 54%,
+        60% 63%,
+        75% 54%,
+        89% 62%,
+        100% 57%,
+        100% 100%,
+        0 100%
+      );
+      opacity: 0.38;
+      z-index: -1;
     }
 
     @media (max-width: 700px) {
@@ -74,8 +127,13 @@ function installBrandStyles() {
       }
 
       .brand-swagystan {
-        font-size: 1em !important;
-        letter-spacing: 0.065em !important;
+        font-size: 1.08em !important;
+        letter-spacing: -0.05em !important;
+        transform:
+          skewX(-16deg)
+          scaleX(0.88)
+          scaleY(1.2)
+          translateY(-0.01em);
       }
     }
   `;
@@ -160,6 +218,7 @@ function normalizeTextNode(node: Text) {
       parent.classList.remove("brand-swagystan");
     } else {
       parent.classList.remove("brand-zulfia");
+      parent.setAttribute("data-brand-word", "SWAGYSTAN");
     }
   }
 }
@@ -190,6 +249,7 @@ function normalizeElement(root: ParentNode) {
         element.classList.remove("brand-swagystan");
       } else {
         element.classList.remove("brand-zulfia");
+        element.setAttribute("data-brand-word", "SWAGYSTAN");
       }
     }
   });
