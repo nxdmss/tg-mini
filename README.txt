@@ -1,15 +1,13 @@
-SWAGYSTAN DMC5 — MASSIVE / CRAMPED
+SWAGYSTAN BIGGER / ZULFIA SMALLER
 
 Только один файл на замену:
 frontend\src\brandRuntime.ts
 
 Изменено:
-- слово сильно больше;
-- line-height сильно меньше;
-- буквы прижаты плотнее;
-- силуэт выше и массивнее;
-- тонкий стиль сохранён;
-- Zulfia не трогается.
+- SWAGYSTAN ещё больше;
+- Zulfia заметно меньше;
+- сами шрифты не менялись;
+- остальная стилистика не тронута.
 
 Распаковать в:
 C:\Users\umarc\tg-mini

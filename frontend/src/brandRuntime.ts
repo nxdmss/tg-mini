@@ -24,7 +24,7 @@ function installBrandStyles() {
         "Brush Script MT",
         "URW Chancery L",
         cursive !important;
-      font-size: 1.96em !important;
+      font-size: 1.79em !important;
       font-weight: 400 !important;
       font-style: normal !important;
       line-height: 0.92 !important;
@@ -60,7 +60,7 @@ function installBrandStyles() {
         "Didot",
         "Times New Roman",
         serif !important;
-      font-size: 1.38em !important;
+      font-size: 1.12em !important;
       font-weight: 400 !important;
       font-style: normal !important;
       line-height: 0.74 !important;
@@ -122,11 +122,11 @@ function installBrandStyles() {
 
     @media (max-width: 700px) {
       .brand-zulfia {
-        font-size: 1.32em !important;
+        font-size: 0.95em !important;
       }
 
       .brand-swagystan {
-        font-size: 1.82em !important;
+        font-size: 2.02em !important;
         letter-spacing: 0.01em !important;
         transform:
           skewX(-6deg)
