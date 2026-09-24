@@ -12,19 +12,36 @@
 
 .shop-switcher {
   position: relative;
-  padding: 8px 0 0;
+  padding: 8px 0 5px;
   color: var(--text);
 }
 
-.shop-switcher__inner {
+.shop-switcher__panel {
   position: relative;
+  min-width: 0;
+  padding:
+    clamp(12px, 2.8vw, 18px)
+    clamp(13px, 3vw, 20px)
+    clamp(11px, 2.6vw, 17px);
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.shop-switcher__label {
+  margin-bottom: 9px;
+  font-family:
+    "IBM Plex Mono",
+    monospace;
+  font-size: 7px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.14em;
+  opacity: 0.32;
 }
 
 .shop-switcher__stage {
   position: relative;
-  min-height: clamp(96px, 18vw, 138px);
-  overflow: hidden;
-  contain: layout paint;
+  height: clamp(40px, 8vw, 54px);
 }
 
 .shop-switcher__rail,
@@ -34,41 +51,28 @@
 }
 
 .shop-switcher__rail {
-  display: grid;
-  grid-template-columns:
-    repeat(
-      auto-fit,
-      minmax(
-        min(150px, 42vw),
-        1fr
-      )
-    );
-  align-items: stretch;
-  gap: clamp(12px, 3vw, 28px);
-  padding: 7px 0 3px;
+  display: flex;
+  align-items: center;
+  gap: clamp(18px, 6vw, 54px);
+  min-width: 0;
 }
 
 .shop-switcher__rail-item {
-  position: relative;
+  flex: 0 0 auto;
   min-width: 0;
-  min-height: clamp(82px, 15vw, 112px);
-  padding: 9px 0 8px;
+  padding: 4px 0;
   border: 0;
-  border-top: 1px solid currentColor;
   border-radius: 0;
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  grid-template-rows: 1fr auto;
-  column-gap: 9px;
-  align-items: start;
+  display: inline-flex;
+  align-items: center;
   background: transparent;
   color: inherit;
   text-align: left;
-  overflow: visible;
+  white-space: nowrap;
   -webkit-tap-highlight-color: transparent;
   transition:
     opacity 140ms ease,
-    transform 180ms cubic-bezier(0.16, 1, 0.3, 1);
+    transform 160ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .shop-switcher__rail-item::before,
@@ -78,7 +82,7 @@
 }
 
 .shop-switcher__rail-item:active {
-  transform: translateY(2px);
+  transform: scale(0.98);
 }
 
 .shop-switcher__rail-item:disabled,
@@ -86,45 +90,12 @@
   cursor: default;
 }
 
-.shop-switcher__index,
-.shop-switcher__count,
-.shop-switcher__focus-kicker {
-  font-family:
-    "IBM Plex Mono",
-    monospace;
-  font-size: 8px;
-  font-weight: 600;
-  line-height: 1;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  opacity: 0.36;
-}
-
-.shop-switcher__index {
-  grid-column: 1;
-  grid-row: 1;
-}
-
-.shop-switcher__count {
-  grid-column: 3;
-  grid-row: 1;
-  justify-self: end;
-}
-
-.shop-switcher__rail-main {
-  grid-column: 1 / -1;
-  grid-row: 2;
-  min-width: 0;
-  align-self: end;
-  overflow: visible;
-}
-
 .shop-switcher__name,
 .shop-switcher__rail-placeholder {
-  display: block;
+  display: inline-block;
   min-width: 0;
   white-space: nowrap;
-  transform-origin: left bottom;
+  transform-origin: left center;
   backface-visibility: hidden;
   -webkit-font-smoothing: antialiased;
   text-rendering: geometricPrecision;
@@ -132,10 +103,10 @@
 
 .shop-switcher__name--rail,
 .shop-switcher__rail-placeholder {
-  font-size: clamp(20px, 5.6vw, 36px);
-  line-height: 0.92;
+  font-size: clamp(15px, 4.2vw, 22px);
+  line-height: 1;
   font-weight: 700;
-  letter-spacing: -0.055em;
+  letter-spacing: -0.045em;
 }
 
 .shop-switcher__rail-placeholder {
@@ -144,7 +115,6 @@
 
 .shop-switcher__brand {
   display: inline-block;
-  max-width: 100%;
   white-space: nowrap;
 }
 
@@ -155,18 +125,18 @@
     "Didot",
     "Times New Roman",
     serif !important;
-  font-size: 1.2em !important;
+  font-size: 1.08em !important;
   font-weight: 400 !important;
   font-style: normal !important;
-  line-height: 0.78 !important;
-  letter-spacing: -0.105em !important;
+  line-height: 0.82 !important;
+  letter-spacing: -0.11em !important;
   text-transform: none !important;
   transform:
-    skewX(-6deg)
-    scaleX(1.08)
-    scaleY(1.13);
-  transform-origin: left bottom;
-  -webkit-text-stroke: 0.04px currentColor;
+    skewX(-5deg)
+    scaleX(1.04)
+    scaleY(1.08);
+  transform-origin: left center;
+  -webkit-text-stroke: 0.025px currentColor;
 }
 
 .shop-switcher__brand--zulfia {
@@ -176,58 +146,70 @@
     "Brush Script MT",
     "URW Chancery L",
     cursive !important;
-  font-size: 1.18em !important;
+  font-size: 1.04em !important;
   font-weight: 400 !important;
   font-style: normal !important;
-  line-height: 0.88 !important;
+  line-height: 0.9 !important;
   letter-spacing: -0.01em !important;
   text-transform: none !important;
-  transform: translateY(0.04em);
-  transform-origin: left bottom;
+  transform: translateY(0.035em);
+  transform-origin: left center;
 }
 
 .shop-switcher__focus {
   width: 100%;
   min-width: 0;
-  padding: 8px 0 10px;
+  padding: 0;
   border: 0;
-  border-top: 1px solid currentColor;
-  display: grid;
-  grid-template-rows: auto 1fr;
-  align-items: end;
+  border-radius: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
   background: transparent;
   color: inherit;
   text-align: left;
   -webkit-tap-highlight-color: transparent;
 }
 
-.shop-switcher__focus-kicker {
-  align-self: start;
-}
-
 .shop-switcher__name--focus {
-  max-width: 100%;
+  min-width: 0;
   overflow: visible;
-  font-size: clamp(34px, 9.2vw, 72px);
-  line-height: 0.88;
-  font-weight: 800;
-  letter-spacing: -0.065em;
+  font-size: clamp(23px, 6vw, 36px);
+  line-height: 0.9;
+  font-weight: 700;
+  letter-spacing: -0.05em;
 }
 
 .shop-switcher__name--focus
 .shop-switcher__brand--swagystan {
-  font-size: 1.14em !important;
-  letter-spacing: -0.11em !important;
+  font-size: 1.08em !important;
+  letter-spacing: -0.115em !important;
 }
 
 .shop-switcher__name--focus
 .shop-switcher__brand--zulfia {
-  font-size: 1.06em !important;
+  font-size: 1em !important;
+}
+
+.shop-switcher__focus-meta {
+  flex: 0 0 auto;
+  padding-top: 2px;
+  font-family:
+    "IBM Plex Mono",
+    monospace;
+  font-size: 8px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+  opacity: 0.34;
 }
 
 .shop-switcher__details-slot {
   position: relative;
-  height: 24px;
+  height: 14px;
+  margin-top: 3px;
   overflow: hidden;
 }
 
@@ -235,41 +217,19 @@
   position: absolute;
   inset: 0;
   min-width: 0;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  pointer-events: none;
-  backface-visibility: hidden;
-}
-
-.shop-switcher__description {
-  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 10px;
-  line-height: 1;
+  font-size: 8px;
+  line-height: 1.2;
   font-weight: 500;
-  opacity: 0.56;
+  opacity: 0.38;
+  pointer-events: none;
 }
 
-.shop-switcher__meta {
-  flex: 0 0 auto;
-  font-size: 9px;
-  line-height: 1;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  white-space: nowrap;
-  opacity: 0.4;
-}
-
-.shop-switcher__skeleton {
-  width: 100%;
-  height: 92px;
-  border-top: 1px solid currentColor;
-  background: var(--text);
-  opacity: 0.035;
+.shop-switcher__panel--skeleton {
+  height: 82px;
+  opacity: 0.5;
 }
 
 .shop-switcher.is-pending
@@ -281,48 +241,51 @@
 
 @media (hover: hover) {
   .shop-switcher__rail-item:hover {
-    opacity: 0.62;
+    opacity: 0.58;
   }
 }
 
 @media (max-width: 520px) {
   .shop-switcher {
-    padding-top: 5px;
+    padding-top: 6px;
+  }
+
+  .shop-switcher__panel {
+    padding: 12px 13px 10px;
+  }
+
+  .shop-switcher__label {
+    margin-bottom: 8px;
   }
 
   .shop-switcher__stage {
-    min-height: 102px;
+    height: 42px;
   }
 
   .shop-switcher__rail {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 14px;
-  }
-
-  .shop-switcher__rail-item {
-    min-height: 90px;
+    gap: 22px;
   }
 
   .shop-switcher__name--rail,
   .shop-switcher__rail-placeholder {
-    font-size: clamp(21px, 7vw, 30px);
+    font-size: 17px;
   }
 
   .shop-switcher__brand--swagystan {
-    font-size: 1.17em !important;
-    letter-spacing: -0.11em !important;
-    transform:
-      skewX(-5deg)
-      scaleX(1.06)
-      scaleY(1.12);
+    font-size: 1.05em !important;
+    letter-spacing: -0.115em !important;
   }
 
   .shop-switcher__brand--zulfia {
-    font-size: 1.12em !important;
+    font-size: 1em !important;
   }
 
   .shop-switcher__name--focus {
-    font-size: clamp(36px, 11.4vw, 58px);
+    font-size: clamp(24px, 7vw, 31px);
+  }
+
+  .shop-switcher__focus-meta {
+    font-size: 7px;
   }
 }
 

@@ -52,10 +52,6 @@ function displayShopName(
       shop.name,
     )
   ) {
-    /*
-     * The DMC5 font uses lowercase glyph mapping.
-     * Visually this is the SWAGYSTAN wordmark.
-     */
     return "swagystan";
   }
 
@@ -231,7 +227,7 @@ export function ShopSwitcher({
     return (
       <section className="shop-switcher">
         <div className="container">
-          <div className="shop-switcher__skeleton" />
+          <div className="shop-switcher__panel shop-switcher__panel--skeleton" />
         </div>
       </section>
     );
@@ -254,83 +250,75 @@ export function ShopSwitcher({
           : ""
       }`}
     >
-      <div className="container shop-switcher__inner">
+      <div className="container">
         <LayoutGroup id="swag-shop-switcher">
-          <div className="shop-switcher__stage">
-            <motion.div
-              className="shop-switcher__rail"
-              initial={false}
-              animate={{
-                opacity:
-                  mode === "rail"
-                    ? 1
-                    : 0,
-                y:
-                  mode === "rail"
-                    ? 0
-                    : 4,
-              }}
-              transition={{
-                duration: 0.12,
-                ease: [
-                  0.22,
-                  1,
-                  0.36,
-                  1,
-                ],
-              }}
-              style={{
-                pointerEvents:
-                  mode === "rail" &&
-                  !pending
-                    ? "auto"
-                    : "none",
-              }}
-              aria-hidden={
-                mode !== "rail"
-              }
-            >
-              {activeShops.map(
-                (
-                  item,
-                  index,
-                ) => {
-                  const isMoving =
-                    mode === "focus" &&
-                    focusShop.slug ===
-                      item.slug;
+          <div className="shop-switcher__panel">
+            <div className="shop-switcher__label">
+              МАГАЗИНЫ
+            </div>
 
-                  return (
-                    <button
-                      type="button"
-                      key={item.id}
-                      className="shop-switcher__rail-item"
-                      onPointerEnter={() =>
-                        onPrefetch(item)
-                      }
-                      onPointerDown={() =>
-                        onPrefetch(item)
-                      }
-                      onClick={() => {
-                        void chooseShop(
+            <div className="shop-switcher__stage">
+              <motion.div
+                className="shop-switcher__rail"
+                initial={false}
+                animate={{
+                  opacity:
+                    mode === "rail"
+                      ? 1
+                      : 0,
+                  y:
+                    mode === "rail"
+                      ? 0
+                      : 3,
+                }}
+                transition={{
+                  duration: 0.12,
+                  ease: [
+                    0.22,
+                    1,
+                    0.36,
+                    1,
+                  ],
+                }}
+                style={{
+                  pointerEvents:
+                    mode === "rail" &&
+                    !pending
+                      ? "auto"
+                      : "none",
+                }}
+                aria-hidden={
+                  mode !== "rail"
+                }
+              >
+                {activeShops.map(
+                  (item) => {
+                    const isMoving =
+                      mode === "focus" &&
+                      focusShop.slug ===
+                        item.slug;
+
+                    return (
+                      <button
+                        type="button"
+                        key={item.id}
+                        className="shop-switcher__rail-item"
+                        onPointerEnter={() =>
+                          onPrefetch(item)
+                        }
+                        onPointerDown={() =>
+                          onPrefetch(item)
+                        }
+                        onClick={() => {
+                          void chooseShop(
+                            item,
+                          );
+                        }}
+                        disabled={pending}
+                        aria-label={`Открыть магазин ${accessibleShopName(
                           item,
-                        );
-                      }}
-                      disabled={pending}
-                      aria-label={`Открыть магазин ${accessibleShopName(
-                        item,
-                      )}`}
-                    >
-                      <span className="shop-switcher__index">
-                        {String(
-                          index + 1,
-                        ).padStart(
-                          2,
-                          "0",
-                        )}
-                      </span>
-
-                      <span className="shop-switcher__rail-main">
+                        )}`}
+                      >
                         {isMoving ? (
                           <span
                             className="shop-switcher__rail-placeholder"
@@ -366,99 +354,85 @@ export function ShopSwitcher({
                             </span>
                           </motion.span>
                         )}
-                      </span>
+                      </button>
+                    );
+                  },
+                )}
+              </motion.div>
 
-                      <span className="shop-switcher__count">
-                        {item.productCount}
-                      </span>
-                    </button>
-                  );
-                },
-              )}
-            </motion.div>
-
-            <AnimatePresence initial={false}>
-              {mode === "focus" && (
-                <motion.button
-                  key={`focus-${focusShop.slug}`}
-                  type="button"
-                  className="shop-switcher__focus"
-                  initial={{
-                    opacity: 0,
-                  }}
-                  animate={{
-                    opacity: 1,
-                  }}
-                  exit={{
-                    opacity: 0,
-                  }}
-                  transition={{
-                    duration: 0.08,
-                  }}
-                  onClick={() => {
-                    void clearShop();
-                  }}
-                  disabled={pending}
-                  aria-label={`Вернуть ${accessibleShopName(
-                    focusShop,
-                  )} к списку магазинов`}
-                >
-                  <span className="shop-switcher__focus-kicker">
-                    STORE / НАЗАД К МАГАЗИНАМ
-                  </span>
-
-                  <motion.span
-                    className="shop-switcher__name shop-switcher__name--focus"
-                    layoutId={`shop-name-${focusShop.slug}`}
-                    transition={{
-                      layout:
-                        nameMotion,
+              <AnimatePresence initial={false}>
+                {mode === "focus" && (
+                  <motion.button
+                    key={`focus-${focusShop.slug}`}
+                    type="button"
+                    className="shop-switcher__focus"
+                    initial={{
+                      opacity: 0,
                     }}
+                    animate={{
+                      opacity: 1,
+                    }}
+                    exit={{
+                      opacity: 0,
+                    }}
+                    transition={{
+                      duration: 0.08,
+                    }}
+                    onClick={() => {
+                      void clearShop();
+                    }}
+                    disabled={pending}
+                    aria-label={`Вернуть ${accessibleShopName(
+                      focusShop,
+                    )} к списку магазинов`}
                   >
-                    <span
-                      className={brandClass(
-                        focusShop,
-                      )}
+                    <motion.span
+                      className="shop-switcher__name shop-switcher__name--focus"
+                      layoutId={`shop-name-${focusShop.slug}`}
+                      transition={{
+                        layout:
+                          nameMotion,
+                      }}
                     >
-                      {displayShopName(
-                        focusShop,
-                      )}
+                      <span
+                        className={brandClass(
+                          focusShop,
+                        )}
+                      >
+                        {displayShopName(
+                          focusShop,
+                        )}
+                      </span>
+                    </motion.span>
+
+                    <span className="shop-switcher__focus-meta">
+                      {focusShop.productCount} товаров
                     </span>
-                  </motion.span>
-                </motion.button>
-              )}
-            </AnimatePresence>
-          </div>
+                  </motion.button>
+                )}
+              </AnimatePresence>
+            </div>
 
-          <div className="shop-switcher__details-slot">
-            <motion.div
-              className="shop-switcher__details"
-              initial={false}
-              animate={{
-                opacity:
-                  mode === "focus"
-                    ? 1
-                    : 0,
-                y:
-                  mode === "focus"
-                    ? 0
-                    : -2,
-              }}
-              transition={{
-                duration: 0.1,
-              }}
-              aria-hidden={
-                mode !== "focus"
-              }
-            >
-              <span className="shop-switcher__description">
+            <div className="shop-switcher__details-slot">
+              <motion.div
+                className="shop-switcher__details"
+                initial={false}
+                animate={{
+                  opacity:
+                    mode === "focus"
+                      ? 1
+                      : 0,
+                }}
+                transition={{
+                  duration: 0.1,
+                }}
+                aria-hidden={
+                  mode !== "focus"
+                }
+              >
                 {focusShop.description || ""}
-              </span>
-
-              <span className="shop-switcher__meta">
-                {focusShop.productCount} товаров
-              </span>
-            </motion.div>
+              </motion.div>
+            </div>
           </div>
         </LayoutGroup>
       </div>
