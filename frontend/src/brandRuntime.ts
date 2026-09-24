@@ -60,18 +60,18 @@ function installBrandStyles() {
         "Didot",
         "Times New Roman",
         serif !important;
-      font-size: 1.16em !important;
+      font-size: 1.28em !important;
       font-weight: 400 !important;
       font-style: normal !important;
       line-height: 0.98 !important;
-      letter-spacing: 0.035em !important;
+      letter-spacing: 0.012em !important;
       text-transform: none !important;
       white-space: nowrap;
       transform:
         skewX(-7deg)
-        scaleX(1.08)
-        scaleY(1.03)
-        translateY(-0.01em);
+        scaleX(1.10)
+        scaleY(1.12)
+        translateY(-0.045em);
       transform-origin: left center;
       -webkit-text-stroke: 0.22px currentColor;
       paint-order: stroke fill;
@@ -126,13 +126,13 @@ function installBrandStyles() {
       }
 
       .brand-swagystan {
-        font-size: 1.12em !important;
-        letter-spacing: 0.03em !important;
+        font-size: 1.24em !important;
+        letter-spacing: 0.01em !important;
         transform:
           skewX(-6deg)
-          scaleX(1.06)
-          scaleY(1.02)
-          translateY(-0.005em);
+          scaleX(1.08)
+          scaleY(1.10)
+          translateY(-0.035em);
       }
     }
   `;
