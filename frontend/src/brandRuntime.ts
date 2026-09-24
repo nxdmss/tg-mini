@@ -24,11 +24,11 @@ function installBrandStyles() {
         "Brush Script MT",
         "URW Chancery L",
         cursive !important;
-      font-size: 1.52em !important;
+      font-size: 1.96em !important;
       font-weight: 400 !important;
       font-style: normal !important;
       line-height: 0.92 !important;
-      letter-spacing: 0.01em !important;
+      letter-spacing: -0.006em !important;
       text-transform: none !important;
       white-space: nowrap;
       transform: translateY(0.02em);
@@ -63,15 +63,15 @@ function installBrandStyles() {
       font-size: 1.38em !important;
       font-weight: 400 !important;
       font-style: normal !important;
-      line-height: 0.98 !important;
-      letter-spacing: 0.012em !important;
+      line-height: 0.74 !important;
+      letter-spacing: -0.008em !important;
       text-transform: none !important;
       white-space: nowrap;
       transform:
         skewX(-7deg)
-        scaleX(1.15)
-        scaleY(1.18)
-        translateY(-0.065em);
+        scaleX(1.22)
+        scaleY(1.28)
+        translateY(-0.1em);
       transform-origin: left center;
       -webkit-text-stroke: 0.08px currentColor;
       paint-order: stroke fill;
@@ -126,13 +126,13 @@ function installBrandStyles() {
       }
 
       .brand-swagystan {
-        font-size: 1.46em !important;
+        font-size: 1.82em !important;
         letter-spacing: 0.01em !important;
         transform:
           skewX(-6deg)
-          scaleX(1.13)
-          scaleY(1.16)
-          translateY(-0.055em);
+          scaleX(1.20)
+          scaleY(1.25)
+          translateY(-0.088em);
       }
     }
   `;
