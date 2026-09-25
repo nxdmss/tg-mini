@@ -77,7 +77,15 @@ export function Header({
           onClick={handleLogoClick}
           aria-label="SWA6Y5TAN"
         >
-          <motion.span\n            layoutId="swag-main-logo"\n            transition={{\n              layout: {\n                duration: 0.7,\n                ease: [0.16, 1, 0.3, 1],\n              },\n            }}\n            className="brand__logo-mark"
+          <motion.span
+            layoutId="swag-main-logo"
+            transition={{
+              layout: {
+                duration: 0.7,
+                ease: [0.16, 1, 0.3, 1],
+              },
+            }}
+            className="brand__logo-mark"
           >
             <img
               className="brand__logo-image brand__logo-image--base"
