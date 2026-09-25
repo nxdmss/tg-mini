@@ -1499,12 +1499,13 @@ export default function App() {
         >
           <img
             className="zulfia-backdrop__image"
-            src="/river.gif?live=2"
+            src="/river.gif?live=3"
             alt=""
             decoding="async"
           />
         </motion.div>
       )}
+      <div className={`storefront-shell${shopSlug === "zulf" ? " storefront-shell--zulfia" : ""}`}>
       <div className="store-top">
         <Header
           onCartClick={() =>
@@ -1513,10 +1514,7 @@ export default function App() {
             )
           }
           homePath="/"
-          logoNegative={
-            shop?.slug ===
-            "zulf"
-          }
+          logoNegative={false}
           homeHeroLogo={
             !shopSlug
           }
@@ -1680,6 +1678,7 @@ export default function App() {
             </div>
           </footer>
       </motion.div>
+      </div>
 
       {productOverlay}
 

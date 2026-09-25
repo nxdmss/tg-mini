@@ -1,6 +1,95 @@
-/* Replace public/river.gif to update the moving scenery. */
+@font-face {
+  font-family: "Zulfia Editorial";
+  src: url("/fonts/Regez-Regular.otf") format("opentype");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+/* The river fills the screen; the shop lives in a separate paper frame. */
 .app--zulfia {
   isolation: isolate;
+}
+
+.app--zulfia,
+.app--zulfia button,
+.app--zulfia input,
+.app--zulfia select,
+.app--zulfia textarea {
+  font-family: "Zulfia Editorial", Georgia, serif !important;
+}
+
+.storefront-shell {
+  display: contents;
+}
+
+.storefront-shell--zulfia {
+  --bg: #faf8ee;
+  --text: #30291f;
+  --text-secondary: #514536;
+  --text-muted: #736957;
+  --line: rgba(117, 94, 62, 0.24);
+  --line-strong: rgba(117, 94, 62, 0.44);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  z-index: 1;
+  width: min(1120px, calc(100% - 28px));
+  min-height: calc(100svh - 40px);
+  margin: 20px auto;
+  padding: clamp(92px, 12vw, 142px) clamp(14px, 4vw, 52px)
+    clamp(95px, 12vw, 142px);
+  color: var(--text);
+  background: #f8f6ea url("/zulfia-frame.jpg") center / 100% 100% no-repeat;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.24);
+}
+
+.storefront-shell--zulfia > .store-top,
+.storefront-shell--zulfia > .shop-content-stage {
+  position: relative;
+  z-index: 1;
+}
+
+.storefront-shell--zulfia > .shop-content-stage {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.storefront-shell--zulfia .card__media {
+  background: rgba(255, 255, 255, 0.42);
+  border: 1px solid rgba(117, 94, 62, 0.19);
+}
+
+.app--zulfia .product-overlay-shell {
+  --bg: #faf8ee;
+  --text: #30291f;
+  --shop-muted: #746956;
+  background: rgba(4, 5, 11, 0.35);
+}
+
+.app--zulfia .product-overlay-shell .product-page {
+  width: min(1120px, calc(100% - 28px));
+  min-height: calc(100dvh - 40px);
+  margin: 20px auto;
+  padding: clamp(85px, 10vw, 135px) clamp(10px, 3vw, 32px)
+    clamp(90px, 10vw, 130px);
+  background: #f8f6ea url("/zulfia-frame.jpg") center / 100% 100% no-repeat;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.24);
+}
+
+@media (max-width: 520px) {
+  .storefront-shell--zulfia {
+    width: calc(100% - 16px);
+    margin: 8px auto;
+    padding: 106px 10px 112px;
+  }
+
+  .app--zulfia .product-overlay-shell .product-page {
+    width: calc(100% - 16px);
+    margin: 8px auto;
+    padding: 100px 8px 105px;
+  }
 }
 
 .zulfia-backdrop {
@@ -46,10 +135,4 @@
     rgba(255, 255, 255, 0.026) 4px
   );
   opacity: 0.45;
-}
-
-.app--zulfia > .store-top,
-.app--zulfia > .shop-content-stage {
-  position: relative;
-  z-index: 1;
 }

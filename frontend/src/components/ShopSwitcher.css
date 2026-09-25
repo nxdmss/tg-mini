@@ -32,7 +32,7 @@ html.store-home-mode .store-top {
 html.store-home-mode
 .store-top > .shop-content-stage,
 html.store-home-mode
-.app > .shop-content-stage {
+.app .shop-content-stage {
   display: none !important;
 }
 
