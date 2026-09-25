@@ -1,11 +1,22 @@
+@font-face {
+  font-family: "Zulfia Editorial";
+  src: url("/fonts/Regez-Regular.otf") format("opentype");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
 /* The river fills the catalog and the product screen. */
 .app--zulfia {
   isolation: isolate;
 }
 
 .app--zulfia,
-.app--zulfia * {
-  font-family: "Snell Roundhand", "Segoe Script", "Brush Script MT", "URW Chancery L", cursive !important;
+.app--zulfia button,
+.app--zulfia input,
+.app--zulfia select,
+.app--zulfia textarea {
+  font-family: "Zulfia Editorial", Georgia, serif !important;
 }
 
 .app--zulfia > .store-top,
@@ -45,21 +56,21 @@
   margin: 18px auto;
   padding: clamp(105px, 13vw, 142px) clamp(12px, 4vw, 38px)
     clamp(100px, 12vw, 135px);
-  background: url("/zulfia-frame-transparent.png") center / 100% 100% no-repeat;
+  background:
+    url("/zulfia-frame-transparent.png") center / 100% 100% no-repeat,
+    linear-gradient(180deg, rgba(3, 7, 11, 0.64), rgba(3, 7, 11, 0.74));
   box-shadow: none;
   color: var(--text);
 }
 
-.app--zulfia .product-overlay-shell .product-page__content {
-  width: min(100%, 460px);
+.app--zulfia .product-overlay-shell .product-page__cart {
+  background: transparent !important;
+  color: var(--text);
+  border-color: rgba(255, 248, 233, 0.55);
 }
 
-.app--zulfia .product-overlay-shell .product-page__gallery {
-  min-height: clamp(320px, 62vw, 480px);
-}
-
-.app--zulfia .product-overlay-shell .product-page__image-box {
-  width: min(370px, 70vw);
+.app--zulfia .product-overlay-shell .product-page__cart span {
+  color: var(--text);
 }
 
 @media (max-width: 520px) {
@@ -69,9 +80,6 @@
     padding: 105px 22px 112px;
   }
 
-  .app--zulfia .product-overlay-shell .product-page__gallery {
-    min-height: 350px;
-  }
 }
 
 .zulfia-backdrop {
