@@ -41,6 +41,7 @@ import { ShopSwitcher } from "./components/ShopSwitcher";
 
 import "./components/ShopTransitions.css";
 import "./components/ShopCommerceTheme.css";
+import "./components/ZulfiaBackdrop.css";
 import "./components/ProductOverlay.css";
 
 import {
@@ -1483,11 +1484,20 @@ export default function App() {
 
   return (
     <div
-      className="app"
+      className={`app${shopSlug === "zulf" ? " app--zulfia" : ""}`}
       style={
         shopThemeStyle
       }
     >
+      {shopSlug === "zulf" && (
+        <motion.div
+          className="zulfia-backdrop"
+          aria-hidden="true"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: reducedMotion ? 0 : 1.15, ease: [0.22, 1, 0.36, 1] }}
+        />
+      )}
       <div className="store-top">
         <Header
           onCartClick={() =>

@@ -1,0 +1,61 @@
+/* Swap /river.gif at any time; the storefront layout and overlay stay intact. */
+.app--zulfia {
+  isolation: isolate;
+}
+
+.zulfia-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-color: #0d0c14;
+  overflow: hidden;
+}
+
+.zulfia-backdrop::before {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  background-image:
+    linear-gradient(
+      180deg,
+      rgba(7, 8, 15, 0.48) 0%,
+      rgba(7, 8, 16, 0.65) 56%,
+      rgba(4, 5, 11, 0.8) 100%
+    ),
+    url("/river.gif");
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  filter: blur(3px) saturate(0.82);
+}
+
+.zulfia-backdrop::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent 0 3px,
+    rgba(255, 255, 255, 0.026) 4px
+  );
+  opacity: 0.45;
+}
+
+.app--zulfia > .store-top,
+.app--zulfia > .shop-content-stage {
+  position: relative;
+  z-index: 1;
+}
+
+@media (prefers-reduced-motion: reduce), (prefers-reduced-data: reduce) {
+  .zulfia-backdrop::before {
+    background-image:
+      linear-gradient(
+        180deg,
+        rgba(7, 8, 15, 0.48),
+        rgba(4, 5, 11, 0.8)
+      ),
+      url("/river.png");
+  }
+}
