@@ -318,6 +318,15 @@ export function ShopSwitcher({
       }`}
     >
       <div className="container shop-switcher__inner">
+        {!selected && (
+          <motion.span
+            className="shop-switcher__home-logo"
+            layoutId="swag-logo"
+            transition={{ layout: { duration: 0.55, ease: [0.16, 1, 0.3, 1] } }}
+          >
+            <img src="/logo.png" alt="SWA6Y5TAN" />
+          </motion.span>
+        )}
         <LayoutGroup id="swag-shop-switcher">
           <div className="shop-switcher__stage">
             <motion.div

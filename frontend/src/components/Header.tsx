@@ -3,7 +3,9 @@ import { useRef } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { useCart } from "../cart";
+
 import { tg } from "../telegram";
+
 import { isTelegram } from "../platform";
 
 import { SwagLogo } from "./SwagLogo";
@@ -21,10 +23,14 @@ export function Header({
   onCartClick,
   homePath = "/",
   logoNegative = false,
+  homeHeroLogo = false,
 }: HeaderProps) {
   const { count } = useCart();
+
   const navigate = useNavigate();
+
   const lastLogoTap = useRef(0);
+
   const telegramMode = isTelegram();
 
   function handleLogoClick() {
@@ -54,7 +60,7 @@ export function Header({
         <button
           className={`brand__logo ${
             logoNegative ? "brand__logo--negative" : ""
-          }`}
+          } ${homeHeroLogo ? "brand__logo--hero" : ""}`}
           type="button"
           onClick={handleLogoClick}
           aria-label="SWA6Y5TAN"
@@ -70,6 +76,7 @@ export function Header({
             aria-label="Корзина"
           >
             <span>Корзина</span>
+
             {count > 0 && (
               <span className="header-action__badge">
                 {count}

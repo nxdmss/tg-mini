@@ -1,10 +1,1 @@
-SWAG SVG HOME LOGO PATCH
-
-Changed:
-frontend/src/components/Header.tsx
-
-Adds Motion shared layoutId="swag-logo" to the real SVG/PNG logo wrapper.
-
-Next step:
-Use the same motion wrapper with layoutId="swag-logo" in the Home component
-around /logo.png so the same logo flies from Home to Header.
+Скопируй папку frontend из этого архива в корень tg-mini с заменой двух файлов. Затем в frontend выполни npm install и npm run build. Логотип берётся из уже существующего frontend/public/logo.png.

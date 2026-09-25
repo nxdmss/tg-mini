@@ -25,7 +25,7 @@ export function SwagLogo({
           negative ? "is-hidden" : ""
         }`}
         src="/logo.png"
-        alt="SWA6Y5TAN"
+        alt="SWAG"
       />
       <img
         className={`brand__logo-image brand__logo-image--negative ${

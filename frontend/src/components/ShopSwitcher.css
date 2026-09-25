@@ -65,6 +65,23 @@ html.store-home-mode
   align-items: center;
 }
 
+.shop-switcher__home-logo {
+  display: block;
+  width: clamp(180px, 42vw, 360px);
+  margin: 0 auto clamp(24px, 5vh, 48px);
+  line-height: 0;
+}
+
+.shop-switcher__home-logo img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shop-switcher__home-logo { transition: none; }
+}
+
 .shop-switcher__stage {
   position: relative;
 }
