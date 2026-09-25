@@ -16,14 +16,12 @@ type HeaderProps = {
   onCartClick: () => void;
   homePath?: string;
   logoNegative?: boolean;
-  homeHeroLogo?: boolean;
 };
 
 export function Header({
   onCartClick,
   homePath = "/",
   logoNegative = false,
-  homeHeroLogo = false,
 }: HeaderProps) {
   const { count } = useCart();
 
@@ -68,7 +66,7 @@ export function Header({
     <header className="header">
       <div className="container header__inner header__inner--store">
         <button
-          className={`brand__logo ${homeHeroLogo ? "brand__logo--home" : ""} ${
+          className={`brand__logo ${
             logoNegative
               ? "brand__logo--negative"
               : ""
@@ -77,16 +75,7 @@ export function Header({
           onClick={handleLogoClick}
           aria-label="SWA6Y5TAN"
         >
-          <motion.span
-            layoutId="swag-main-logo"
-            transition={{
-              layout: {
-                duration: 0.7,
-                ease: [0.16, 1, 0.3, 1] as const,
-              },
-            }}
-            className="brand__logo-mark"
-          >
+          <motion.span className="brand__logo-mark" layoutId="swag-logo">
             <img
               className="brand__logo-image brand__logo-image--base"
               src="/logo.png"

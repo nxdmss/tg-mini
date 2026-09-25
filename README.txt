@@ -1,23 +1,10 @@
-HOME EAGLE.JPG — 16:9 FIX
+SWAG SVG HOME LOGO PATCH
 
-Исправлено специально под фотографию 16:9.
+Changed:
+frontend/src/components/Header.tsx
 
-Фото:
-C:\Users\umarc\tg-mini\frontend\public\eagle.JPG
+Adds Motion shared layoutId="swag-logo" to the real SVG/PNG logo wrapper.
 
-Что изменено:
-- контейнер Home-фото теперь имеет aspect-ratio: 16 / 9;
-- убрана фиксированная высокая вертикальная высота;
-- object-fit: cover заменён на object-fit: contain;
-- eagle.JPG показывается целиком без обрезки;
-- фото стало шире и аккуратно центрируется;
-- остальной Home и логика магазинов не менялись.
-
-Заменить:
-frontend\src\components\ShopSwitcher.css
-
-ZIP также содержит остальные файлы текущей Home-версии для удобства.
-
-Проверка:
-cd C:\Users\umarc\tg-mini\frontend
-npm run dev -- --host 0.0.0.0
+Next step:
+Use the same motion wrapper with layoutId="swag-logo" in the Home component
+around /logo.png so the same logo flies from Home to Header.
