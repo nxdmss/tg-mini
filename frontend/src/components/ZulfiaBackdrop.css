@@ -56,7 +56,13 @@
 .app--zulfia .product-overlay-shell .product-page__header {
   flex: 0 0 42px;
   height: 42px;
-  padding: 0;
+  width: 100%;
+  min-width: 0;
+  padding: 0 clamp(10px, 3vw, 18px);
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  align-items: center;
+  box-sizing: border-box;
 }
 
 .app--zulfia .product-overlay-shell .product-page__content {
@@ -98,6 +104,13 @@
 }
 
 .app--zulfia .product-overlay-shell .product-page__cart {
+  justify-self: end;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  max-width: 100%;
+  white-space: nowrap;
   background: transparent !important;
   color: var(--text);
   border: 0 !important;
@@ -113,6 +126,9 @@
 }
 
 .app--zulfia .product-overlay-shell .product-page__cart span {
+  flex: 0 0 auto;
+  display: inline-block;
+  line-height: 1;
   color: var(--text);
 }
 
