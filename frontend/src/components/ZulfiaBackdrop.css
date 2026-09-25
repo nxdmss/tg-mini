@@ -1,4 +1,4 @@
-/* Swap /river.gif at any time; the storefront layout and overlay stay intact. */
+/* Replace public/river.gif to update the moving scenery. */
 .app--zulfia {
   isolation: isolate;
 }
@@ -12,28 +12,34 @@
   overflow: hidden;
 }
 
+.zulfia-backdrop__image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  filter: blur(3px) saturate(0.82);
+  transform: scale(1.025);
+}
+
 .zulfia-backdrop::before {
   content: "";
   position: absolute;
-  inset: -6px;
-  background-image:
-    linear-gradient(
-      180deg,
-      rgba(7, 8, 15, 0.48) 0%,
-      rgba(7, 8, 16, 0.65) 56%,
-      rgba(4, 5, 11, 0.8) 100%
-    ),
-    url("/river.gif");
-  background-size: cover;
-  background-position: center center;
-  background-repeat: no-repeat;
-  filter: blur(3px) saturate(0.82);
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(
+    180deg,
+    rgba(7, 8, 15, 0.48) 0%,
+    rgba(7, 8, 16, 0.65) 56%,
+    rgba(4, 5, 11, 0.8) 100%
+  );
 }
 
 .zulfia-backdrop::after {
   content: "";
   position: absolute;
   inset: 0;
+  z-index: 2;
   background: repeating-linear-gradient(
     0deg,
     transparent 0 3px,
@@ -46,16 +52,4 @@
 .app--zulfia > .shop-content-stage {
   position: relative;
   z-index: 1;
-}
-
-@media (prefers-reduced-motion: reduce), (prefers-reduced-data: reduce) {
-  .zulfia-backdrop::before {
-    background-image:
-      linear-gradient(
-        180deg,
-        rgba(7, 8, 15, 0.48),
-        rgba(4, 5, 11, 0.8)
-      ),
-      url("/river.png");
-  }
 }

@@ -1496,7 +1496,14 @@ export default function App() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: reducedMotion ? 0 : 1.15, ease: [0.22, 1, 0.36, 1] }}
-        />
+        >
+          <img
+            className="zulfia-backdrop__image"
+            src="/river.gif?live=2"
+            alt=""
+            decoding="async"
+          />
+        </motion.div>
       )}
       <div className="store-top">
         <Header
