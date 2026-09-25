@@ -99,7 +99,7 @@ export function Header({
               alt=""
               aria-hidden="true"
             />
-          </span>
+          </motion.span>
         </button>
         <div className="header__actions">
           <button
