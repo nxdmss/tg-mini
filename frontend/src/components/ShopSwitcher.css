@@ -30,8 +30,6 @@ html.store-home-mode .store-top {
 }
 
 html.store-home-mode
-.store-top > .header,
-html.store-home-mode
 .store-top > .shop-content-stage,
 html.store-home-mode
 .app > .shop-content-stage {
@@ -48,7 +46,7 @@ html.store-home-mode
 }
 
 .shop-switcher.is-home {
-  min-height: 100svh;
+  min-height: calc(100svh - var(--header-h) - env(safe-area-inset-top));
   display: flex;
   align-items: center;
   padding:
@@ -63,23 +61,6 @@ html.store-home-mode
   display: flex;
   flex-direction: column;
   align-items: center;
-}
-
-.shop-switcher__home-logo {
-  display: block;
-  width: clamp(180px, 42vw, 360px);
-  margin: 0 auto clamp(24px, 5vh, 48px);
-  line-height: 0;
-}
-
-.shop-switcher__home-logo img {
-  display: block;
-  width: 100%;
-  height: auto;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .shop-switcher__home-logo { transition: none; }
 }
 
 .shop-switcher__stage {
