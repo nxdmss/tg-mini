@@ -1,22 +1,6 @@
-@font-face {
-  font-family: "Zulfia Editorial";
-  src: url("/fonts/Regez-Regular.otf") format("opentype");
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-}
-
 /* The river fills the catalog and the product screen. */
 .app--zulfia {
   isolation: isolate;
-}
-
-.app--zulfia,
-.app--zulfia button,
-.app--zulfia input,
-.app--zulfia select,
-.app--zulfia textarea {
-  font-family: "Zulfia Editorial", Georgia, serif !important;
 }
 
 .app--zulfia > .store-top,
@@ -52,11 +36,11 @@
 
 .app--zulfia .product-overlay-shell .product-page {
   /* Keep the 471 x 680 illustration intact, including its beige center. */
-  --frame-width: min(471px, calc(100vw - 24px), calc((100dvh - 24px) * 0.692647));
+  --frame-width: min(680px, 100vw);
   width: var(--frame-width);
   min-height: 0;
   aspect-ratio: 471 / 680;
-  margin: 12px auto;
+  margin: 0 auto 16px;
   padding:
     calc(var(--frame-width) * 0.174)
     calc(var(--frame-width) * 0.18)
@@ -92,12 +76,12 @@
 
 .app--zulfia .product-overlay-shell .product-page__gallery {
   min-height: 0;
-  height: clamp(165px, 28dvh, 245px);
+  height: clamp(220px, 36vw, 310px);
   flex: 0 0 auto;
 }
 
 .app--zulfia .product-overlay-shell .product-page__image-box {
-  width: min(100%, 185px);
+  width: min(100%, 240px);
   max-height: 100%;
 }
 
