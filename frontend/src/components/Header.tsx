@@ -82,7 +82,7 @@ export function Header({
             transition={{
               layout: {
                 duration: 0.7,
-                ease: [0.16, 1, 0.3, 1],
+                ease: [0.16, 1, 0.3, 1] as const,
               },
             }}
             className="brand__logo-mark"
