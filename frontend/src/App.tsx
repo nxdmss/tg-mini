@@ -1505,7 +1505,6 @@ export default function App() {
           />
         </motion.div>
       )}
-      <div className={`storefront-shell${shopSlug === "zulf" ? " storefront-shell--zulfia" : ""}`}>
       <div className="store-top">
         <Header
           onCartClick={() =>
@@ -1514,7 +1513,7 @@ export default function App() {
             )
           }
           homePath="/"
-          logoNegative={false}
+          logoNegative={shop?.slug === "zulf"}
           homeHeroLogo={
             !shopSlug
           }
@@ -1678,7 +1677,6 @@ export default function App() {
             </div>
           </footer>
       </motion.div>
-      </div>
 
       {productOverlay}
 

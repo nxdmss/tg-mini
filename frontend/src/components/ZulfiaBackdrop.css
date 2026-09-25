@@ -6,7 +6,7 @@
   font-display: swap;
 }
 
-/* The river fills the screen; the shop lives in a separate paper frame. */
+/* The river fills the catalog; only an opened product receives the paper frame. */
 .app--zulfia {
   isolation: isolate;
 }
@@ -19,76 +19,43 @@
   font-family: "Zulfia Editorial", Georgia, serif !important;
 }
 
-.storefront-shell {
-  display: contents;
-}
-
-.storefront-shell--zulfia {
-  --bg: #faf8ee;
-  --text: #30291f;
-  --text-secondary: #514536;
-  --text-muted: #736957;
-  --line: rgba(117, 94, 62, 0.24);
-  --line-strong: rgba(117, 94, 62, 0.44);
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  z-index: 1;
-  width: min(1120px, calc(100% - 28px));
-  min-height: calc(100svh - 40px);
-  margin: 20px auto;
-  padding: clamp(92px, 12vw, 142px) clamp(14px, 4vw, 52px)
-    clamp(95px, 12vw, 142px);
-  color: var(--text);
-  background: #f8f6ea url("/zulfia-frame.jpg") center / 100% 100% no-repeat;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.24);
-}
-
-.storefront-shell--zulfia > .store-top,
-.storefront-shell--zulfia > .shop-content-stage {
+.app--zulfia > .store-top,
+.app--zulfia > .shop-content-stage {
   position: relative;
   z-index: 1;
 }
 
-.storefront-shell--zulfia > .shop-content-stage {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.storefront-shell--zulfia .card__media {
-  background: rgba(255, 255, 255, 0.42);
-  border: 1px solid rgba(117, 94, 62, 0.19);
+.app--zulfia .card,
+.app--zulfia .card__media,
+.app--zulfia .card__media img,
+.app--zulfia .card__body {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
 }
 
 .app--zulfia .product-overlay-shell {
   --bg: #faf8ee;
   --text: #30291f;
   --shop-muted: #746956;
-  background: rgba(4, 5, 11, 0.35);
+  background: #f2ede0;
 }
 
 .app--zulfia .product-overlay-shell .product-page {
-  width: min(1120px, calc(100% - 28px));
-  min-height: calc(100dvh - 40px);
-  margin: 20px auto;
-  padding: clamp(85px, 10vw, 135px) clamp(10px, 3vw, 32px)
-    clamp(90px, 10vw, 130px);
+  width: min(570px, calc(100% - 44px));
+  min-height: calc(100dvh - 36px);
+  margin: 18px auto;
+  padding: clamp(105px, 13vw, 142px) clamp(12px, 4vw, 38px)
+    clamp(100px, 12vw, 135px);
   background: #f8f6ea url("/zulfia-frame.jpg") center / 100% 100% no-repeat;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.24);
+  box-shadow: 0 14px 38px rgba(84, 65, 36, 0.12);
 }
 
 @media (max-width: 520px) {
-  .storefront-shell--zulfia {
-    width: calc(100% - 16px);
-    margin: 8px auto;
-    padding: 106px 10px 112px;
-  }
-
   .app--zulfia .product-overlay-shell .product-page {
-    width: calc(100% - 16px);
-    margin: 8px auto;
-    padding: 100px 8px 105px;
+    width: calc(100% - 32px);
+    margin: 16px auto;
+    padding: 105px 22px 112px;
   }
 }
 
