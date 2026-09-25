@@ -1484,7 +1484,7 @@ export default function App() {
 
   return (
     <div
-      className={`app${shopSlug === "zulf" ? " app--zulfia" : ""}`}
+      className={`app${shopSlug === "zulf" ? " app--zulfia" : ""}${shopSlug === "zulf" && isProductPage ? " app--zulfia-product" : ""}`}
       style={
         shopThemeStyle
       }

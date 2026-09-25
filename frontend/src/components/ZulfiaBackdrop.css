@@ -1,22 +1,11 @@
-@font-face {
-  font-family: "Zulfia Editorial";
-  src: url("/fonts/Regez-Regular.otf") format("opentype");
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-}
-
-/* The river fills the catalog; only an opened product receives the paper frame. */
+/* The river fills the catalog and the product screen. */
 .app--zulfia {
   isolation: isolate;
 }
 
 .app--zulfia,
-.app--zulfia button,
-.app--zulfia input,
-.app--zulfia select,
-.app--zulfia textarea {
-  font-family: "Zulfia Editorial", Georgia, serif !important;
+.app--zulfia * {
+  font-family: "Snell Roundhand", "Segoe Script", "Brush Script MT", "URW Chancery L", cursive !important;
 }
 
 .app--zulfia > .store-top,
@@ -35,10 +24,19 @@
 }
 
 .app--zulfia .product-overlay-shell {
-  --bg: #faf8ee;
-  --text: #30291f;
-  --shop-muted: #746956;
-  background: #f2ede0;
+  --bg: #101617;
+  --text: #fff8e9;
+  --shop-muted: rgba(255, 248, 233, 0.78);
+  background: transparent;
+}
+
+.app--zulfia.app--zulfia-product > .store-top,
+.app--zulfia.app--zulfia-product > .shop-content-stage {
+  visibility: hidden;
+}
+
+.app--zulfia .product-overlay-shell .product-route-state {
+  background: transparent;
 }
 
 .app--zulfia .product-overlay-shell .product-page {
@@ -47,8 +45,21 @@
   margin: 18px auto;
   padding: clamp(105px, 13vw, 142px) clamp(12px, 4vw, 38px)
     clamp(100px, 12vw, 135px);
-  background: #f8f6ea url("/zulfia-frame.jpg") center / 100% 100% no-repeat;
-  box-shadow: 0 14px 38px rgba(84, 65, 36, 0.12);
+  background: url("/zulfia-frame-transparent.png") center / 100% 100% no-repeat;
+  box-shadow: none;
+  color: var(--text);
+}
+
+.app--zulfia .product-overlay-shell .product-page__content {
+  width: min(100%, 460px);
+}
+
+.app--zulfia .product-overlay-shell .product-page__gallery {
+  min-height: clamp(320px, 62vw, 480px);
+}
+
+.app--zulfia .product-overlay-shell .product-page__image-box {
+  width: min(370px, 70vw);
 }
 
 @media (max-width: 520px) {
@@ -56,6 +67,10 @@
     width: calc(100% - 32px);
     margin: 16px auto;
     padding: 105px 22px 112px;
+  }
+
+  .app--zulfia .product-overlay-shell .product-page__gallery {
+    min-height: 350px;
   }
 }
 
