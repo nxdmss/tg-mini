@@ -1,0 +1,21 @@
+--- a/frontend/src/components/Header.tsx
++++ b/frontend/src/components/Header.tsx
+@@
+ type HeaderProps = {
+   onCartClick: () => void;
+   homePath?: string;
+   logoNegative?: boolean;
++  homeHeroLogo?: boolean;
+ };
+
+@@
+ export function Header({
+   onCartClick,
+   homePath,
+   logoNegative,
++  homeHeroLogo = false,
+ }: HeaderProps) {
+
+@@
++  // homeHeroLogo is reserved for the shared SWAG logo transition.
++  // It is optional to keep existing Header usage working.
