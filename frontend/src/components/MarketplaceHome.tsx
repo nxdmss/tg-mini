@@ -1,8 +1,8 @@
-import type {
-  CSSProperties,
-} from "react";
+import type { CSSProperties } from "react";
 
 import type { Shop } from "../shopApi";
+
+import { SwagLogo } from "./SwagLogo";
 
 import "./MarketplaceHome.css";
 
@@ -20,14 +20,14 @@ export function MarketplaceHome({
   onOpen,
 }: MarketplaceHomeProps) {
   return (
-    <main
-      className={`market-home ${
-        openingSlug
-          ? "is-opening"
-          : ""
-      }`}
-    >
+    <main className={`market-home ${openingSlug ? "is-opening" : ""}`}>
       <div className="container market-home__inner">
+        {!openingSlug && (
+          <div className="market-home__hero-logo">
+            <SwagLogo />
+          </div>
+        )}
+
         {loading ? (
           <div className="market-store-row market-store-row--loading">
             <span />
@@ -39,53 +39,26 @@ export function MarketplaceHome({
           </div>
         ) : (
           <div className="market-store-row">
-            {shops.map(
-              (
-                shop,
-                index,
-              ) => {
-                const isOpening =
-                  openingSlug ===
-                  shop.slug;
-
-                const isMuted =
-                  Boolean(
-                    openingSlug,
-                  ) &&
-                  !isOpening;
-
-                return (
-                  <button
-                    type="button"
-                    key={shop.id}
-                    className={`market-store-word ${
-                      isOpening
-                        ? "is-opening"
-                        : ""
-                    } ${
-                      isMuted
-                        ? "is-muted"
-                        : ""
-                    }`}
-                    style={{
-                      "--store-index":
-                        index,
-                    } as CSSProperties}
-                    onClick={() =>
-                      onOpen(shop)
-                    }
-                    disabled={
-                      Boolean(
-                        openingSlug,
-                      )
-                    }
-                    aria-label={`Открыть магазин $<span className={shop.slug === "zulf" ? "shop-name--zulfia" : undefined}>{shop.slug === "zulf" ? "Zulfia" : shop.name}</span>`}
-                  >
-                    <span className={shop.slug === "zulf" ? "shop-name--zulfia" : undefined}>{shop.slug === "zulf" ? "Zulfia" : shop.name}</span>
-                  </button>
-                );
-              },
-            )}
+            {shops.map((shop, index) => (
+              <button
+                type="button"
+                key={shop.id}
+                className={`market-store-word ${
+                  openingSlug === shop.slug ? "is-opening" : ""
+                } ${
+                  openingSlug && openingSlug !== shop.slug
+                    ? "is-muted"
+                    : ""
+                }`}
+                style={{ "--store-index": index } as CSSProperties}
+                onClick={() => onOpen(shop)}
+                disabled={Boolean(openingSlug)}
+              >
+                <span>
+                  {shop.slug === "zulf" ? "Zulfia" : shop.name}
+                </span>
+              </button>
+            ))}
           </div>
         )}
       </div>

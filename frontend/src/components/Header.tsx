@@ -1,14 +1,12 @@
 import { useRef } from "react";
 
-import { motion } from "motion/react";
-
 import { useNavigate } from "react-router-dom";
 
 import { useCart } from "../cart";
-
 import { tg } from "../telegram";
-
 import { isTelegram } from "../platform";
+
+import { SwagLogo } from "./SwagLogo";
 
 import "./Header.css";
 
@@ -23,41 +21,27 @@ export function Header({
   onCartClick,
   homePath = "/",
   logoNegative = false,
-  homeHeroLogo = false,
 }: HeaderProps) {
   const { count } = useCart();
-
   const navigate = useNavigate();
-
   const lastLogoTap = useRef(0);
-
   const telegramMode = isTelegram();
 
   function handleLogoClick() {
     if (!telegramMode) {
       navigate(homePath);
-
       return;
     }
 
     const now = Date.now();
 
-    if (
-      now - lastLogoTap.current <
-      450
-    ) {
+    if (now - lastLogoTap.current < 450) {
       try {
-        tg.HapticFeedback?.impactOccurred?.(
-          "light",
-        );
-      } catch {
-        // Not running inside Telegram.
-      }
+        tg.HapticFeedback?.impactOccurred?.("light");
+      } catch {}
 
       navigate("/admin");
-
       lastLogoTap.current = 0;
-
       return;
     }
 
@@ -69,36 +53,15 @@ export function Header({
       <div className="container header__inner header__inner--store">
         <button
           className={`brand__logo ${
-            logoNegative
-              ? "brand__logo--negative"
-              : ""
-          } ${
-            homeHeroLogo
-              ? "brand__logo--hero"
-              : ""
+            logoNegative ? "brand__logo--negative" : ""
           }`}
           type="button"
           onClick={handleLogoClick}
           aria-label="SWA6Y5TAN"
         >
-          <motion.span
-            className="brand__logo-mark"
-            layoutId="swag-logo"
-          >
-            <img
-              className="brand__logo-image brand__logo-image--base"
-              src="/logo.png"
-              alt="SWA6Y5TAN"
-            />
-
-            <img
-              className="brand__logo-image brand__logo-image--negative"
-              src="/logo.png"
-              alt=""
-              aria-hidden="true"
-            />
-          </motion.span>
+          <SwagLogo negative={logoNegative} />
         </button>
+
         <div className="header__actions">
           <button
             type="button"
@@ -106,10 +69,7 @@ export function Header({
             onClick={onCartClick}
             aria-label="Корзина"
           >
-            <span>
-              Корзина
-            </span>
-
+            <span>Корзина</span>
             {count > 0 && (
               <span className="header-action__badge">
                 {count}
