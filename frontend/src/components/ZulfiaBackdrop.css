@@ -36,11 +36,11 @@
 
 .app--zulfia .product-overlay-shell .product-page {
   /* Keep the 471 x 680 illustration intact, including its beige center. */
-  --frame-width: min(680px, 100vw);
+  --frame-width: min(calc(100vw - 48px), max(820px, calc(100dvh * 0.692647)));
   width: var(--frame-width);
   min-height: 0;
   aspect-ratio: 471 / 680;
-  margin: 0 auto 16px;
+  margin: 0 auto;
   padding:
     calc(var(--frame-width) * 0.174)
     calc(var(--frame-width) * 0.18)
@@ -82,12 +82,12 @@
 
 .app--zulfia .product-overlay-shell .product-page__gallery {
   min-height: 0;
-  height: clamp(220px, 36vw, 310px);
+  height: 560px;
   flex: 0 0 auto;
 }
 
 .app--zulfia .product-overlay-shell .product-page__image-box {
-  width: min(100%, 240px);
+  width: min(100%, 440px);
   max-height: 100%;
 }
 
@@ -151,6 +151,14 @@
       12vh 18vw 15vh;
     padding:
       12dvh 18vw 15dvh;
+  }
+
+  .app--zulfia .product-overlay-shell .product-page__gallery {
+    height: clamp(220px, 36vw, 310px);
+  }
+
+  .app--zulfia .product-overlay-shell .product-page__image-box {
+    width: min(100%, 240px);
   }
 }
 

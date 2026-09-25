@@ -458,6 +458,36 @@
   cursor: not-allowed;
 }
 
+/* Both shops use the same larger product presentation on desktop. */
+@media (min-width: 701px) {
+  .product-page__gallery {
+    min-height: 560px;
+  }
+
+  .product-page__image-box {
+    width: min(440px, 68vw);
+  }
+
+  .product-page__name {
+    font-size: 24px;
+  }
+
+  .product-page__price {
+    font-size: 20px;
+  }
+
+  .product-page__description {
+    font-size: 16px !important;
+  }
+
+  .product-page__cart,
+  .product-page__sizes-title,
+  .product-page__size,
+  .product-page__add {
+    font-size: 16px;
+  }
+}
+
 
 /* =========================================================
    HOVER
