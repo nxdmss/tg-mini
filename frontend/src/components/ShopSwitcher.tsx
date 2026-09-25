@@ -8,6 +8,7 @@ import {
   AnimatePresence,
   LayoutGroup,
   motion,
+  useReducedMotion,
 } from "motion/react";
 
 import {
@@ -34,7 +35,7 @@ type ShopSwitcherProps = {
 };
 
 const nameMotion = {
-  duration: 0.22,
+  duration: 0.7,
   ease: [
     0.16,
     1,
@@ -114,6 +115,8 @@ export function ShopSwitcher({
   onClear,
   onPrefetch,
 }: ShopSwitcherProps) {
+  const reducedMotion = useReducedMotion();
+  const moveTransition = reducedMotion ? { duration: 0 } : nameMotion;
   const navigate =
     useNavigate();
 
@@ -319,7 +322,11 @@ export function ShopSwitcher({
     >
       <div className="container shop-switcher__inner">
         <LayoutGroup id="swag-shop-switcher">
-          <div className="shop-switcher__stage">
+          <motion.div
+            layout
+            className="shop-switcher__stage"
+            transition={{ layout: moveTransition }}
+          >
             <motion.div
               className="shop-switcher__rail"
               initial={false}
@@ -334,7 +341,7 @@ export function ShopSwitcher({
                     : -4,
               }}
               transition={{
-                duration: 0.14,
+                duration: reducedMotion ? 0 : 0.38,
                 ease: [
                   0.16,
                   1,
@@ -402,7 +409,7 @@ export function ShopSwitcher({
                           layoutId={`shop-name-${item.slug}`}
                           transition={{
                             layout:
-                              nameMotion,
+                              moveTransition,
                           }}
                         >
                           <span
@@ -438,7 +445,7 @@ export function ShopSwitcher({
                     opacity: 0,
                   }}
                   transition={{
-                    duration: 0.1,
+                    duration: reducedMotion ? 0 : 0.38,
                   }}
                   onClick={() => {
                     void clearShop();
@@ -453,7 +460,7 @@ export function ShopSwitcher({
                     layoutId={`shop-name-${focusShop.slug}`}
                     transition={{
                       layout:
-                        nameMotion,
+                        moveTransition,
                     }}
                   >
                     <span
@@ -469,7 +476,7 @@ export function ShopSwitcher({
                 </motion.button>
               )}
             </AnimatePresence>
-          </div>
+          </motion.div>
 
           <AnimatePresence initial={false}>
             {!selected &&
@@ -489,7 +496,7 @@ export function ShopSwitcher({
                     y: 8,
                   }}
                   transition={{
-                    duration: 0.32,
+                    duration: reducedMotion ? 0 : 0.6,
                     ease: [
                       0.16,
                       1,

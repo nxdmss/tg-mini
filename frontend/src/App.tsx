@@ -14,6 +14,7 @@ import {
 
 import {
   motion,
+  useReducedMotion,
 } from "motion/react";
 
 import {
@@ -324,6 +325,7 @@ function warmProductImages(
 }
 
 export default function App() {
+  const reducedMotion = useReducedMotion();
   const location =
     useLocation();
 
@@ -1526,7 +1528,13 @@ export default function App() {
           }
         />
 
-        <div className="shop-content-stage">
+        <motion.div
+          key={`filters-${shopSlug || "home"}`}
+          className="shop-content-stage"
+          initial={shopSlug && !reducedMotion ? { opacity: 0, y: 18 } : false}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: reducedMotion ? 0 : 0.7, delay: reducedMotion ? 0 : 0.25, ease: [0.22, 1, 0.36, 1] }}
+        >
           <Filters
             categories={
               categories
@@ -1540,10 +1548,16 @@ export default function App() {
               )
             }
           />
-        </div>
+        </motion.div>
       </div>
 
-      <div className="shop-content-stage">
+      <motion.div
+        key={`catalog-${shopSlug || "home"}`}
+        className="shop-content-stage"
+        initial={shopSlug && !reducedMotion ? { opacity: 0, y: 34 } : false}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: reducedMotion ? 0 : 0.95, delay: reducedMotion ? 0 : 0.32, ease: [0.22, 1, 0.36, 1] }}
+      >
           <main className="container">
           {loading ||
           shopLoading ? (
@@ -1604,19 +1618,16 @@ export default function App() {
                     className="product-flow-item"
                     initial={{
                       opacity: 0,
-                      y: 22,
+                      y: reducedMotion ? 0 : 32,
                     }}
                     animate={{
                       opacity: 1,
                       y: 0,
                     }}
                     transition={{
-                      duration: 0.46,
+                      duration: reducedMotion ? 0 : 0.85,
                       delay:
-                        Math.min(
-                          index * 0.042,
-                          0.30,
-                        ),
+                        reducedMotion ? 0 : Math.min(index * 0.055, 0.55),
                       ease: [
                         0.16,
                         1,
@@ -1653,7 +1664,7 @@ export default function App() {
               </span>
             </div>
           </footer>
-        </div>
+      </motion.div>
 
       {productOverlay}
 
