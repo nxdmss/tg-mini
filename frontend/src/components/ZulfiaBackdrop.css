@@ -141,24 +141,53 @@
 @media (max-width: 700px) {
   .app--zulfia .product-overlay-shell .product-page {
     width: 100%;
-    height: 100vh;
-    height: 100dvh;
     min-height: 100vh;
     min-height: 100dvh;
     aspect-ratio: auto;
     margin: 0;
-    padding:
-      12vh 18vw 15vh;
-    padding:
-      12dvh 18vw 15dvh;
+    padding: 0;
+    overflow: visible;
+    background: #eeeee5;
+  }
+
+  .app--zulfia .product-overlay-shell .product-page__header {
+    flex: 0 0 58px;
+    height: 58px;
+    padding: 0 14px;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .app--zulfia .product-overlay-shell .product-page__content {
+    flex: 1 0 auto;
+    min-height: auto;
+    width: calc(100% - 24px);
+    padding: 8px 0 calc(40px + env(safe-area-inset-bottom));
+    overflow: visible;
   }
 
   .app--zulfia .product-overlay-shell .product-page__gallery {
-    height: clamp(220px, 36vw, 310px);
+    min-height: 410px;
+    height: auto;
   }
 
   .app--zulfia .product-overlay-shell .product-page__image-box {
-    width: min(100%, 240px);
+    width: min(310px, 74vw);
+    max-height: none;
+  }
+
+  .app--zulfia .product-overlay-shell .product-page__info {
+    margin-top: 22px;
+  }
+}
+
+@media (max-width: 390px) {
+  .app--zulfia .product-overlay-shell .product-page__gallery {
+    min-height: 370px;
+  }
+
+  .app--zulfia .product-overlay-shell .product-page__image-box {
+    width: min(280px, 72vw);
   }
 }
 
