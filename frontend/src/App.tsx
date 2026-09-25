@@ -1531,9 +1531,9 @@ export default function App() {
         <motion.div
           key={`filters-${shopSlug || "home"}`}
           className="shop-content-stage"
-          initial={shopSlug && !reducedMotion ? { opacity: 0, y: 18 } : false}
+          initial={shopSlug && !reducedMotion ? { opacity: 0, y: 12 } : false}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: reducedMotion ? 0 : 0.7, delay: reducedMotion ? 0 : 0.25, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ duration: reducedMotion ? 0 : 0.8, delay: reducedMotion ? 0 : 0.4, ease: [0.22, 1, 0.36, 1] }}
         >
           <Filters
             categories={
@@ -1554,9 +1554,7 @@ export default function App() {
       <motion.div
         key={`catalog-${shopSlug || "home"}`}
         className="shop-content-stage"
-        initial={shopSlug && !reducedMotion ? { opacity: 0, y: 34 } : false}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: reducedMotion ? 0 : 0.95, delay: reducedMotion ? 0 : 0.32, ease: [0.22, 1, 0.36, 1] }}
+        initial={false}
       >
           <main className="container">
           {loading ||
@@ -1618,20 +1616,20 @@ export default function App() {
                     className="product-flow-item"
                     initial={{
                       opacity: 0,
-                      y: reducedMotion ? 0 : 32,
+                      y: reducedMotion ? 0 : 54,
                     }}
                     animate={{
                       opacity: 1,
                       y: 0,
                     }}
                     transition={{
-                      duration: reducedMotion ? 0 : 0.85,
+                      duration: reducedMotion ? 0 : 1.05,
                       delay:
-                        reducedMotion ? 0 : Math.min(index * 0.055, 0.55),
+                        reducedMotion ? 0 : 0.85 + Math.min(index * 0.075, 0.85),
                       ease: [
-                        0.16,
+                        0.22,
                         1,
-                        0.3,
+                        0.36,
                         1,
                       ],
                     }}

@@ -243,6 +243,13 @@ html.store-home-mode
   background: transparent;
 }
 
+.shop-switcher__home-media--fading {
+  position: fixed;
+  z-index: 40;
+  pointer-events: none;
+  margin: 0;
+}
+
 .shop-switcher__home-media img,
 .shop-switcher__home-media-placeholder {
   width: 100%;

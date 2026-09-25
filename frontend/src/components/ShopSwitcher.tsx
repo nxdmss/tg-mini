@@ -1,8 +1,10 @@
 import {
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
+import { createPortal } from "react-dom";
 
 import {
   AnimatePresence,
@@ -139,6 +141,14 @@ export function ShopSwitcher({
       null,
     );
 
+  const homeMediaRef = useRef<HTMLDivElement>(null);
+  const [fadingMedia, setFadingMedia] = useState<{
+    top: number;
+    left: number;
+    width: number;
+    height: number;
+  } | null>(null);
+
   const activeShops =
     useMemo(
       () =>
@@ -213,6 +223,15 @@ export function ShopSwitcher({
     setPressedSlug(
       nextShop.slug,
     );
+    const mediaRect = homeMediaRef.current?.getBoundingClientRect();
+    if (mediaRect) {
+      setFadingMedia({
+        top: mediaRect.top,
+        left: mediaRect.left,
+        width: mediaRect.width,
+        height: mediaRect.height,
+      });
+    }
     setVisualShop(
       nextShop,
     );
@@ -309,6 +328,7 @@ export function ShopSwitcher({
     activeShops[0];
 
   return (
+    <>
     <section
       className={`shop-switcher ${
         selected
@@ -478,25 +498,19 @@ export function ShopSwitcher({
             </AnimatePresence>
           </motion.div>
 
-          <AnimatePresence initial={false}>
-            {!selected &&
-              mode === "rail" && (
+            {!selected && (
                 <motion.div
+                  ref={homeMediaRef}
                   className="shop-switcher__home-media"
+                  style={{ visibility: mode === "rail" && !fadingMedia ? "visible" : "hidden" }}
                   initial={{
                     opacity: 0,
-                    y: 8,
                   }}
                   animate={{
-                    opacity: 1,
-                    y: 0,
-                  }}
-                  exit={{
-                    opacity: 0,
-                    y: 8,
+                    opacity: mode === "rail" && !fadingMedia ? 1 : 0,
                   }}
                   transition={{
-                    duration: reducedMotion ? 0 : 0.6,
+                    duration: reducedMotion ? 0 : 0.85,
                     ease: [
                       0.16,
                       1,
@@ -515,9 +529,23 @@ export function ShopSwitcher({
                   />
                 </motion.div>
               )}
-          </AnimatePresence>
         </LayoutGroup>
       </div>
     </section>
+    {fadingMedia && createPortal(
+      <motion.div
+        className="shop-switcher__home-media shop-switcher__home-media--fading"
+        style={fadingMedia}
+        initial={{ opacity: 1 }}
+        animate={{ opacity: 0 }}
+        transition={{ duration: reducedMotion ? 0 : 0.9, ease: [0.22, 1, 0.36, 1] }}
+        onAnimationComplete={() => setFadingMedia(null)}
+        aria-hidden="true"
+      >
+        <img src="/eagle.JPG" alt="" />
+      </motion.div>,
+      document.body,
+    )}
+    </>
   );
 }
