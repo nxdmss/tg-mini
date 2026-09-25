@@ -1,1 +1,1 @@
-Скопируй папку frontend в корень tg-mini с заменой файлов, включая предыдущие версии фикса. Eagle плавно растворяется без сдвига, товары появляются снизу с задержкой. Для проверки: cd frontend && npm install && npm run build.
+Скопируй папку frontend в корень tg-mini с заменой файлов. Теперь обе ссылки ведут на /eagle.png — это прозрачный PNG 1356x763. Старые eagle.JPG и eagle-transparent.svg можно оставить, но сайт их больше не использует. Проверка: cd frontend && npm install && npm run build.

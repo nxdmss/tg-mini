@@ -250,6 +250,10 @@ html.store-home-mode
   margin: 0;
 }
 
+.shop-switcher__home-media--negative img {
+  filter: brightness(0) invert(1);
+}
+
 .shop-switcher__home-media img,
 .shop-switcher__home-media-placeholder {
   width: 100%;

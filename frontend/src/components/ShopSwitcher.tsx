@@ -147,6 +147,7 @@ export function ShopSwitcher({
     left: number;
     width: number;
     height: number;
+    negative: boolean;
   } | null>(null);
 
   const activeShops =
@@ -230,6 +231,7 @@ export function ShopSwitcher({
         left: mediaRect.left,
         width: mediaRect.width,
         height: mediaRect.height,
+        negative: nextShop.slug === "zulf",
       });
     }
     setVisualShop(
@@ -520,7 +522,7 @@ export function ShopSwitcher({
                   }}
                 >
                   <img
-                    src="/eagle.JPG"
+                    src="/eagle.png"
                     alt=""
                     aria-hidden="true"
                     loading="eager"
@@ -534,15 +536,15 @@ export function ShopSwitcher({
     </section>
     {fadingMedia && createPortal(
       <motion.div
-        className="shop-switcher__home-media shop-switcher__home-media--fading"
-        style={fadingMedia}
+        className={`shop-switcher__home-media shop-switcher__home-media--fading${fadingMedia.negative ? " shop-switcher__home-media--negative" : ""}`}
+        style={{ top: fadingMedia.top, left: fadingMedia.left, width: fadingMedia.width, height: fadingMedia.height }}
         initial={{ opacity: 1 }}
         animate={{ opacity: 0 }}
         transition={{ duration: reducedMotion ? 0 : 0.9, ease: [0.22, 1, 0.36, 1] }}
         onAnimationComplete={() => setFadingMedia(null)}
         aria-hidden="true"
       >
-        <img src="/eagle.JPG" alt="" />
+        <img src="/eagle.png" alt="" />
       </motion.div>,
       document.body,
     )}
