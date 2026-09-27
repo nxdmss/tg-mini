@@ -7,7 +7,7 @@ import {
 } from "react";
 import type { CSSProperties } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { motion, useReducedMotion } from "motion/react";
+import { LayoutGroup, motion, useReducedMotion } from "motion/react";
 
 import {
   getCategories,
@@ -31,6 +31,7 @@ import { ProductCard } from "./components/ProductCard";
 import { Filters } from "./components/Filters";
 import { StoreTabs } from "./components/StoreTabs";
 import { StoreDirectory } from "./components/StoreDirectory";
+import { StoreName } from "./components/StoreName";
 
 import "./components/ShopCommerceTheme.css";
 import "./components/ProductOverlay.css";
@@ -413,10 +414,11 @@ export default function App() {
   const activeTab = isForYouView ? "for-you" : "stores";
 
   return (
-    <div
-      className={`app store-experience${shopSlug === "zulf" ? " app--zulfia" : ""}`}
-      style={shopThemeStyle}
-    >
+    <LayoutGroup id="store-name-flight">
+      <div
+        className={`app store-experience${shopSlug === "zulf" ? " app--zulfia" : ""}`}
+        style={shopThemeStyle}
+      >
       <div className="store-top store-experience__top">
         <Header
           onCartClick={() => setCartOpen(true)}
@@ -432,16 +434,19 @@ export default function App() {
         />
 
         {isShopView && shop && (
-          <motion.div
-            className="store-current"
-            initial={reducedMotion ? false : { opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: reducedMotion ? 0 : 0.36 }}
-          >
-            <button type="button" className="store-current__name" onClick={goStores}>
-              {shop.slug === "zulf" ? "Zulfia" : shop.name}
+          <div className="store-current">
+            <button
+              type="button"
+              className="store-current__name"
+              onClick={goStores}
+            >
+              <StoreName
+                shop={shop}
+                place="current"
+                reducedMotion={Boolean(reducedMotion)}
+              />
             </button>
-          </motion.div>
+          </div>
         )}
 
         {!isStoresView && (
@@ -520,6 +525,7 @@ export default function App() {
           <CartDrawer onClose={() => setCartOpen(false)} />
         </Suspense>
       )}
-    </div>
+      </div>
+    </LayoutGroup>
   );
 }

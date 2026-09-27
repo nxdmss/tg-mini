@@ -1,6 +1,7 @@
 import { motion } from "motion/react";
 
 import type { Shop } from "../shopApi";
+import { StoreName } from "./StoreName";
 
 type StoreDirectoryProps = {
   shops: Shop[];
@@ -8,19 +9,15 @@ type StoreDirectoryProps = {
   onOpen: (shop: Shop) => void;
 };
 
-function isSwagystan(shop: Shop) {
-  return (
-    shop.slug === "swagystan" ||
-    /^(SWA6Y5TAN|SWAGYSTAN)$/i.test(shop.name)
-  );
-}
-
 function displayName(shop: Shop) {
   if (shop.slug === "zulf") {
     return "Zulfia";
   }
 
-  if (isSwagystan(shop)) {
+  if (
+    shop.slug === "swagystan" ||
+    /^(SWA6Y5TAN|SWAGYSTAN)$/i.test(shop.name)
+  ) {
     return "SWAGYSTAN";
   }
 
@@ -62,8 +59,6 @@ export function StoreDirectory({
       <div className="store-directory__grid">
         {active.map((shop, index) => {
           const artwork = storeArtwork(shop);
-          const name = displayName(shop);
-          const swag = isSwagystan(shop);
 
           return (
             <motion.button
@@ -78,7 +73,7 @@ export function StoreDirectory({
                 ease: [0.16, 1, 0.3, 1],
               }}
               onClick={() => onOpen(shop)}
-              aria-label={`Открыть магазин ${name}`}
+              aria-label={`Открыть магазин ${displayName(shop)}`}
             >
               <span className="store-tile__shine" aria-hidden="true" />
 
@@ -98,24 +93,13 @@ export function StoreDirectory({
                   />
                 </div>
               ) : (
-                <span className="store-tile__fallback">{name}</span>
+                <span className="store-tile__fallback">
+                  {displayName(shop)}
+                </span>
               )}
 
-              <span
-                className={`store-tile__label ${
-                  swag ? "store-tile__label--swag" : ""
-                }`}
-              >
-                {swag ? (
-                  <img
-                    className="store-tile__swag-wordmark"
-                    src="/swagystan-label.svg"
-                    alt=""
-                    aria-hidden="true"
-                  />
-                ) : (
-                  name
-                )}
+              <span className="store-tile__label">
+                <StoreName shop={shop} place="tile" />
               </span>
             </motion.button>
           );

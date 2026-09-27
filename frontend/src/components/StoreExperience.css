@@ -311,3 +311,104 @@
     height: 25px;
   }
 }
+
+
+/* Shared shop-name transition: tile -> selected shop title. */
+.store-name {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  color: currentColor;
+  white-space: nowrap;
+  transform-origin: center;
+  backface-visibility: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+.store-name--tile {
+  width: 100%;
+  height: 100%;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.08em;
+  text-align: center;
+}
+
+.store-name--current {
+  min-height: 36px;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: clamp(20px, 4.8vw, 34px);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+
+.store-name--zulfia {
+  font-family:
+    "Snell Roundhand",
+    "Segoe Script",
+    "Brush Script MT",
+    cursive;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+}
+
+.store-name--current.store-name--zulfia {
+  font-size: clamp(28px, 7vw, 46px);
+}
+
+.store-name--swag {
+  width: 100%;
+}
+
+.store-name__swag-wordmark {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  object-fit: contain;
+  object-position: center;
+  margin: 0 auto;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.store-name--tile.store-name--swag {
+  height: 34px;
+  padding: 0 15%;
+  box-sizing: border-box;
+}
+
+.store-name--current.store-name--swag {
+  width: clamp(132px, 28vw, 230px);
+  height: clamp(32px, 6vw, 46px);
+}
+
+.store-current__name {
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: visible;
+}
+
+@media (max-width: 620px) {
+  .store-name--tile {
+    font-size: 10px;
+  }
+
+  .store-name--tile.store-name--swag {
+    height: 28px;
+    padding-left: 10%;
+    padding-right: 10%;
+  }
+
+  .store-name--current.store-name--swag {
+    width: clamp(126px, 36vw, 190px);
+    height: 34px;
+  }
+}
