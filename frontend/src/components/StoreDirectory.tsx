@@ -8,15 +8,19 @@ type StoreDirectoryProps = {
   onOpen: (shop: Shop) => void;
 };
 
+function isSwagystan(shop: Shop) {
+  return (
+    shop.slug === "swagystan" ||
+    /^(SWA6Y5TAN|SWAGYSTAN)$/i.test(shop.name)
+  );
+}
+
 function displayName(shop: Shop) {
   if (shop.slug === "zulf") {
     return "Zulfia";
   }
 
-  if (
-    shop.slug === "swagystan" ||
-    /^(SWA6Y5TAN|SWAGYSTAN)$/i.test(shop.name)
-  ) {
+  if (isSwagystan(shop)) {
     return "SWAGYSTAN";
   }
 
@@ -59,7 +63,7 @@ export function StoreDirectory({
         {active.map((shop, index) => {
           const artwork = storeArtwork(shop);
           const name = displayName(shop);
-          const isSwag = shop.slug === "swagystan" || /^(SWA6Y5TAN|SWAGYSTAN)$/i.test(shop.name);
+          const swag = isSwagystan(shop);
 
           return (
             <motion.button
@@ -77,10 +81,15 @@ export function StoreDirectory({
               aria-label={`Открыть магазин ${name}`}
             >
               <span className="store-tile__shine" aria-hidden="true" />
+
               {artwork ? (
                 <div className="store-tile__art-wrap">
                   <img
-                    className={`store-tile__art ${shop.slug === "swagystan" ? "store-tile__art--swag" : ""}`}
+                    className={`store-tile__art ${
+                      shop.slug === "swagystan"
+                        ? "store-tile__art--swag"
+                        : ""
+                    }`}
                     src={artwork}
                     alt=""
                     aria-hidden="true"
@@ -91,10 +100,22 @@ export function StoreDirectory({
               ) : (
                 <span className="store-tile__fallback">{name}</span>
               )}
+
               <span
-                className={`store-tile__label ${isSwag ? "store-tile__label--swag" : ""}`}
+                className={`store-tile__label ${
+                  swag ? "store-tile__label--swag" : ""
+                }`}
               >
-                {name}
+                {swag ? (
+                  <img
+                    className="store-tile__swag-wordmark"
+                    src="/swagystan-label.svg"
+                    alt=""
+                    aria-hidden="true"
+                  />
+                ) : (
+                  name
+                )}
               </span>
             </motion.button>
           );

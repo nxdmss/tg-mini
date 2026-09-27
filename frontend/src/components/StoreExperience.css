@@ -132,9 +132,7 @@
 
 .store-tile__shine {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
+  inset: 0 0 auto;
   height: 34%;
   background: linear-gradient(
     180deg,
@@ -150,7 +148,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 7% 7% 18%;
+  padding: 7% 7% 19%;
 }
 
 .store-tile__art {
@@ -170,11 +168,16 @@
 
 .store-tile__label {
   position: absolute;
-  left: 12px;
-  right: 12px;
-  bottom: 12px;
+  left: 0;
+  right: 0;
+  bottom: 11px;
   z-index: 3;
-  display: block;
+  width: 100%;
+  min-width: 0;
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   color: #111;
   text-align: center;
   font-family: "IBM Plex Mono", monospace;
@@ -182,19 +185,29 @@
   font-weight: 700;
   line-height: 1.1;
   letter-spacing: 0.08em;
-  text-transform: uppercase;
+  text-transform: none;
   white-space: nowrap;
   overflow: hidden;
-  text-overflow: ellipsis;
   pointer-events: none;
+  box-sizing: border-box;
 }
 
 .store-tile__label--swag {
-  font-family: "SWAGYSTAN DMC5", "IBM Plex Mono", monospace;
-  font-size: 18px;
-  font-style: italic;
-  font-weight: 400;
-  letter-spacing: 0.04em;
+  height: 34px;
+  padding-left: 15%;
+  padding-right: 15%;
+}
+
+.store-tile__swag-wordmark {
+  display: block;
+  width: min(100%, 230px);
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  margin: 0 auto;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
 }
 
 .store-tile__fallback {
@@ -260,18 +273,24 @@
   }
 
   .store-tile__art-wrap {
-    padding: 6% 6% 18%;
+    padding: 6% 6% 19%;
   }
 
   .store-tile__label {
-    left: 10px;
-    right: 10px;
-    bottom: 10px;
+    bottom: 9px;
+    padding-left: 8px;
+    padding-right: 8px;
     font-size: 10px;
   }
 
   .store-tile__label--swag {
-    font-size: 15px;
+    height: 28px;
+    padding-left: 10%;
+    padding-right: 10%;
+  }
+
+  .store-tile__swag-wordmark {
+    width: min(100%, 190px);
   }
 }
 
@@ -290,6 +309,6 @@
   }
 
   .store-tile__label--swag {
-    font-size: 13px;
+    height: 25px;
   }
 }
