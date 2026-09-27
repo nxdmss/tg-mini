@@ -60,10 +60,10 @@
   background:
     linear-gradient(
       180deg,
-      rgba(7, 11, 16, 0.54),
-      rgba(7, 11, 16, 0.66)
+      rgba(7, 11, 16, 0.20),
+      rgba(7, 11, 16, 0.34)
     ),
-    url("/zulfia-river.gif")
+    url("/river.gif")
       center / cover
       no-repeat;
   opacity: 1;
