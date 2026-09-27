@@ -1,0 +1,199 @@
+@font-face {
+  font-family: "SWAGYSTAN DMC5";
+  src: url("/fonts/dmc5-kalina-ann.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+.store-experience {
+  min-height: 100svh;
+}
+
+.store-experience__top {
+  position: relative;
+  z-index: 20;
+}
+
+.store-tabs {
+  width: 100%;
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 26px;
+  padding: 1px 16px 7px;
+  background: transparent;
+}
+
+.store-tabs__item {
+  position: relative;
+  padding: 6px 0 8px;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1;
+  opacity: 0.42;
+  transition: opacity 160ms ease;
+}
+
+.store-tabs__item::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 1px;
+  width: 0;
+  height: 2px;
+  background: currentColor;
+  transform: translateX(-50%);
+  transition: width 220ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.store-tabs__item.is-active {
+  opacity: 1;
+}
+
+.store-tabs__item.is-active::after {
+  width: 22px;
+}
+
+.store-current {
+  display: flex;
+  justify-content: center;
+  padding: 2px 16px 5px;
+}
+
+.store-current__name {
+  padding: 2px 0;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  font-size: clamp(20px, 4.8vw, 34px);
+  font-weight: 700;
+  letter-spacing: -0.05em;
+}
+
+.store-experience__catalog {
+  padding-top: 8px;
+}
+
+.store-directory {
+  padding-top: clamp(18px, 4vw, 36px);
+  padding-bottom: 44px;
+}
+
+.store-directory__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.store-tile {
+  position: relative;
+  min-height: clamp(190px, 34vw, 360px);
+  padding: clamp(18px, 3vw, 30px);
+  border: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  overflow: hidden;
+  text-align: left;
+  transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1), opacity 160ms ease;
+}
+
+.store-tile:active {
+  transform: scale(0.985);
+}
+
+.store-tile__name {
+  max-width: 100%;
+  font-size: clamp(34px, 7vw, 76px);
+  font-weight: 800;
+  line-height: 0.9;
+  letter-spacing: -0.075em;
+  white-space: nowrap;
+}
+
+.store-tile--swagystan .store-tile__name {
+  font-family: "SWAGYSTAN DMC5", serif;
+  font-weight: 400;
+  font-size: clamp(42px, 8vw, 88px);
+  letter-spacing: -0.11em;
+  transform: skewX(-5deg) scaleX(1.04);
+  transform-origin: left center;
+}
+
+.store-tile--zulfia .store-tile__name {
+  font-family: "Snell Roundhand", "Segoe Script", "Brush Script MT", cursive;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+}
+
+.store-tile__meta {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  opacity: 0.5;
+}
+
+.store-tile--skeleton {
+  background: var(--text);
+  opacity: 0.04;
+}
+
+@media (hover: hover) {
+  .store-tile:hover {
+    transform: translateY(-3px);
+  }
+
+  .store-tabs__item:hover {
+    opacity: 0.72;
+  }
+}
+
+@media (max-width: 620px) {
+  .store-tabs {
+    min-height: 38px;
+    gap: 24px;
+    padding-bottom: 5px;
+  }
+
+  .store-tabs__item {
+    font-size: 12px;
+  }
+
+  .store-directory {
+    padding-top: 14px;
+  }
+
+  .store-directory__grid {
+    gap: 10px;
+  }
+
+  .store-tile {
+    min-height: 185px;
+    padding: 15px;
+  }
+
+  .store-tile__name {
+    font-size: clamp(27px, 9vw, 44px);
+  }
+
+  .store-tile--swagystan .store-tile__name {
+    font-size: clamp(31px, 10vw, 48px);
+  }
+}
+
+@media (max-width: 390px) {
+  .store-directory__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .store-tile {
+    min-height: 170px;
+  }
+}

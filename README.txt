@@ -1,7 +1,25 @@
-Исправление «КОРЗИНА 1» в карточке товара Zulfia
+SWAGYSTAN V2 — FOR YOU / STORES
 
-Скопируйте папку frontend из этого архива в корень tg-mini-main с заменой совпадающих файлов.
+Replace only these files/folders in project root:
+frontend/src/App.tsx
+frontend/src/components/Header.tsx
+frontend/src/components/Header.css
+frontend/src/components/StoreTabs.tsx
+frontend/src/components/StoreDirectory.tsx
+frontend/src/components/StoreExperience.css
 
-Текст корзины и счетчик теперь удерживаются внутри бежевой области рамки на узком экране. Кнопка остается без рамки, мобильная рамка занимает весь экран.
+NEW UX:
+- / = "Для вас": all products mixed together.
+- /stores = big store tiles.
+- /shop/:slug = products from selected store.
+- Logo: left on For You, smoothly moves to center on Stores, returns left after store selection.
+- Top tabs behave like TikTok-style section switcher.
 
-Ваш river.gif архив НЕ содержит и НЕ перезаписывает.
+Mac install:
+1. Unzip this archive into your tg-mini project root.
+2. Allow replacement of existing files.
+3. New files will be added automatically.
+4. Run:
+   cd frontend
+   npm run build
+   npm run dev -- --host 0.0.0.0
