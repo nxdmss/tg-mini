@@ -159,10 +159,11 @@
   pointer-events: none;
   user-select: none;
   -webkit-user-drag: none;
+  transform: translateY(4%);
 }
 
 .store-tile__art--swag {
-  transform: scale(1.04);
+  transform: translateY(4%) scale(1.04);
 }
 
 .store-tile__label {

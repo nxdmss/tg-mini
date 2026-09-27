@@ -42,6 +42,58 @@
     );
 }
 
+/* =========================================================
+   ZULFIA RIVER GIF BACKGROUND
+   ========================================================= */
+
+.app--zulfia {
+  position: relative;
+  isolation: isolate;
+}
+
+.app--zulfia::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(7, 11, 16, 0.54),
+      rgba(7, 11, 16, 0.66)
+    ),
+    url("/zulfia-river.gif")
+      center / cover
+      no-repeat;
+  opacity: 1;
+  will-change: transform;
+}
+
+.app--zulfia > * {
+  position: relative;
+  z-index: 1;
+}
+
+.app--zulfia .store-top,
+.app--zulfia .toolbar,
+.app--zulfia .footer {
+  background: transparent;
+}
+
+.app--zulfia .card,
+.app--zulfia .product-detail,
+.app--zulfia .cart-drawer,
+.app--zulfia .sort-menu {
+  background:
+    color-mix(
+      in srgb,
+      var(--bg) 84%,
+      transparent
+    );
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
 
 /* =========================================================
    MAIN CATALOG CONTROLS FOLLOW SHOP THEME
@@ -79,7 +131,6 @@
   border-color: var(--shop-line);
 }
 
-
 /* =========================================================
    PRODUCT CARDS FOLLOW SHOP THEME
    ========================================================= */
@@ -88,145 +139,118 @@
   color: var(--text);
 }
 
-.app .card__body,
 .app .card__name,
-.app .card__price {
-  color: var(--text);
-}
-
 .app .card__brand,
-.app .card__category {
-  color: var(--shop-muted);
-}
-
-.app .card__media {
+.app .card__price,
+.app .card__category,
+.app .media-fallback,
+.app .card__cta {
   color: var(--text);
 }
 
-.app .media-fallback {
-  color: var(--shop-muted);
+.app .card__body,
+.app .card__footer {
+  border-color: var(--shop-line);
+}
 
+.app .card__overlay {
   background:
-    color-mix(
-      in srgb,
-      var(--text) 6%,
-      var(--bg)
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--bg) 0%, transparent) 0%,
+      color-mix(in srgb, var(--bg) 66%, transparent) 100%
     );
 }
 
 .app .tag-out {
-  border-color:
-    color-mix(
-      in srgb,
-      var(--text) 28%,
-      transparent
-    );
-}
-
-
-/* =========================================================
-   PRODUCT DETAIL = CONTINUATION OF CURRENT SHOP
-   ========================================================= */
-
-.app .product-page {
-  background: var(--bg);
-  color: var(--text);
-
-  transition:
-    background-color 140ms ease,
-    color 120ms ease;
-}
-
-.app .product-page__header {
-  color: var(--text);
-}
-
-.app .product-page__back,
-.app .product-page__arrow {
-  color: var(--text);
-}
-
-.app .product-page__image-empty {
-  color: var(--shop-muted);
-}
-
-.app .product-page__dot {
+  border-color: var(--shop-line);
   background:
     color-mix(
       in srgb,
-      var(--text) 18%,
+      var(--bg) 74%,
+      transparent
+    );
+  color: var(--text);
+}
+
+/* =========================================================
+   PRODUCT DETAIL FOLLOWS SHOP THEME
+   ========================================================= */
+
+.app .product-detail {
+  color: var(--text);
+}
+
+.app .product-detail__back,
+.app .product-detail__close,
+.app .product-detail__share,
+.app .product-detail__size,
+.app .product-detail__thumb,
+.app .product-detail__size-guide-button,
+.app .product-detail__accordion-button,
+.app .product-detail__meta,
+.app .product-detail__hint,
+.app .product-detail__info,
+.app .product-detail__notice,
+.app .product-detail__footer {
+  color: var(--text);
+  border-color: var(--shop-line);
+}
+
+.app .product-detail__back,
+.app .product-detail__close,
+.app .product-detail__share,
+.app .product-detail__size,
+.app .product-detail__thumb,
+.app .product-detail__size-guide-button,
+.app .product-detail__accordion-button {
+  background:
+    color-mix(
+      in srgb,
+      var(--bg) 82%,
       transparent
     );
 }
 
-.app .product-page__dot--active {
-  background: var(--text);
+.app .product-detail__size.is-selected,
+.app .product-detail__thumb.is-active,
+.app .product-detail__accordion-button.is-open {
+  border-color: var(--text);
 }
 
-.app .product-page__name,
-.app .product-page__price,
-.app .product-page__sizes-title {
-  color: var(--text);
+.app .product-detail__size.is-disabled {
+  opacity: 0.38;
 }
 
-.app .product-page__description {
+.app .product-detail__brand,
+.app .product-detail__category,
+.app .product-detail__description,
+.app .product-detail__hint,
+.app .product-detail__empty {
   color: var(--shop-muted);
 }
 
-.app .product-page__size {
-  color: var(--text);
-}
-
-.app .product-page__size--active {
-  color: var(--bg);
-  background: var(--text);
-
-  text-decoration: none;
-
-  transform: translateZ(0);
-
-  transition:
-    background-color 110ms ease,
-    color 110ms ease,
-    opacity 110ms ease;
-}
-
-.app .product-page__size:disabled {
-  color: var(--text);
-  opacity: 0.22;
-}
-
-.app .product-route-state {
-  background: var(--bg);
-  color: var(--text);
-}
-
-.app .product-route-state__back,
-.app .product-route-state__text {
-  color: var(--text);
-}
-
-
 /* =========================================================
-   SWAG CORE ACTIONS
-   Cart / conversion controls do NOT inherit store colors.
+   KEEP SWAG CORE CONTROLS CONSISTENT
    ========================================================= */
 
-.app .header .header-cart {
-  min-height: 40px;
+.app .header-cart,
+.app .cart-drawer__close,
+.app .cart-drawer__qty-btn,
+.app .cart-drawer__remove,
+.app .cart-drawer__checkout,
+.app .checkout-form__submit,
+.app .order-success__button {
+  border-color: var(--line-strong);
+}
 
-  padding: 0 !important;
-
-  border: 0 !important;
-  border-radius: 0 !important;
-
+.app .header-cart {
   background: transparent !important;
 
-  /* Pure text button: black in SWA6Y5TAN, white in Zulfia. */
+  /* Pure text button: black in SWAGYSTAN, white in Zulfia. */
   color: var(--text) !important;
 
   box-shadow: none !important;
-
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
 
@@ -236,288 +260,34 @@
     color 110ms linear;
 }
 
-.app .header .header-cart:active {
-  transform:
-    scale(0.97);
-}
-
-.app .header .header-action__badge {
-  min-width: 0 !important;
-  width: auto !important;
-  height: auto !important;
-
-  padding: 0 !important;
-
-  border: 0 !important;
-  border-radius: 0 !important;
-
+.app .header-cart:hover {
+  border-color: transparent !important;
   background: transparent !important;
-
   color: var(--text) !important;
+  opacity: 0.72;
 }
 
-.app .product-page__cart {
-  min-height: 38px;
-
-  padding:
-    0
-    10px;
-
-  border:
-    1px solid
-    #000;
-
-  background:
-    #fff;
-
-  color:
-    #000;
-
-  font-weight:
-    900;
-
-  transition:
-    transform 100ms ease,
-    opacity 100ms ease;
+.app .header-cart:active {
+  transform: translateY(1px);
+  opacity: 0.55;
 }
 
-.app .product-page__cart:active {
-  transform:
-    scale(0.97);
+.app .header-action__badge {
+  border-color: var(--line-strong);
 }
 
-.app .product-page__cart span {
-  color: #000;
+.app .cart-drawer,
+.app .checkout-form,
+.app .order-success,
+.app .cart-drawer__footer,
+.app .checkout-form__section {
+  color: var(--cart-text);
 }
 
-
-/*
-  Add-to-cart is a SWAG CORE action too:
-  shop-themed product page around it,
-  fixed black/white purchase action inside it.
-*/
-.app .product-page__add {
-  width:
-    min(
-      360px,
-      100%
-    );
-
-  min-height:
-    54px;
-
-  border:
-    1px solid
-    #000;
-
-  border-radius:
-    0;
-
-  background:
-    #fff;
-
-  color:
-    #000;
-
-  transform:
-    translateZ(0);
-
-  transition:
-    background-color 100ms ease,
-    color 100ms ease,
-    transform 100ms ease,
-    opacity 100ms ease;
-}
-
-.app .product-page__add:active:not(:disabled) {
-  transform:
-    scale(0.985);
-}
-
-.app .product-page__add:disabled {
-  background:
-    #fff;
-
-  color:
-    #000;
-
-  opacity:
-    0.36;
-}
-
-
-/* =========================================================
-   CART + CHECKOUT = PERMANENT SWAG CORE THEME
-   ========================================================= */
-
-.checkout-modal {
-  --bg:
-    #ffffff;
-
-  --surface:
-    #ffffff;
-
-  --surface-strong:
-    #ffffff;
-
-  --text:
-    #000000;
-
-  --text-secondary:
-    #18181c;
-
-  --text-muted:
-    #333338;
-
-  --line:
-    rgba(
-      0,
-      0,
-      0,
-      0.18
-    );
-
-  --line-strong:
-    rgba(
-      0,
-      0,
-      0,
-      0.72
-    );
-
-  --shop-accent:
-    #000000;
-
-  color-scheme:
-    light;
-
-  background:
-    #fff !important;
-
-  color:
-    #000 !important;
-}
-
-.checkout-modal,
-.checkout-modal button,
-.checkout-modal input,
-.checkout-modal textarea,
-.checkout-modal select,
-.checkout-modal label {
-  color:
-    #000;
-}
-
-.checkout-modal input,
-.checkout-modal textarea,
-.checkout-modal select {
-  background:
-    #fff;
-}
-
-.checkout-modal .checkout-submit-btn {
-  background:
-    #000 !important;
-
-  color:
-    #fff !important;
-
-  border-color:
-    #000 !important;
-}
-
-.checkout-modal .checkout-submit-btn:disabled {
-  opacity:
-    0.34;
-}
-
-.checkout-modal .checkout-switch-btn {
-  background:
-    #fff;
-
-  color:
-    #000;
-}
-
-.checkout-modal .checkout-switch-btn--active {
-  background:
-    #000;
-
-  color:
-    #fff;
-}
-
-.checkout-modal .checkout-input::placeholder {
-  color:
-    rgba(
-      0,
-      0,
-      0,
-      0.4
-    );
-}
-
-
-/* =========================================================
-   CART BACK ARROW = PRODUCT PAGE BACK ARROW
-   ========================================================= */
-
-.checkout-modal__header
-.checkout-icon-btn:first-child {
-  width: 44px;
-  height: 44px;
-  min-width: 44px;
-
-  padding: 0;
-
-  display: grid;
-  place-items: center;
-
-  font-size: 0;
-  line-height: 1;
-
-  color: #000;
-}
-
-.checkout-modal__header
-.checkout-icon-btn:first-child::before {
-  content: "‹";
-
-  display: block;
-
-  font-size: 38px;
-  line-height: 1;
-  font-weight: 900;
-
-  transform:
-    translateY(-1px);
-}
-
-
-/* =========================================================
-   MOTION / PERFORMANCE
-   ========================================================= */
-
-.app .card,
-.app .product-page,
-.app .product-page__size,
-.app .product-page__add,
-.app .product-page__cart,
-.app .header .header-cart {
-  backface-visibility:
-    hidden;
-
-  -webkit-font-smoothing:
-    antialiased;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .app .product-page,
-  .app .product-page__size,
-  .app .product-page__add,
-  .app .product-page__cart,
-  .app .header .header-cart {
-    transition-duration:
-      1ms !important;
-  }
+.app .cart-drawer__empty,
+.app .cart-drawer__meta,
+.app .cart-drawer__hint,
+.app .checkout-form__helper,
+.app .order-success__meta {
+  color: var(--cart-muted);
 }
