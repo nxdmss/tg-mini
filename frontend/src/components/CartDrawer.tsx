@@ -6,7 +6,6 @@ import {
 
 import { useCart } from "../cart";
 import { formatPrice } from "../utils";
-import { CartIcon } from "./CartIcon";
 import {
   createOrder,
   getApiErrorMessage,
@@ -271,6 +270,10 @@ export function CartDrawer({
             ←
           </button>
 
+          <div className="checkout-modal__title">
+            Корзина
+          </div>
+
           <button
             className="checkout-icon-btn"
             onClick={
@@ -311,10 +314,6 @@ export function CartDrawer({
         ) : items.length ===
           0 ? (
           <div className="checkout-empty">
-            <div className="checkout-empty__cart">
-              <CartIcon count={0} />
-            </div>
-
             <div className="checkout-empty__title">
               ПУСТО
             </div>
@@ -322,16 +321,6 @@ export function CartDrawer({
         ) : step ===
           "cart" ? (
           <div className="checkout-cart-view">
-            <div className="checkout-section-title checkout-section-title--cart">
-              <CartIcon
-                count={items.reduce(
-                  (sum, item) =>
-                    sum + item.quantity,
-                  0,
-                )}
-              />
-            </div>
-
             <div className="checkout-cart-list">
               {items.map(
                 (i) => (

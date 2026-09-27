@@ -102,9 +102,32 @@
     );
 }
 
-.app--zulfia > :not(.zulfia-river-bg) {
+/*
+ * Only lift the storefront layers above the river.
+ * Do NOT touch .product-overlay-shell / cart modal here:
+ * they need their own fixed positioning to open correctly.
+ */
+.app--zulfia > .store-top,
+.app--zulfia > .store-experience__catalog,
+.app--zulfia > .store-directory,
+.app--zulfia > .footer {
   position: relative;
   z-index: 1;
+}
+
+.app--zulfia > .product-overlay-shell {
+  position: fixed;
+  z-index: 200;
+}
+
+.app--zulfia > .overlay {
+  position: fixed;
+  z-index: 1000;
+}
+
+.app--zulfia > .checkout-modal {
+  position: fixed !important;
+  z-index: 1001;
 }
 
 .app--zulfia .store-top,
@@ -367,4 +390,33 @@
 .app .media-fallback {
   background: transparent;
   border: 1px solid color-mix(in srgb, var(--text) 14%, transparent);
+}
+
+
+/* =========================================================
+   CART WINDOW HEADER
+   ========================================================= */
+
+.checkout-modal__header {
+  position: relative;
+}
+
+.checkout-modal__title {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  color: #000;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  text-transform: none;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.app--zulfia .checkout-modal__title {
+  color: #000;
 }
