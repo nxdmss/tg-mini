@@ -693,3 +693,103 @@
   background:
     transparent !important;
 }
+
+
+/* =========================================================
+   ZULFIA PRODUCT = SEPARATE PAGE, SAME UNIVERSE
+   When a product route is open, the catalog/header/footer
+   disappear completely. The fixed river layer remains alive
+   underneath, so the product page feels like a real separate
+   page rather than a transparent overlay on top of the catalog.
+   ========================================================= */
+
+.app--zulfia:has(> .product-overlay-shell)
+  > .store-top,
+.app--zulfia:has(> .product-overlay-shell)
+  > .store-experience__catalog,
+.app--zulfia:has(> .product-overlay-shell)
+  > .store-directory,
+.app--zulfia:has(> .product-overlay-shell)
+  > .footer {
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+/*
+ * Product page owns the whole viewport.
+ * It still stays transparent so ONLY the same river is behind it.
+ */
+.app--zulfia > .product-overlay-shell {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 200 !important;
+
+  width: 100% !important;
+  min-height: 100dvh !important;
+
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+
+  background: transparent !important;
+  color: var(--text) !important;
+
+  isolation: isolate;
+}
+
+/*
+ * No old catalog can bleed through even during the route transition.
+ * The product page itself is the only visible UI layer above the river.
+ */
+.app--zulfia > .product-overlay-shell
+  .product-page {
+  position: relative;
+  z-index: 1;
+
+  min-height: 100dvh !important;
+
+  background: transparent !important;
+  color: var(--text) !important;
+}
+
+/* Keep the same fixed river visible and untouched behind product page. */
+.app--zulfia:has(> .product-overlay-shell)
+  > .zulfia-river-bg {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Product page header behaves like a real page header. */
+.app--zulfia
+  .product-page__header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(4, 8, 10, 0.72) 0%,
+      rgba(4, 8, 10, 0.28) 72%,
+      transparent 100%
+    );
+
+  backdrop-filter:
+    blur(5px);
+
+  -webkit-backdrop-filter:
+    blur(5px);
+}
+
+/*
+ * Cart may open from the standalone product page.
+ * The product page remains behind it, but the same river is still
+ * the universe background for both layers.
+ */
+.app--zulfia:has(> .product-overlay-shell)
+  > .overlay,
+.app--zulfia:has(> .product-overlay-shell)
+  > .checkout-modal {
+  visibility: visible !important;
+  pointer-events: auto !important;
+}
