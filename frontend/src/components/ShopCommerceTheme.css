@@ -43,64 +43,74 @@
 }
 
 /* =========================================================
-   ZULFIA RIVER GIF BACKGROUND
-   Existing scenic river.gif from /public, now darker + further + animated.
+   ZULFIA RIVER: REAL <img> GIF LAYER
+   More reliable in Telegram/Safari than CSS background-image.
    ========================================================= */
 
 .app--zulfia {
   position: relative;
   isolation: isolate;
+  background: #070b0d;
 }
 
-.app--zulfia::before {
-  content: "";
-  position: fixed;
-  inset: -6%;
-  z-index: -2;
-  pointer-events: none;
-  background: url("/river.gif") center center / cover no-repeat;
-  opacity: 1;
-  filter: brightness(0.72) contrast(1.05) saturate(0.92);
-  transform: translate3d(0, 0, 0) scale(1.06);
-  will-change: transform;
-  animation: zulfia-river-float 22s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite alternate;
-}
-
-.app--zulfia::after {
-  content: "";
+.zulfia-river-bg {
   position: fixed;
   inset: 0;
-  z-index: -1;
+  z-index: 0;
+  overflow: hidden;
   pointer-events: none;
+  background: #070b0d;
+}
+
+.zulfia-river-bg__media {
+  position: absolute;
+  left: -5%;
+  top: -5%;
+  width: 110%;
+  height: 110%;
+  display: block;
+  object-fit: cover;
+  object-position: center;
+  filter: brightness(0.68) contrast(1.04) saturate(0.88);
+  transform: translate3d(0, 0, 0) scale(0.94);
+  transform-origin: center;
+  will-change: transform;
+  animation: zulfia-river-camera 18s ease-in-out infinite alternate;
+}
+
+.zulfia-river-bg__shade {
+  position: absolute;
+  inset: 0;
+  display: block;
   background:
-    radial-gradient(
-      circle at 50% 35%,
-      rgba(255, 255, 255, 0.02) 0%,
-      rgba(255, 255, 255, 0) 42%
-    ),
     linear-gradient(
       180deg,
-      rgba(5, 8, 11, 0.16) 0%,
-      rgba(5, 8, 11, 0.28) 36%,
-      rgba(5, 8, 11, 0.46) 100%
+      rgba(3, 6, 8, 0.18) 0%,
+      rgba(3, 6, 8, 0.26) 45%,
+      rgba(3, 6, 8, 0.44) 100%
+    ),
+    radial-gradient(
+      circle at 50% 30%,
+      rgba(255, 255, 255, 0.025),
+      transparent 54%
     );
 }
 
-@keyframes zulfia-river-float {
+@keyframes zulfia-river-camera {
   0% {
-    transform: translate3d(-1.6%, -0.6%, 0) scale(1.06);
+    transform: translate3d(-1.5%, -0.8%, 0) scale(0.94);
   }
 
   50% {
-    transform: translate3d(0.6%, 0.4%, 0) scale(1.08);
+    transform: translate3d(0.5%, 0.3%, 0) scale(0.955);
   }
 
   100% {
-    transform: translate3d(1.8%, 1.1%, 0) scale(1.07);
+    transform: translate3d(1.5%, 0.9%, 0) scale(0.945);
   }
 }
 
-.app--zulfia > * {
+.app--zulfia > :not(.zulfia-river-bg) {
   position: relative;
   z-index: 1;
 }
@@ -124,21 +134,26 @@
   -webkit-backdrop-filter: blur(12px);
 }
 
-/* Clothes stay bare / floating: no box behind product images. */
-.app--zulfia .card {
+/* Product photos float directly on the page: no media/card plate. */
+.app .card,
+.app .card__media,
+.app .product-page__image-box,
+.app .product-page__image,
+.app .product-page__media,
+.app .product-page__media img {
   background: transparent !important;
   box-shadow: none !important;
+}
+
+.app--zulfia .card {
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
 }
 
-.app--zulfia .card__media,
-.app--zulfia .product-page__image-box,
-.app--zulfia .product-page__image,
-.app--zulfia .product-page__media,
-.app--zulfia .product-page__media img {
-  background: transparent !important;
-  box-shadow: none !important;
+@media (prefers-reduced-motion: reduce) {
+  .zulfia-river-bg__media {
+    animation-duration: 1ms;
+  }
 }
 
 

@@ -32,6 +32,7 @@ import { Filters } from "./components/Filters";
 import { StoreTabs } from "./components/StoreTabs";
 import { StoreDirectory } from "./components/StoreDirectory";
 import { StoreName } from "./components/StoreName";
+import { ZulfiaRiverBackground } from "./components/ZulfiaRiverBackground";
 
 import "./components/ShopCommerceTheme.css";
 import "./components/ProductOverlay.css";
@@ -419,6 +420,9 @@ export default function App() {
         className={`app store-experience${shopSlug === "zulf" ? " app--zulfia" : ""}`}
         style={shopThemeStyle}
       >
+        <ZulfiaRiverBackground
+          active={isShopView && shopSlug === "zulf"}
+        />
       <div className="store-top store-experience__top">
         <Header
           onCartClick={() => setCartOpen(true)}
