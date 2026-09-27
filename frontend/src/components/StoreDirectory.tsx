@@ -65,16 +65,8 @@ export function StoreDirectory({
               type="button"
               className="store-tile"
               key={shop.id}
-              initial={{
-                opacity: 0,
-                y: 18,
-                scale: 0.985,
-              }}
-              animate={{
-                opacity: 1,
-                y: 0,
-                scale: 1,
-              }}
+              initial={{ opacity: 0, y: 18, scale: 0.985 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
               transition={{
                 duration: 0.46,
                 delay: index * 0.06,
@@ -84,9 +76,6 @@ export function StoreDirectory({
               aria-label={`Открыть магазин ${name}`}
             >
               <span className="store-tile__shine" aria-hidden="true" />
-              <span className="store-tile__tap-indicator" aria-hidden="true">
-                open
-              </span>
               {artwork ? (
                 <div className="store-tile__art-wrap">
                   <img
