@@ -5,11 +5,8 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
-import {
-  v2 as cloudinary,
-  UploadApiResponse,
-} from 'cloudinary';
 import { PrismaService } from '../prisma/prisma.service';
+import { uploadProductImage } from '../storage/yandex-object-storage';
 import { CreateProductDto } from './create-product.dto';
 import { QueryProductsDto } from './query-products.dto';
 import { UpdateProductDto } from './update-product.dto';
@@ -779,112 +776,24 @@ export class ProductsService {
       return [];
     }
 
-    this.configureCloudinary();
-
-    return Promise.all(
-      imageFiles.map(
-        (file) =>
-          new Promise<string>(
-            (
-              resolve,
-              reject,
-            ) => {
-              const stream =
-                cloudinary.uploader.upload_stream(
-                  {
-                    folder:
-                      process.env
-                        .CLOUDINARY_FOLDER ||
-                      'zov/products',
-                    resource_type:
-                      'image',
-                    quality:
-                      'auto:good',
-                    fetch_format:
-                      'auto',
-                  },
-                  (
-                    error,
-                    result?:
-                      UploadApiResponse,
-                  ) => {
-                    if (
-                      error ||
-                      !result
-                    ) {
-                      reject(
-                        new InternalServerErrorException(
-                          error?.message ||
-                            'Image upload failed',
-                        ),
-                      );
-
-                      return;
-                    }
-
-                    resolve(
-                      result.secure_url,
-                    );
-                  },
-                );
-
-              stream.end(
-                file.buffer,
-              );
-            },
-          ),
-      ),
-    );
-  }
-
-  private configureCloudinary() {
-    if (
-      process.env
-        .CLOUDINARY_URL
-    ) {
-      return;
-    }
-
-    const cloudName =
-      process.env
-        .CLOUDINARY_CLOUD_NAME;
-
-    const apiKey =
-      process.env
-        .CLOUDINARY_API_KEY;
-
-    const apiSecret =
-      process.env
-        .CLOUDINARY_API_SECRET;
-
-    if (
-      !cloudName ||
-      !apiKey ||
-      !apiSecret
-    ) {
-      const missing = [
-        !cloudName
-          ? 'CLOUDINARY_CLOUD_NAME'
-          : null,
-        !apiKey
-          ? 'CLOUDINARY_API_KEY'
-          : null,
-        !apiSecret
-          ? 'CLOUDINARY_API_SECRET'
-          : null,
-      ].filter(Boolean);
-
-      throw new BadRequestException(
-        `Image storage is not configured. Missing: ${missing.join(
-          ', ',
-        )}.`,
+    try {
+      return await Promise.all(
+        imageFiles.map(
+          (file) =>
+            uploadProductImage(
+              file.buffer,
+              file.mimetype ||
+                'application/octet-stream',
+              file.originalname,
+            ),
+        ),
+      );
+    } catch (error) {
+      throw new InternalServerErrorException(
+        error instanceof Error
+          ? error.message
+          : 'Image upload failed',
       );
     }
-
-    cloudinary.config({
-      cloud_name: cloudName,
-      api_key: apiKey,
-      api_secret: apiSecret,
-    });
   }
 }

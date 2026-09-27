@@ -10,7 +10,8 @@
     "start:prod": "node dist/main.js",
     "postinstall": "prisma generate",
     "prisma:migrate": "prisma migrate deploy",
-    "shop:backfill": "ts-node prisma/backfill-default-shop.ts"
+    "shop:backfill": "ts-node prisma/backfill-default-shop.ts",
+    "migrate:images:yandex": "node scripts/migrate-images-to-yandex.mjs"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",

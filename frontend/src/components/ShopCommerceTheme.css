@@ -420,3 +420,276 @@
 .app--zulfia .checkout-modal__title {
   color: #000;
 }
+
+
+/* =========================================================
+   ZULFIA = ONE CONTINUOUS UNIVERSE
+   Keep the same animated river visible in:
+   - catalog
+   - product page
+   - cart / checkout
+   Nothing switches back to a white page.
+   ========================================================= */
+
+/* Product route keeps the river instead of painting an opaque page. */
+.app--zulfia .product-overlay-shell {
+  background: transparent !important;
+  color: var(--text) !important;
+}
+
+.app--zulfia .product-page {
+  background: transparent !important;
+  color: var(--text) !important;
+}
+
+/* Product page typography / controls inherit Zulfia's shop color. */
+.app--zulfia .product-page__back,
+.app--zulfia .product-page__cart,
+.app--zulfia .product-page__arrow,
+.app--zulfia .product-page__name,
+.app--zulfia .product-page__price,
+.app--zulfia .product-page__description,
+.app--zulfia .product-page__sizes-title,
+.app--zulfia .product-page__size,
+.app--zulfia .product-page__add,
+.app--zulfia .product-page__image-empty {
+  color: var(--text) !important;
+}
+
+.app--zulfia .product-page__description,
+.app--zulfia .product-page__image-empty {
+  color:
+    color-mix(
+      in srgb,
+      var(--text) 72%,
+      transparent
+    ) !important;
+}
+
+.app--zulfia .product-page__dot {
+  background:
+    color-mix(
+      in srgb,
+      var(--text) 26%,
+      transparent
+    ) !important;
+}
+
+.app--zulfia .product-page__dot--active {
+  background: var(--text) !important;
+}
+
+.app--zulfia .product-page__add {
+  border-top-color:
+    color-mix(
+      in srgb,
+      var(--text) 44%,
+      transparent
+    ) !important;
+
+  border-bottom-color:
+    color-mix(
+      in srgb,
+      var(--text) 44%,
+      transparent
+    ) !important;
+
+  background: transparent !important;
+}
+
+.app--zulfia .product-page__size--active {
+  text-decoration-color: currentColor !important;
+}
+
+/*
+ * Cart overlay: keep the river readable behind the drawer.
+ * Very light dim only, no white veil.
+ */
+.app--zulfia > .overlay {
+  background:
+    rgba(
+      0,
+      0,
+      0,
+      0.14
+    ) !important;
+
+  backdrop-filter:
+    blur(2px) !important;
+
+  -webkit-backdrop-filter:
+    blur(2px) !important;
+}
+
+/* Cart / checkout becomes a dark transparent glass panel over the river. */
+.app--zulfia .checkout-modal {
+  border-color:
+    color-mix(
+      in srgb,
+      var(--text) 46%,
+      transparent
+    ) !important;
+
+  background:
+    rgba(
+      4,
+      8,
+      10,
+      0.64
+    ) !important;
+
+  color:
+    var(--text) !important;
+
+  backdrop-filter:
+    blur(10px) !important;
+
+  -webkit-backdrop-filter:
+    blur(10px) !important;
+}
+
+.app--zulfia .checkout-modal__header {
+  border-bottom-color:
+    color-mix(
+      in srgb,
+      var(--text) 30%,
+      transparent
+    ) !important;
+}
+
+/* Everything inside cart follows Zulfia white/light text instead of global black. */
+.app--zulfia .checkout-modal__title,
+.app--zulfia .checkout-icon-btn,
+.app--zulfia .checkout-section-title,
+.app--zulfia .checkout-empty__title,
+.app--zulfia .checkout-done__title,
+.app--zulfia .checkout-done__text,
+.app--zulfia .checkout-label,
+.app--zulfia .checkout-input,
+.app--zulfia .checkout-cart-item__name,
+.app--zulfia .checkout-cart-item__meta,
+.app--zulfia .checkout-cart-item__price,
+.app--zulfia .checkout-summary-item__name,
+.app--zulfia .checkout-summary-item__meta,
+.app--zulfia .checkout-summary-item__price,
+.app--zulfia .checkout-cart-total,
+.app--zulfia .checkout-totals__row,
+.app--zulfia .checkout-text-btn,
+.app--zulfia .checkout-qty button,
+.app--zulfia .checkout-qty span,
+.app--zulfia .checkout-error {
+  color:
+    var(--text) !important;
+}
+
+.app--zulfia .checkout-cart-item__meta,
+.app--zulfia .checkout-summary-item__meta,
+.app--zulfia .checkout-done__text,
+.app--zulfia .checkout-text-btn {
+  color:
+    color-mix(
+      in srgb,
+      var(--text) 68%,
+      transparent
+    ) !important;
+}
+
+.app--zulfia .checkout-input {
+  border-color:
+    color-mix(
+      in srgb,
+      var(--text) 52%,
+      transparent
+    ) !important;
+
+  background:
+    rgba(
+      0,
+      0,
+      0,
+      0.10
+    ) !important;
+
+  caret-color:
+    var(--text) !important;
+}
+
+.app--zulfia .checkout-input::placeholder {
+  color:
+    color-mix(
+      in srgb,
+      var(--text) 42%,
+      transparent
+    ) !important;
+}
+
+.app--zulfia .checkout-input:focus {
+  border-color:
+    var(--text) !important;
+}
+
+.app--zulfia .checkout-cart-list,
+.app--zulfia .checkout-summary-list {
+  border-top-color:
+    color-mix(
+      in srgb,
+      var(--text) 44%,
+      transparent
+    ) !important;
+}
+
+.app--zulfia .checkout-cart-item,
+.app--zulfia .checkout-summary-item {
+  border-bottom-color:
+    color-mix(
+      in srgb,
+      var(--text) 24%,
+      transparent
+    ) !important;
+}
+
+.app--zulfia .checkout-switch-btn {
+  border-color:
+    color-mix(
+      in srgb,
+      var(--text) 52%,
+      transparent
+    ) !important;
+
+  background:
+    transparent !important;
+
+  color:
+    var(--text) !important;
+}
+
+.app--zulfia .checkout-switch-btn--active {
+  background:
+    var(--text) !important;
+
+  color:
+    var(--bg) !important;
+}
+
+/* Main checkout button remains clearly visible over the moving river. */
+.app--zulfia .checkout-submit-btn {
+  border-color:
+    var(--text) !important;
+
+  background:
+    var(--text) !important;
+
+  color:
+    var(--bg) !important;
+}
+
+.app--zulfia .checkout-submit-btn:disabled {
+  opacity: 0.42 !important;
+}
+
+/* Product/cart images themselves stay naked / transparent in Zulfia. */
+.app--zulfia .product-page__image-box,
+.app--zulfia .checkout-cart-item__image {
+  background:
+    transparent !important;
+}
