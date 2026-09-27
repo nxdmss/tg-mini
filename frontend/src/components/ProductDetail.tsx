@@ -386,16 +386,11 @@ export function ProductDetail({
               addToCart
             }
           >
-            {added ? (
-              "ДОБАВЛЕНО"
-            ) : canAdd ? (
-              <span className="product-page__add-content">
-                <span>ДОБАВИТЬ</span>
-                <CartIcon count={count} />
-              </span>
-            ) : (
-              "НЕТ В НАЛИЧИИ"
-            )}
+            {added
+              ? "ДОБАВЛЕНО"
+              : canAdd
+                ? "ДОБАВИТЬ В КОРЗИНУ"
+                : "НЕТ В НАЛИЧИИ"}
           </button>
         </section>
       </div>
