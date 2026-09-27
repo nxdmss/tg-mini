@@ -4,7 +4,7 @@ type ZulfiaRiverBackgroundProps = {
   active: boolean;
 };
 
-const ANIMATED_RIVER_SRC =
+const FALLBACK_ANIMATED_RIVER_SRC =
   "https://giffiles.alphacoders.com/223/223620.gif";
 
 export function ZulfiaRiverBackground({
@@ -20,7 +20,11 @@ export function ZulfiaRiverBackground({
     <div className="zulfia-river-bg" aria-hidden="true">
       <img
         className="zulfia-river-bg__media"
-        src={failed ? "/river.gif" : ANIMATED_RIVER_SRC}
+        src={
+          failed
+            ? FALLBACK_ANIMATED_RIVER_SRC
+            : "/river-slow.gif"
+        }
         alt=""
         loading="eager"
         decoding="async"
