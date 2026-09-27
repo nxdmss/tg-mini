@@ -8,6 +8,7 @@ import type { Product } from "../types";
 
 import { useCart } from "../cart";
 import { formatPrice } from "../utils";
+import { CartIcon } from "./CartIcon";
 
 import "./ProductDetail.css";
 
@@ -222,17 +223,10 @@ export function ProductDetail({
         <button
           type="button"
           className="product-page__cart"
-          onClick={
-            onCartClick
-          }
+          onClick={onCartClick}
+          aria-label="Открыть покупки"
         >
-          КОРЗИНА
-
-          {count > 0 && (
-            <span>
-              {count}
-            </span>
-          )}
+          <CartIcon count={count} />
         </button>
       </header>
 
@@ -392,11 +386,16 @@ export function ProductDetail({
               addToCart
             }
           >
-            {added
-              ? "ДОБАВЛЕНО"
-              : canAdd
-                ? "ДОБАВИТЬ В КОРЗИНУ"
-                : "НЕТ В НАЛИЧИИ"}
+            {added ? (
+              "ДОБАВЛЕНО"
+            ) : canAdd ? (
+              <span className="product-page__add-content">
+                <span>ДОБАВИТЬ</span>
+                <CartIcon count={count} />
+              </span>
+            ) : (
+              "НЕТ В НАЛИЧИИ"
+            )}
           </button>
         </section>
       </div>

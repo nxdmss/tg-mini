@@ -1,0 +1,140 @@
+.sketch-cart {
+  position: relative;
+  display: inline-block;
+  width: 48px;
+  height: 36px;
+  flex: 0 0 auto;
+  line-height: 0;
+  pointer-events: none;
+}
+
+.sketch-cart__body {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain;
+  object-position: center;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.sketch-cart__count {
+  position: absolute;
+  left: 58%;
+  top: 48%;
+  width: 34%;
+  height: 30%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  pointer-events: none;
+}
+
+.sketch-cart__count--long {
+  width: 39%;
+  height: 24%;
+}
+
+.sketch-cart__digit {
+  display: block;
+  width: auto;
+  height: 100%;
+  max-width: 52%;
+  object-fit: contain;
+  object-position: center;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.header-cart {
+  width: 54px !important;
+  min-width: 54px !important;
+  height: 46px !important;
+  min-height: 46px !important;
+  padding: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+}
+
+.header-cart .sketch-cart {
+  width: 50px;
+  height: 38px;
+}
+
+.product-page__cart {
+  width: 58px !important;
+  min-width: 58px !important;
+  min-height: 50px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.product-page__cart .sketch-cart {
+  width: 52px;
+  height: 39px;
+}
+
+.checkout-section-title--cart {
+  min-height: 50px;
+  display: flex;
+  align-items: center;
+}
+
+.checkout-section-title--cart .sketch-cart {
+  width: 62px;
+  height: 46px;
+}
+
+.checkout-empty__cart {
+  margin-bottom: 7px;
+}
+
+.checkout-empty__cart .sketch-cart {
+  width: 76px;
+  height: 57px;
+}
+
+.product-page__add-content {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.product-page__add .sketch-cart {
+  width: 38px;
+  height: 28px;
+}
+
+.app--zulfia .sketch-cart__body,
+.app--zulfia .sketch-cart__digit,
+.brand__logo--negative ~ .header__actions .sketch-cart__body,
+.brand__logo--negative ~ .header__actions .sketch-cart__digit {
+  filter: brightness(0) invert(1);
+}
+
+@media (max-width: 520px) {
+  .header-cart {
+    width: 50px !important;
+    min-width: 50px !important;
+  }
+
+  .header-cart .sketch-cart {
+    width: 46px;
+    height: 35px;
+  }
+}

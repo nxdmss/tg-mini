@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { useCart } from "../cart";
 import { tg } from "../telegram";
 import { isTelegram } from "../platform";
+import { CartIcon } from "./CartIcon";
 
 import "./Header.css";
 
@@ -53,26 +54,49 @@ export function Header({
       <motion.div
         layout
         className={`container header__inner header__inner--store header__inner--logo-${logoPosition}`}
-        transition={{ layout: { duration: reducedMotion ? 0 : 0.62, ease: [0.16, 1, 0.3, 1] } }}
+        transition={{
+          layout: {
+            duration: reducedMotion ? 0 : 0.62,
+            ease: [0.16, 1, 0.3, 1],
+          },
+        }}
       >
         <motion.button
           layout
           className={`brand__logo ${logoNegative ? "brand__logo--negative" : ""}`}
-          transition={{ layout: { duration: reducedMotion ? 0 : 0.62, ease: [0.16, 1, 0.3, 1] } }}
+          transition={{
+            layout: {
+              duration: reducedMotion ? 0 : 0.62,
+              ease: [0.16, 1, 0.3, 1],
+            },
+          }}
           type="button"
           onClick={handleLogoClick}
           aria-label="SWA6Y5TAN"
         >
           <span className="brand__logo-mark">
-            <img className="brand__logo-image brand__logo-image--base" src="/logo.png" alt="SWA6Y5TAN" />
-            <img className="brand__logo-image brand__logo-image--negative" src="/logo.png" alt="" aria-hidden="true" />
+            <img
+              className="brand__logo-image brand__logo-image--base"
+              src="/logo.png"
+              alt="SWA6Y5TAN"
+            />
+            <img
+              className="brand__logo-image brand__logo-image--negative"
+              src="/logo.png"
+              alt=""
+              aria-hidden="true"
+            />
           </span>
         </motion.button>
 
         <div className="header__actions">
-          <button type="button" className="header-action header-cart" onClick={onCartClick} aria-label="Корзина">
-            <span>Корзина</span>
-            {count > 0 && <span className="header-action__badge">{count}</span>}
+          <button
+            type="button"
+            className="header-action header-cart"
+            onClick={onCartClick}
+            aria-label="Открыть покупки"
+          >
+            <CartIcon count={count} />
           </button>
         </div>
       </motion.div>
