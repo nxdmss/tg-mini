@@ -81,71 +81,81 @@
 }
 
 .store-directory {
-  padding-top: clamp(18px, 4vw, 36px);
+  padding-top: clamp(14px, 3vw, 28px);
   padding-bottom: 44px;
 }
 
 .store-directory__grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
+  gap: clamp(8px, 1.4vw, 14px);
 }
 
 .store-tile {
   position: relative;
-  min-height: clamp(190px, 34vw, 360px);
-  padding: clamp(18px, 3vw, 30px);
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
   border: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: space-between;
+  border-radius: 0;
   overflow: hidden;
-  text-align: left;
-  transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1), opacity 160ms ease;
+  display: block;
+  background: #000;
+  color: #fff;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transform-origin: center;
+  transition:
+    transform 220ms cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 160ms ease;
+}
+
+.store-tile:focus,
+.store-tile:focus-visible,
+.store-tile:active {
+  outline: none;
+  box-shadow: none;
 }
 
 .store-tile:active {
   transform: scale(0.985);
 }
 
-.store-tile__name {
-  max-width: 100%;
-  font-size: clamp(34px, 7vw, 76px);
-  font-weight: 800;
-  line-height: 0.9;
-  letter-spacing: -0.075em;
-  white-space: nowrap;
+.store-tile__art {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain;
+  object-position: center;
+  background: #000;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
 }
 
-.store-tile--swagystan .store-tile__name {
-  font-family: "SWAGYSTAN DMC5", serif;
-  font-weight: 400;
-  font-size: clamp(42px, 8vw, 88px);
-  letter-spacing: -0.11em;
-  transform: skewX(-5deg) scaleX(1.04);
-  transform-origin: left center;
-}
-
-.store-tile--zulfia .store-tile__name {
-  font-family: "Snell Roundhand", "Segoe Script", "Brush Script MT", cursive;
-  font-weight: 400;
-  letter-spacing: -0.02em;
-}
-
-.store-tile__meta {
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  opacity: 0.5;
+.store-tile__fallback {
+  width: 100%;
+  height: 100%;
+  padding: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: clamp(24px, 5vw, 54px);
+  font-weight: 700;
+  line-height: 0.92;
+  letter-spacing: -0.06em;
+  text-align: center;
 }
 
 .store-tile--skeleton {
-  background: var(--text);
-  opacity: 0.04;
+  background: #000;
+  opacity: 0.08;
 }
 
-@media (hover: hover) {
+@media (hover: hover) and (pointer: fine) {
   .store-tile:hover {
     transform: translateY(-3px);
   }
@@ -167,33 +177,24 @@
   }
 
   .store-directory {
-    padding-top: 14px;
+    padding-top: 12px;
+    padding-left: 10px;
+    padding-right: 10px;
   }
 
   .store-directory__grid {
-    gap: 10px;
-  }
-
-  .store-tile {
-    min-height: 185px;
-    padding: 15px;
-  }
-
-  .store-tile__name {
-    font-size: clamp(27px, 9vw, 44px);
-  }
-
-  .store-tile--swagystan .store-tile__name {
-    font-size: clamp(31px, 10vw, 48px);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
   }
 }
 
-@media (max-width: 390px) {
-  .store-directory__grid {
-    grid-template-columns: 1fr;
+@media (max-width: 360px) {
+  .store-directory {
+    padding-left: 8px;
+    padding-right: 8px;
   }
 
-  .store-tile {
-    min-height: 170px;
+  .store-directory__grid {
+    gap: 6px;
   }
 }
