@@ -1,13 +1,13 @@
-SWAGYSTAN V2 — full replacement patch
+SWAGYSTAN V2 — GLASS STORE BUTTONS
 
-1. Open your tg-mini project folder on Mac.
-2. Drag the "frontend" folder from this archive into the project root.
-3. Choose Replace / Merge when macOS asks.
-4. Then run:
+Что изменено:
+- у обоих магазинов убраны фоны у самих изображений;
+- орёл сделан чёрным на прозрачном фоне;
+- лотос без фона;
+- кнопки магазинов одинакового размера;
+- сами плитки теперь выглядят как glass / liquid glass кнопки с подсветкой, бликом и мягкой обводкой.
 
-   cd frontend
-   npm run build
-
-New store button images:
-- frontend/public/store-swag.png
-- frontend/public/store-zulfia.png
+Замени папку frontend из архива в корне проекта.
+Потом:
+cd frontend
+npm run build

@@ -40,9 +40,7 @@ export function StoreDirectory({
   loading,
   onOpen,
 }: StoreDirectoryProps) {
-  const active = shops.filter(
-    (shop) => shop.isActive,
-  );
+  const active = shops.filter((shop) => shop.isActive);
 
   if (loading && active.length === 0) {
     return (
@@ -60,6 +58,7 @@ export function StoreDirectory({
       <div className="store-directory__grid">
         {active.map((shop, index) => {
           const artwork = storeArtwork(shop);
+          const name = displayName(shop);
 
           return (
             <motion.button
@@ -82,22 +81,27 @@ export function StoreDirectory({
                 ease: [0.16, 1, 0.3, 1],
               }}
               onClick={() => onOpen(shop)}
-              aria-label={`Открыть магазин ${displayName(shop)}`}
+              aria-label={`Открыть магазин ${name}`}
             >
+              <span className="store-tile__shine" aria-hidden="true" />
+              <span className="store-tile__tap-indicator" aria-hidden="true">
+                open
+              </span>
               {artwork ? (
-                <img
-                  className="store-tile__art"
-                  src={artwork}
-                  alt=""
-                  aria-hidden="true"
-                  loading="eager"
-                  decoding="async"
-                />
+                <div className="store-tile__art-wrap">
+                  <img
+                    className={`store-tile__art ${shop.slug === "swagystan" ? "store-tile__art--swag" : ""}`}
+                    src={artwork}
+                    alt=""
+                    aria-hidden="true"
+                    loading="eager"
+                    decoding="async"
+                  />
+                </div>
               ) : (
-                <span className="store-tile__fallback">
-                  {displayName(shop)}
-                </span>
+                <span className="store-tile__fallback">{name}</span>
               )}
+              <span className="store-tile__label">{name}</span>
             </motion.button>
           );
         })}
