@@ -59,6 +59,7 @@ export function StoreDirectory({
         {active.map((shop, index) => {
           const artwork = storeArtwork(shop);
           const name = displayName(shop);
+          const isSwag = shop.slug === "swagystan" || /^(SWA6Y5TAN|SWAGYSTAN)$/i.test(shop.name);
 
           return (
             <motion.button
@@ -90,7 +91,11 @@ export function StoreDirectory({
               ) : (
                 <span className="store-tile__fallback">{name}</span>
               )}
-              <span className="store-tile__label">{name}</span>
+              <span
+                className={`store-tile__label ${isSwag ? "store-tile__label--swag" : ""}`}
+              >
+                {name}
+              </span>
             </motion.button>
           );
         })}

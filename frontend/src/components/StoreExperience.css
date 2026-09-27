@@ -150,7 +150,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 12% 12% 19%;
+  padding: 7% 7% 18%;
 }
 
 .store-tile__art {
@@ -165,7 +165,7 @@
 }
 
 .store-tile__art--swag {
-  transform: scale(0.94);
+  transform: scale(1.08);
 }
 
 .store-tile__label {
@@ -187,6 +187,14 @@
   overflow: hidden;
   text-overflow: ellipsis;
   pointer-events: none;
+}
+
+.store-tile__label--swag {
+  font-family: "SWAGYSTAN DMC5", "IBM Plex Mono", monospace;
+  font-size: 18px;
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: 0.04em;
 }
 
 .store-tile__fallback {
@@ -252,7 +260,7 @@
   }
 
   .store-tile__art-wrap {
-    padding: 11% 11% 19%;
+    padding: 6% 6% 18%;
   }
 
   .store-tile__label {
@@ -260,6 +268,10 @@
     right: 10px;
     bottom: 10px;
     font-size: 10px;
+  }
+
+  .store-tile__label--swag {
+    font-size: 15px;
   }
 }
 
@@ -275,5 +287,9 @@
 
   .store-tile {
     border-radius: 0;
+  }
+
+  .store-tile__label--swag {
+    font-size: 13px;
   }
 }
