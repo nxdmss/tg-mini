@@ -7,16 +7,16 @@ type ZulfiaRiverBackgroundProps = {
 export function ZulfiaRiverBackground({
   active,
 }: ZulfiaRiverBackgroundProps) {
-  const [src, setSrc] = useState("/river.gif");
+  const [playKey, setPlayKey] = useState(0);
 
   useEffect(() => {
     if (!active) {
       return;
     }
 
-    // A fresh URL forces WebView/Safari/Telegram to restart the GIF
-    // instead of reusing a paused background-image frame from cache.
-    setSrc(`/river.gif?play=${Date.now()}`);
+    // Restart the original animated GIF only when Zulfia is entered.
+    // The image itself stays spatially fixed; only the GIF frames move.
+    setPlayKey((value) => value + 1);
   }, [active]);
 
   if (!active) {
@@ -26,10 +26,11 @@ export function ZulfiaRiverBackground({
   return (
     <div className="zulfia-river-bg" aria-hidden="true">
       <img
-        key={src}
+        key={playKey}
         className="zulfia-river-bg__media"
-        src={src}
+        src={`/river.gif?play=${playKey}`}
         alt=""
+        loading="eager"
         decoding="async"
         draggable={false}
       />

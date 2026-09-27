@@ -43,8 +43,8 @@
 }
 
 /* =========================================================
-   ZULFIA RIVER: REAL <img> GIF LAYER
-   More reliable in Telegram/Safari than CSS background-image.
+   ZULFIA RIVER: FIXED FRAME + ANIMATED GIF WATER
+   The layer NEVER pans or zooms. Motion comes only from river.gif itself.
    ========================================================= */
 
 .app--zulfia {
@@ -64,50 +64,42 @@
 
 .zulfia-river-bg__media {
   position: absolute;
-  left: -5%;
-  top: -5%;
-  width: 110%;
-  height: 110%;
+  inset: 0;
+  width: 100%;
+  height: 100%;
   display: block;
   object-fit: cover;
-  object-position: center;
-  filter: brightness(0.68) contrast(1.04) saturate(0.88);
-  transform: translate3d(0, 0, 0) scale(0.94);
-  transform-origin: center;
-  will-change: transform;
-  animation: zulfia-river-camera 18s ease-in-out infinite alternate;
+  object-position: center center;
+
+  /* Darker, but no artificial camera motion. */
+  filter:
+    brightness(0.64)
+    contrast(1.06)
+    saturate(0.90);
+
+  transform: none !important;
+  animation: none !important;
+  transition: none !important;
+  will-change: auto;
 }
 
 .zulfia-river-bg__shade {
   position: absolute;
   inset: 0;
   display: block;
+  pointer-events: none;
   background:
     linear-gradient(
       180deg,
-      rgba(3, 6, 8, 0.18) 0%,
-      rgba(3, 6, 8, 0.26) 45%,
-      rgba(3, 6, 8, 0.44) 100%
+      rgba(3, 6, 8, 0.12) 0%,
+      rgba(3, 6, 8, 0.20) 45%,
+      rgba(3, 6, 8, 0.34) 100%
     ),
     radial-gradient(
       circle at 50% 30%,
-      rgba(255, 255, 255, 0.025),
-      transparent 54%
+      rgba(255, 255, 255, 0.018),
+      transparent 56%
     );
-}
-
-@keyframes zulfia-river-camera {
-  0% {
-    transform: translate3d(-1.5%, -0.8%, 0) scale(0.94);
-  }
-
-  50% {
-    transform: translate3d(0.5%, 0.3%, 0) scale(0.955);
-  }
-
-  100% {
-    transform: translate3d(1.5%, 0.9%, 0) scale(0.945);
-  }
 }
 
 .app--zulfia > :not(.zulfia-river-bg) {
@@ -148,12 +140,6 @@
 .app--zulfia .card {
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .zulfia-river-bg__media {
-    animation-duration: 1ms;
-  }
 }
 
 
