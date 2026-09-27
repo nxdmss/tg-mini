@@ -53,6 +53,7 @@
 .brand__logo {
   flex: 0 0 auto;
   min-width: 0;
+  min-height: var(--header-h);
   padding: 10px 0 0;
   border: 0;
   display: inline-flex;
@@ -72,8 +73,8 @@
   grid-area: 1 / 1;
   display: block;
   width: auto;
-  height: 58px;
-  max-width: min(35vw, 202px);
+  height: 40px;
+  max-width: min(27vw, 145px);
   object-fit: contain;
   transform: translateY(3px) translateZ(0);
   backface-visibility: hidden;
@@ -89,8 +90,8 @@
   .header__actions { right: 13px; }
   .header-action { padding: 0 4px; font-size: 11px; }
   .brand__logo-image {
-    height: 51px;
-    max-width: 31vw;
+    height: 34px;
+    max-width: 25vw;
     transform: translateY(4px) translateZ(0);
   }
 }
