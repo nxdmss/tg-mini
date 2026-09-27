@@ -7,6 +7,7 @@ import "@fontsource/ibm-plex-mono/600.css";
 import "@fontsource/ibm-plex-mono/700.css";
 
 import "./index.css";
+import "./brandRuntime";
 
 import Router from "./router";
 import { CartProvider } from "./cart";

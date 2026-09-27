@@ -23,26 +23,7 @@ function installBrandStyles() {
 
   style.id = STYLE_ID;
 
-  /*
-   * Typography/text safety net only.
-   * Never changes layout.
-   *
-   * ShopSwitcher has its own intentionally sized brand styles,
-   * so runtime branding must not stack on top of it.
-   */
   style.textContent = `
-    @font-face {
-      font-family: "SWAGYSTAN DMC5";
-      src:
-        url("/fonts/dmc5-kalina-ann.woff2") format("woff2"),
-        url("/fonts/dmc5-kalina-ann.woff") format("woff"),
-        url("/fonts/dmc5-kalina-ann.ttf") format("truetype"),
-        url("/fonts/dmc5-kalina-ann.otf") format("opentype");
-      font-style: normal;
-      font-weight: 400;
-      font-display: swap;
-    }
-
     .brand-zulfia {
       display: inline-block !important;
       font-family:
@@ -62,35 +43,54 @@ function installBrandStyles() {
       transform-origin: center;
     }
 
+    /*
+     * New SWAGYSTAN lettering.
+     * The wordmark is an SVG outline generated from the supplied font,
+     * so it renders identically without shipping a font file.
+     *
+     * visibility:hidden keeps the original text box dimensions;
+     * ::after paints the new wordmark exactly inside that same box.
+     */
     .brand-swagystan {
-      display: inline-block !important;
-      font-family:
-        "SWAGYSTAN DMC5",
-        "Bodoni 72",
-        "Didot",
-        "Times New Roman",
-        serif !important;
-      font-size: 1.92em !important;
-      font-weight: 400 !important;
-      font-style: normal !important;
-      line-height: 0.7 !important;
-      letter-spacing: -0.1em !important;
+      position: relative !important;
+      visibility: hidden !important;
+      white-space: nowrap !important;
       text-transform: none !important;
-      white-space: nowrap;
-      transform:
-        skewX(-6deg)
-        scaleX(1.12)
-        scaleY(1.2)
-        translateY(-0.075em);
-      transform-origin: left center;
-      -webkit-text-stroke:
-        0.04px currentColor;
+      letter-spacing: 0 !important;
+      transform: none !important;
     }
 
-    @media (max-width: 700px) {
+    .brand-swagystan::after {
+      content: "";
+      position: absolute;
+      inset: -0.08em -0.08em;
+      visibility: visible !important;
+      display: block;
+      background-color: var(--text, #111);
+      -webkit-mask-image: url("/swagystan-label.svg");
+      -webkit-mask-repeat: no-repeat;
+      -webkit-mask-position: center;
+      -webkit-mask-size: contain;
+      mask-image: url("/swagystan-label.svg");
+      mask-repeat: no-repeat;
+      mask-position: center;
+      mask-size: contain;
+      pointer-events: none;
+    }
+
+    @supports not (
+      (-webkit-mask-image: url("/swagystan-label.svg")) or
+      (mask-image: url("/swagystan-label.svg"))
+    ) {
       .brand-swagystan {
-        font-size: 2em !important;
-        letter-spacing: -0.095em !important;
+        visibility: visible !important;
+        font-family: "IBM Plex Mono", monospace !important;
+        font-weight: 700 !important;
+        font-style: italic !important;
+      }
+
+      .brand-swagystan::after {
+        display: none !important;
       }
     }
   `;
@@ -110,7 +110,7 @@ function normalizeText(
     )
     .replace(
       SWAG_RE,
-      "swagystan",
+      "SWAGYSTAN",
     );
 }
 
@@ -129,7 +129,7 @@ function classForText(
   }
 
   if (
-    /^(swagystan|SWA6Y5TAN)$/i.test(
+    /^(SWAGYSTAN|SWA6Y5TAN)$/i.test(
       normalized,
     )
   ) {
@@ -180,6 +180,18 @@ function normalizeAttributes(
 function normalizeTextNode(
   node: Text,
 ) {
+  const parent =
+    node.parentElement;
+
+  if (
+    !parent ||
+    parent.matches(
+      "script, style, textarea",
+    )
+  ) {
+    return;
+  }
+
   const current =
     node.nodeValue ?? "";
 
@@ -192,18 +204,6 @@ function normalizeTextNode(
     next !== current
   ) {
     node.nodeValue = next;
-  }
-
-  const parent =
-    node.parentElement;
-
-  if (
-    !parent ||
-    parent.closest(
-      ".shop-switcher",
-    )
-  ) {
-    return;
   }
 
   const brandClass =
@@ -275,6 +275,7 @@ function normalizeElement(
     nodes.push(
       current as Text,
     );
+
     current =
       walker.nextNode();
   }
@@ -288,9 +289,6 @@ function normalizeDocumentTitle() {
   document.title =
     normalizeText(
       document.title,
-    ).replace(
-      /swagystan/gi,
-      "SWAGYSTAN",
     );
 }
 
@@ -358,7 +356,7 @@ function run() {
 
 if (
   document.readyState ===
-  "loading"
+    "loading"
 ) {
   document.addEventListener(
     "DOMContentLoaded",
