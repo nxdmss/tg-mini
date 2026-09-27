@@ -99,7 +99,7 @@
   min-height: 0;
   padding: 0;
   border: 1px solid rgba(17, 17, 17, 0.78);
-  border-radius: 22px;
+  border-radius: 0;
   overflow: hidden;
   display: flex;
   align-items: center;
@@ -166,11 +166,11 @@
 
 .store-tile__label {
   position: absolute;
-  left: 50%;
-  bottom: 14px;
+  left: 12px;
+  right: 12px;
+  bottom: 12px;
   z-index: 3;
-  transform: translateX(-50%);
-  width: calc(100% - 24px);
+  display: block;
   color: #111;
   text-align: center;
   font-family: "IBM Plex Mono", monospace;
@@ -201,7 +201,7 @@
 }
 
 .store-tile--skeleton {
-  border-radius: 22px;
+  border-radius: 0;
   border: 1px solid rgba(17,17,17,0.18);
   background: rgba(255,255,255,0.2);
   opacity: 0.7;
@@ -244,7 +244,7 @@
   }
 
   .store-tile {
-    border-radius: 20px;
+    border-radius: 0;
   }
 
   .store-tile__art-wrap {
@@ -252,9 +252,24 @@
   }
 
   .store-tile__label {
-    bottom: 12px;
-    font-size: 10px;
-  }
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 12px;
+  z-index: 3;
+  display: block;
+  color: #111;
+  text-align: center;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  pointer-events: none;
 }
 
 @media (max-width: 360px) {
@@ -268,6 +283,6 @@
   }
 
   .store-tile {
-    border-radius: 18px;
+    border-radius: 0;
   }
 }
