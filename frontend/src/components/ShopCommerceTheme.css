@@ -44,6 +44,7 @@
 
 /* =========================================================
    ZULFIA RIVER GIF BACKGROUND
+   Existing scenic river.gif from /public, now darker + further + animated.
    ========================================================= */
 
 .app--zulfia {
@@ -54,20 +55,49 @@
 .app--zulfia::before {
   content: "";
   position: fixed;
+  inset: -6%;
+  z-index: -2;
+  pointer-events: none;
+  background: url("/river.gif") center center / cover no-repeat;
+  opacity: 1;
+  filter: brightness(0.72) contrast(1.05) saturate(0.92);
+  transform: translate3d(0, 0, 0) scale(1.06);
+  will-change: transform;
+  animation: zulfia-river-float 22s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite alternate;
+}
+
+.app--zulfia::after {
+  content: "";
+  position: fixed;
   inset: 0;
-  z-index: 0;
+  z-index: -1;
   pointer-events: none;
   background:
+    radial-gradient(
+      circle at 50% 35%,
+      rgba(255, 255, 255, 0.02) 0%,
+      rgba(255, 255, 255, 0) 42%
+    ),
     linear-gradient(
       180deg,
-      rgba(7, 11, 16, 0.20),
-      rgba(7, 11, 16, 0.34)
-    ),
-    url("/river.gif")
-      center / cover
-      no-repeat;
-  opacity: 1;
-  will-change: transform;
+      rgba(5, 8, 11, 0.16) 0%,
+      rgba(5, 8, 11, 0.28) 36%,
+      rgba(5, 8, 11, 0.46) 100%
+    );
+}
+
+@keyframes zulfia-river-float {
+  0% {
+    transform: translate3d(-1.6%, -0.6%, 0) scale(1.06);
+  }
+
+  50% {
+    transform: translate3d(0.6%, 0.4%, 0) scale(1.08);
+  }
+
+  100% {
+    transform: translate3d(1.8%, 1.1%, 0) scale(1.07);
+  }
 }
 
 .app--zulfia > * {
@@ -81,7 +111,6 @@
   background: transparent;
 }
 
-.app--zulfia .card,
 .app--zulfia .product-detail,
 .app--zulfia .cart-drawer,
 .app--zulfia .sort-menu {
@@ -94,6 +123,24 @@
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
 }
+
+/* Clothes stay bare / floating: no box behind product images. */
+.app--zulfia .card {
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.app--zulfia .card__media,
+.app--zulfia .product-page__image-box,
+.app--zulfia .product-page__image,
+.app--zulfia .product-page__media,
+.app--zulfia .product-page__media img {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
 
 /* =========================================================
    MAIN CATALOG CONTROLS FOLLOW SHOP THEME
@@ -290,4 +337,33 @@
 .app .checkout-form__helper,
 .app .order-success__meta {
   color: var(--cart-muted);
+}
+
+
+/* =========================================================
+   CLOTHES WITHOUT BACKGROUND BOXES
+   ========================================================= */
+
+.app .card,
+.app .card__media,
+.app .product-page__image-box,
+.app .product-page__image,
+.app .product-page__media,
+.app .product-page__media img {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.app .card__overlay {
+  background:
+    linear-gradient(
+      180deg,
+      transparent 0%,
+      color-mix(in srgb, var(--bg) 18%, transparent) 100%
+    );
+}
+
+.app .media-fallback {
+  background: transparent;
+  border: 1px solid color-mix(in srgb, var(--text) 14%, transparent);
 }
