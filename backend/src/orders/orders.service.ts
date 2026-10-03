@@ -486,6 +486,27 @@ export class OrdersService {
     });
   }
 
+  async setArchived(
+    id: string,
+    archived: boolean,
+  ) {
+    return this.prisma.order.update({
+      where: {
+        id,
+      },
+
+      data: {
+        archivedAt:
+          archived
+            ? new Date()
+            : null,
+      },
+
+      include:
+        orderInclude,
+    });
+  }
+
   private async notifyOrderCreated(
     order: OrderWithItems,
   ) {
