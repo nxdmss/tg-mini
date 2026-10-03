@@ -309,7 +309,7 @@ export async function uploadProductImage(
           'x-amz-date':
             amzDate,
         },
-        body,
+        body: Uint8Array.from(body),
       },
     );
 

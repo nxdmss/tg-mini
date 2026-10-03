@@ -21,13 +21,27 @@ const orderInclude = {
     include: {
       product: {
         include: {
-          images: true,
+          images: {
+            orderBy: {
+              sortOrder: 'asc',
+            },
+          },
         },
       },
     },
   },
 
-  user: true,
+  user: {
+    select: {
+      id: true,
+      telegramId: true,
+      email: true,
+      name: true,
+      phone: true,
+      role: true,
+      createdAt: true,
+    },
+  },
 } satisfies Prisma.OrderInclude;
 
 type OrderWithItems =
@@ -465,6 +479,27 @@ export class OrdersService {
 
       data: {
         status,
+      },
+
+      include:
+        orderInclude,
+    });
+  }
+
+  async setArchived(
+    id: string,
+    archived: boolean,
+  ) {
+    return this.prisma.order.update({
+      where: {
+        id,
+      },
+
+      data: {
+        archivedAt:
+          archived
+            ? new Date()
+            : null,
       },
 
       include:

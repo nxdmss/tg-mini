@@ -99,7 +99,8 @@ model ProductSize {
 }
 
 model Order {
-  id String @id @default(cuid())
+  id     String @id @default(cuid())
+  number Int    @unique @default(autoincrement())
 
   userId String?
   user   User? @relation(fields: [userId], references: [id])
@@ -116,7 +117,10 @@ model Order {
 
   items OrderItem[]
 
-  createdAt DateTime @default(now())
+  createdAt  DateTime  @default(now())
+  archivedAt DateTime?
+
+  @@index([archivedAt])
 }
 
 model OrderItem {

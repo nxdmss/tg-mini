@@ -1,0 +1,21 @@
+admin.swagystan.ru {
+  encode zstd gzip
+
+  root * /opt/swa6/admin/dist
+  try_files {path} /index.html
+
+  @assets path /assets/*
+  header @assets Cache-Control "public, max-age=31536000, immutable"
+
+  @shell path / /index.html /manifest.webmanifest /sw.js
+  header @shell Cache-Control "no-cache, no-store, must-revalidate"
+
+  header {
+    -Server
+    X-Content-Type-Options "nosniff"
+    Referrer-Policy "strict-origin-when-cross-origin"
+    X-Frame-Options "DENY"
+  }
+
+  file_server
+}

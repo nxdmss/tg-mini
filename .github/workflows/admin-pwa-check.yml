@@ -1,0 +1,46 @@
+name: admin-pwa-check
+
+on:
+  pull_request:
+    paths:
+      - "admin/**"
+      - "backend/**"
+      - ".github/workflows/admin-pwa-check.yml"
+  push:
+    branches:
+      - "feature/admin-orders-pwa"
+    paths:
+      - "admin/**"
+      - "backend/**"
+      - ".github/workflows/admin-pwa-check.yml"
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci
+      - run: npm run build
+
+  admin:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: admin
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: admin/package-lock.json
+      - run: npm ci
+      - run: npm run build
