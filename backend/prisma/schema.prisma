@@ -117,7 +117,10 @@ model Order {
 
   items OrderItem[]
 
-  createdAt DateTime @default(now())
+  createdAt  DateTime  @default(now())
+  archivedAt DateTime?
+
+  @@index([archivedAt])
 }
 
 model OrderItem {
