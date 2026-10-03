@@ -12,6 +12,7 @@ import {
 
 import { TelegramAdminGuard } from '../auth/telegram-admin.guard';
 import { TelegramAuthGuard } from '../auth/telegram-auth.guard';
+import { ArchiveOrderDto } from './archive-order.dto';
 import { CreateOrderDto } from './create-order.dto';
 import { OrdersService } from './orders.service';
 import { UpdateOrderStatusDto } from './update-order-status.dto';
@@ -46,5 +47,14 @@ export class OrdersController {
     @Body() body: UpdateOrderStatusDto,
   ) {
     return this.ordersService.updateStatus(id, body.status);
+  }
+
+  @Patch('admin/:id/archive')
+  @UseGuards(TelegramAdminGuard)
+  archive(
+    @Param('id') id: string,
+    @Body() body: ArchiveOrderDto,
+  ) {
+    return this.ordersService.setArchived(id, body.archived);
   }
 }
