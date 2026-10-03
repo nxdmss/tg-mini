@@ -225,6 +225,38 @@ export async function setAdminOrderArchived(
   );
 }
 
+export async function deleteAdminOrderItem(
+  token: string,
+  orderId: string,
+  itemId: string,
+) {
+  return request<Order>(
+    `/orders/admin/${orderId}/items/${itemId}`,
+    {
+      method: "DELETE",
+      headers:
+        authHeaders(token),
+    },
+  );
+}
+
+export async function deleteAdminOrder(
+  token: string,
+  orderId: string,
+) {
+  return request<{
+    ok: true;
+    id: string;
+  }>(
+    `/orders/admin/${orderId}`,
+    {
+      method: "DELETE",
+      headers:
+        authHeaders(token),
+    },
+  );
+}
+
 export function getApiErrorMessage(
   error: unknown,
 ) {

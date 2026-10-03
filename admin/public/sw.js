@@ -1,4 +1,4 @@
-const CACHE = "swa6-admin-v3";
+const CACHE = "swa6-admin-v4";
 const CORE = ["/", "/manifest.webmanifest", "/icon.svg"];
 
 self.addEventListener("install", (event) => {

@@ -13,6 +13,8 @@ import type {
 import {
   checkAdmin,
   clearAccessToken,
+  deleteAdminOrder,
+  deleteAdminOrderItem,
   getAccessToken,
   getAdminOrders,
   getApiErrorMessage,
@@ -35,17 +37,11 @@ type Filter =
   | "done"
   | "archive";
 
-type OrderAction =
-  | {
-      type: "status";
-      status: OrderStatus;
-      label: string;
-    }
-  | {
-      type: "archive";
-      archived: boolean;
-      label: string;
-    };
+type Stage =
+  | "new"
+  | "work"
+  | "done"
+  | "archive";
 
 const FILTERS: Array<{
   key: Filter;
@@ -54,6 +50,28 @@ const FILTERS: Array<{
   {
     key: "new",
     label: "НОВЫЕ",
+  },
+  {
+    key: "work",
+    label: "В РАБОТЕ",
+  },
+  {
+    key: "done",
+    label: "ГОТОВО",
+  },
+  {
+    key: "archive",
+    label: "АРХИВ",
+  },
+];
+
+const STAGES: Array<{
+  key: Stage;
+  label: string;
+}> = [
+  {
+    key: "new",
+    label: "НОВЫЙ",
   },
   {
     key: "work",
@@ -148,65 +166,18 @@ function itemsLabel(
   return `${count} товаров`;
 }
 
-function inFilter(
+function orderStage(
   order: Order,
-  filter: Filter,
-) {
-  if (filter === "archive") {
-    return Boolean(
-      order.archivedAt,
-    );
-  }
-
+): Stage {
   if (order.archivedAt) {
-    return false;
-  }
-
-  if (filter === "new") {
-    return (
-      order.status ===
-      "PENDING"
-    );
-  }
-
-  if (filter === "work") {
-    return (
-      order.status ===
-        "PAID" ||
-      order.status ===
-        "SHIPPED"
-    );
-  }
-
-  return (
-    order.status ===
-      "DONE" ||
-    order.status ===
-      "CANCELLED"
-  );
-}
-
-function nextAction(
-  order: Order,
-): OrderAction {
-  if (order.archivedAt) {
-    return {
-      type: "archive",
-      archived: false,
-      label:
-        "ВЕРНУТЬ ИЗ АРХИВА",
-    };
+    return "archive";
   }
 
   if (
     order.status ===
     "PENDING"
   ) {
-    return {
-      type: "status",
-      status: "PAID",
-      label: "В РАБОТУ",
-    };
+    return "new";
   }
 
   if (
@@ -215,18 +186,37 @@ function nextAction(
     order.status ===
       "SHIPPED"
   ) {
-    return {
-      type: "status",
-      status: "DONE",
-      label: "ГОТОВО",
-    };
+    return "work";
   }
 
-  return {
-    type: "archive",
-    archived: true,
-    label: "В АРХИВ",
-  };
+  return "done";
+}
+
+function inFilter(
+  order: Order,
+  filter: Filter,
+) {
+  return (
+    orderStage(order) ===
+    filter
+  );
+}
+
+function stageStatus(
+  stage: Exclude<
+    Stage,
+    "archive"
+  >,
+): OrderStatus {
+  if (stage === "new") {
+    return "PENDING";
+  }
+
+  if (stage === "work") {
+    return "PAID";
+  }
+
+  return "DONE";
 }
 
 function Login({
@@ -308,9 +298,7 @@ function Login({
         <h1>ЗАКАЗЫ</h1>
 
         <label className="field">
-          <span>
-            ПОЧТА
-          </span>
+          <span>ПОЧТА</span>
 
           <input
             autoComplete="username"
@@ -330,9 +318,7 @@ function Login({
         </label>
 
         <label className="field">
-          <span>
-            ПАРОЛЬ
-          </span>
+          <span>ПАРОЛЬ</span>
 
           <input
             autoComplete="current-password"
@@ -811,37 +797,58 @@ export default function App() {
       );
     };
 
-  const advanceOrder =
+  const changeStage =
     async (
       order: Order,
+      stage: Stage,
     ) => {
       if (
         !token ||
-        updating
+        updating ||
+        orderStage(order) ===
+          stage
       ) {
         return;
       }
-
-      const action =
-        nextAction(order);
 
       setUpdating(true);
       setError("");
 
       try {
-        const updated =
-          action.type ===
-          "status"
-            ? await updateAdminOrderStatus(
+        let updated =
+          order;
+
+        if (
+          stage ===
+          "archive"
+        ) {
+          updated =
+            await setAdminOrderArchived(
+              token,
+              order.id,
+              true,
+            );
+        } else {
+          if (
+            order.archivedAt
+          ) {
+            updated =
+              await setAdminOrderArchived(
                 token,
                 order.id,
-                action.status,
-              )
-            : await setAdminOrderArchived(
-                token,
-                order.id,
-                action.archived,
+                false,
               );
+          }
+
+          updated =
+            await updateAdminOrderStatus(
+              token,
+              order.id,
+              stageStatus(
+                stage,
+              ),
+            );
+        }
 
         setOrders(
           (current) =>
@@ -870,6 +877,135 @@ export default function App() {
         setError(
           getApiErrorMessage(
             updateError,
+          ),
+        );
+      } finally {
+        setUpdating(false);
+      }
+    };
+
+  const removeItem =
+    async (
+      order: Order,
+      item: OrderItem,
+    ) => {
+      if (
+        !token ||
+        updating
+      ) {
+        return;
+      }
+
+      const confirmed =
+        window.confirm(
+          `Удалить ${item.product.name} из ${orderCode(
+            order,
+          )}?`,
+        );
+
+      if (!confirmed) {
+        return;
+      }
+
+      setUpdating(true);
+      setError("");
+
+      try {
+        const updated =
+          await deleteAdminOrderItem(
+            token,
+            order.id,
+            item.id,
+          );
+
+        setOrders(
+          (current) =>
+            current.map(
+              (currentOrder) =>
+                currentOrder.id ===
+                updated.id
+                  ? updated
+                  : currentOrder,
+            ),
+        );
+      } catch (
+        removeError
+      ) {
+        if (
+          isAuthError(
+            removeError,
+          )
+        ) {
+          logout();
+          return;
+        }
+
+        setError(
+          getApiErrorMessage(
+            removeError,
+          ),
+        );
+      } finally {
+        setUpdating(false);
+      }
+    };
+
+  const removeOrder =
+    async (
+      order: Order,
+    ) => {
+      if (
+        !token ||
+        updating
+      ) {
+        return;
+      }
+
+      const confirmed =
+        window.confirm(
+          `Удалить заказ ${orderCode(
+            order,
+          )} полностью? Это действие нельзя отменить.`,
+        );
+
+      if (!confirmed) {
+        return;
+      }
+
+      setUpdating(true);
+      setError("");
+
+      try {
+        await deleteAdminOrder(
+          token,
+          order.id,
+        );
+
+        setOrders(
+          (current) =>
+            current.filter(
+              (item) =>
+                item.id !==
+                order.id,
+            ),
+        );
+
+        setExpandedId(null);
+      } catch (
+        removeError
+      ) {
+        if (
+          isAuthError(
+            removeError,
+          )
+        ) {
+          logout();
+          return;
+        }
+
+        setError(
+          getApiErrorMessage(
+            removeError,
           ),
         );
       } finally {
@@ -1014,8 +1150,24 @@ export default function App() {
                 key={
                   order.id
                 }
-                onAction={() => {
-                  void advanceOrder(
+                onChangeStage={(
+                  stage,
+                ) => {
+                  void changeStage(
+                    order,
+                    stage,
+                  );
+                }}
+                onDeleteItem={(
+                  item,
+                ) => {
+                  void removeItem(
+                    order,
+                    item,
+                  );
+                }}
+                onDeleteOrder={() => {
+                  void removeOrder(
                     order,
                   );
                 }}
@@ -1049,17 +1201,25 @@ function OrderCard({
   order,
   expanded,
   onToggle,
-  onAction,
+  onChangeStage,
+  onDeleteItem,
+  onDeleteOrder,
   updating,
 }: {
   order: Order;
   expanded: boolean;
   onToggle: () => void;
-  onAction: () => void;
+  onChangeStage: (
+    stage: Stage,
+  ) => void;
+  onDeleteItem: (
+    item: OrderItem,
+  ) => void;
+  onDeleteOrder: () => void;
   updating: boolean;
 }) {
-  const action =
-    nextAction(order);
+  const currentStage =
+    orderStage(order);
 
   return (
     <article
@@ -1120,6 +1280,43 @@ function OrderCard({
         <div className="order-detail">
           <section className="detail-section">
             <div className="section-title">
+              СТАТУС
+            </div>
+
+            <div className="stage-switcher">
+              {STAGES.map(
+                (stage) => (
+                  <button
+                    className={
+                      currentStage ===
+                      stage.key
+                        ? "stage stage--active"
+                        : "stage"
+                    }
+                    disabled={
+                      updating
+                    }
+                    key={
+                      stage.key
+                    }
+                    onClick={() =>
+                      onChangeStage(
+                        stage.key,
+                      )
+                    }
+                    type="button"
+                  >
+                    {
+                      stage.label
+                    }
+                  </button>
+                ),
+              )}
+            </div>
+          </section>
+
+          <section className="detail-section">
+            <div className="section-title">
               ТОВАРЫ
             </div>
 
@@ -1153,13 +1350,34 @@ function OrderCard({
                       </span>
                     </div>
 
-                    <b>
-                      {money(
-                        itemTotal(
-                          item,
-                        ),
-                      )}
-                    </b>
+                    <div className="item__right">
+                      <b>
+                        {money(
+                          itemTotal(
+                            item,
+                          ),
+                        )}
+                      </b>
+
+                      {order.items
+                        .length >
+                      1 ? (
+                        <button
+                          className="item-delete"
+                          disabled={
+                            updating
+                          }
+                          onClick={() =>
+                            onDeleteItem(
+                              item,
+                            )
+                          }
+                          type="button"
+                        >
+                          УДАЛИТЬ
+                        </button>
+                      ) : null}
+                    </div>
                   </div>
                 ),
               )}
@@ -1266,18 +1484,16 @@ function OrderCard({
           </div>
 
           <button
-            className="primary-action"
+            className="delete-order"
             disabled={
               updating
             }
             onClick={
-              onAction
+              onDeleteOrder
             }
             type="button"
           >
-            {updating
-              ? "..."
-              : action.label}
+            УДАЛИТЬ ЗАКАЗ
           </button>
         </div>
       ) : null}
