@@ -1,5 +1,11 @@
-const CACHE = "swa6-admin-v5";
-const CORE = ["/", "/manifest.webmanifest", "/icon.svg"];
+const CACHE = "swa6-admin-v6";
+const CORE = [
+  "/",
+  "/manifest.webmanifest",
+  "/icon-192.png",
+  "/icon-512.png",
+  "/apple-touch-icon.png",
+];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -93,8 +99,8 @@ self.addEventListener("push", (event) => {
   const options = {
     body:
       payload.body || "",
-    icon: "/icon.svg",
-    badge: "/icon.svg",
+    icon: "/icon-192.png",
+    badge: "/icon-192.png",
     tag:
       payload.tag ||
       "swa6-order",
