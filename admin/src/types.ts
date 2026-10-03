@@ -37,6 +37,7 @@ export type Order = {
   address: string | null;
   comment: string | null;
   createdAt: string;
+  archivedAt: string | null;
   items: OrderItem[];
 };
 

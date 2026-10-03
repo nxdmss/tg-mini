@@ -207,6 +207,24 @@ export async function updateAdminOrderStatus(
   );
 }
 
+export async function setAdminOrderArchived(
+  token: string,
+  orderId: string,
+  archived: boolean,
+) {
+  return request<Order>(
+    `/orders/admin/${orderId}/archive`,
+    {
+      method: "PATCH",
+      headers:
+        authHeaders(token),
+      body: JSON.stringify({
+        archived,
+      }),
+    },
+  );
+}
+
 export function getApiErrorMessage(
   error: unknown,
 ) {
