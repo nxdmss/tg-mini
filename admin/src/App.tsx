@@ -1096,55 +1096,56 @@ export default function App() {
               )}
             </div>
 
-            <InfoRow
-              label="CLIENT"
-              value={
-                selected.customerName ||
-                "—"
-              }
-            />
+            {selected.customerName ? (
+              <InfoRow
+                label="CLIENT"
+                value={
+                  selected.customerName
+                }
+              />
+            ) : null}
 
-            <InfoRow
-              href={
-                selected.phone
-                  ? `tel:${selected.phone}`
-                  : undefined
-              }
-              label="PHONE"
-              value={
-                selected.phone ||
-                "—"
-              }
-            />
+            {selected.phone ? (
+              <InfoRow
+                href={
+                  `tel:${selected.phone}`
+                }
+                label="PHONE"
+                value={
+                  selected.phone
+                }
+              />
+            ) : null}
 
-            <InfoRow
-              href={
-                selected.email
-                  ? `mailto:${selected.email}`
-                  : undefined
-              }
-              label="EMAIL"
-              value={
-                selected.email ||
-                "—"
-              }
-            />
+            {selected.email ? (
+              <InfoRow
+                href={
+                  `mailto:${selected.email}`
+                }
+                label="EMAIL"
+                value={
+                  selected.email
+                }
+              />
+            ) : null}
 
-            <InfoRow
-              label="DELIVERY"
-              value={
-                selected.deliveryMethod ||
-                "—"
-              }
-            />
+            {selected.deliveryMethod ? (
+              <InfoRow
+                label="DELIVERY"
+                value={
+                  selected.deliveryMethod
+                }
+              />
+            ) : null}
 
-            <InfoRow
-              label="ADDRESS"
-              value={
-                selected.address ||
-                "—"
-              }
-            />
+            {selected.address ? (
+              <InfoRow
+                label="ADDRESS"
+                value={
+                  selected.address
+                }
+              />
+            ) : null}
 
             {selected.comment ? (
               <InfoRow
@@ -1215,7 +1216,9 @@ function OrderRow({
         <span className="order__bottom">
           <span className="order__customer">
             {order.customerName ||
-              "—"}
+              order.items[0]
+                ?.product.name ||
+              ""}
           </span>
 
           <strong>
