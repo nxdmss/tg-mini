@@ -1,4 +1,4 @@
-const CACHE = "swa6-admin-v4";
+const CACHE = "swa6-admin-v5";
 const CORE = ["/", "/manifest.webmanifest", "/icon.svg"];
 
 self.addEventListener("install", (event) => {
@@ -68,6 +68,48 @@ self.addEventListener("fetch", (event) => {
         return response;
       });
     }),
+  );
+});
+
+self.addEventListener("push", (event) => {
+  let payload = {};
+
+  try {
+    payload =
+      event.data?.json() || {};
+  } catch {
+    payload = {
+      title: "Новый заказ",
+      body:
+        event.data?.text() || "",
+      url: "/",
+    };
+  }
+
+  const title =
+    payload.title ||
+    "Новый заказ";
+
+  const options = {
+    body:
+      payload.body || "",
+    icon: "/icon.svg",
+    badge: "/icon.svg",
+    tag:
+      payload.tag ||
+      "swa6-order",
+    renotify: true,
+    data: {
+      url:
+        payload.url || "/",
+    },
+  };
+
+  event.waitUntil(
+    self.registration.showNotification(
+      title,
+      options,
+    ),
   );
 });
 

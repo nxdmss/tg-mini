@@ -8,15 +8,29 @@ datasource db {
 }
 
 model User {
-  id           String   @id @default(cuid())
-  telegramId   String?  @unique
-  email        String?  @unique
-  passwordHash String?
-  name         String?
-  phone        String?
-  role         Role     @default(USER)
-  orders       Order[]
-  createdAt    DateTime @default(now())
+  id                String             @id @default(cuid())
+  telegramId        String?            @unique
+  email             String?            @unique
+  passwordHash      String?
+  name              String?
+  phone             String?
+  role              Role               @default(USER)
+  orders            Order[]
+  pushSubscriptions PushSubscription[]
+  createdAt         DateTime           @default(now())
+}
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
 }
 
 model Shop {

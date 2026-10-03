@@ -18,9 +18,12 @@ import {
   getAccessToken,
   getAdminOrders,
   getApiErrorMessage,
+  getPushPublicKey,
   isAuthError,
   loginAdmin,
+  removePushSubscription,
   saveAccessToken,
+  savePushSubscription,
   setAdminOrderArchived,
   updateAdminOrderStatus,
 } from "./api";
@@ -164,6 +167,69 @@ function itemsLabel(
   }
 
   return `${count} товаров`;
+}
+
+function urlBase64ToUint8Array(
+  value: string,
+) {
+  const padding =
+    "=".repeat(
+      (4 -
+        (value.length %
+          4)) %
+        4,
+    );
+
+  const base64 =
+    (
+      value +
+      padding
+    )
+      .replace(
+        /-/g,
+        "+",
+      )
+      .replace(
+        /_/g,
+        "/",
+      );
+
+  const raw =
+    window.atob(
+      base64,
+    );
+
+  return Uint8Array.from(
+    raw,
+    (
+      char,
+    ) =>
+      char.charCodeAt(
+        0,
+      ),
+  );
+}
+
+function isIos() {
+  return /iphone|ipad|ipod/i.test(
+    navigator.userAgent,
+  );
+}
+
+function isStandalone() {
+  const iosNavigator =
+    navigator as Navigator & {
+      standalone?:
+        boolean;
+    };
+
+  return (
+    window.matchMedia(
+      "(display-mode: standalone)",
+    ).matches ||
+    iosNavigator.standalone ===
+      true
+  );
 }
 
 function orderStage(
@@ -420,21 +486,37 @@ export default function App() {
   const [
     notificationState,
     setNotificationState,
-  ] = useState(() => {
+  ] = useState<
+    | "unsupported"
+    | "denied"
+    | "disabled"
+    | "enabled"
+    | "loading"
+  >(() => {
     if (
       typeof Notification ===
-      "undefined"
+        "undefined" ||
+      !(
+        "serviceWorker" in
+        navigator
+      ) ||
+      !(
+        "PushManager" in
+        window
+      )
     ) {
       return "unsupported";
     }
 
-    return Notification.permission;
-  });
+    if (
+      Notification.permission ===
+      "denied"
+    ) {
+      return "denied";
+    }
 
-  const highestKnown =
-    useRef<number | null>(
-      null,
-    );
+    return "disabled";
+  });
 
   const refreshing =
     useRef(false);
@@ -446,66 +528,11 @@ export default function App() {
       setAuthorized(false);
       setOrders([]);
       setExpandedId(null);
-      highestKnown.current =
-        null;
     }, []);
-
-  const notifyOrder =
-    useCallback(
-      async (
-        order: Order,
-      ) => {
-        if (
-          typeof Notification ===
-            "undefined" ||
-          Notification.permission !==
-            "granted"
-        ) {
-          return;
-        }
-
-        try {
-          const registration =
-            await navigator
-              .serviceWorker
-              .ready;
-
-          await registration.showNotification(
-            `Новый заказ ${orderCode(
-              order,
-            )}`,
-            {
-              body:
-                money(
-                  orderTotal(
-                    order,
-                  ),
-                ),
-              icon: "/icon.svg",
-              badge:
-                "/icon.svg",
-              tag:
-                `order-${order.id}`,
-              data: {
-                url:
-                  `/?order=${encodeURIComponent(
-                    order.id,
-                  )}`,
-              },
-            },
-          );
-        } catch {
-          // Уведомления не должны ломать заказы.
-        }
-      },
-      [],
-    );
 
   const refreshOrders =
     useCallback(
-      async (
-        announceNew: boolean,
-      ) => {
+      async () => {
         if (
           !token ||
           refreshing.current
@@ -521,54 +548,6 @@ export default function App() {
             await getAdminOrders(
               token,
             );
-
-          const highest =
-            next.reduce(
-              (
-                current,
-                order,
-              ) =>
-                Math.max(
-                  current,
-                  order.number,
-                ),
-              0,
-            );
-
-          if (
-            announceNew &&
-            highestKnown.current !==
-              null &&
-            highest >
-              highestKnown.current
-          ) {
-            const fresh =
-              next
-                .filter(
-                  (order) =>
-                    order.number >
-                    highestKnown.current!,
-                )
-                .sort(
-                  (
-                    left,
-                    right,
-                  ) =>
-                    right.number -
-                    left.number,
-                );
-
-            if (
-              fresh[0]
-            ) {
-              void notifyOrder(
-                fresh[0],
-              );
-            }
-          }
-
-          highestKnown.current =
-            highest;
 
           setOrders(next);
           setError("");
@@ -596,7 +575,6 @@ export default function App() {
       },
       [
         logout,
-        notifyOrder,
         token,
       ],
     );
@@ -666,18 +644,14 @@ export default function App() {
 
     setLoading(true);
 
-    void refreshOrders(
-      false,
-    ).finally(() =>
+    void refreshOrders().finally(() =>
       setLoading(false),
     );
 
     const interval =
       window.setInterval(
         () => {
-          void refreshOrders(
-            true,
-          );
+          void refreshOrders();
         },
         5_000,
       );
@@ -689,6 +663,91 @@ export default function App() {
   }, [
     authorized,
     refreshOrders,
+    token,
+  ]);
+
+  useEffect(() => {
+    if (
+      !authorized ||
+      !token
+    ) {
+      return;
+    }
+
+    if (
+      typeof Notification ===
+        "undefined" ||
+      !(
+        "serviceWorker" in
+        navigator
+      ) ||
+      !(
+        "PushManager" in
+        window
+      )
+    ) {
+      setNotificationState(
+        "unsupported",
+      );
+      return;
+    }
+
+    if (
+      Notification.permission ===
+      "denied"
+    ) {
+      setNotificationState(
+        "denied",
+      );
+      return;
+    }
+
+    let active = true;
+
+    void (async () => {
+      try {
+        const registration =
+          await navigator
+            .serviceWorker
+            .ready;
+
+        const subscription =
+          await registration
+            .pushManager
+            .getSubscription();
+
+        if (!active) {
+          return;
+        }
+
+        setNotificationState(
+          subscription
+            ? "enabled"
+            : "disabled",
+        );
+
+        if (
+          subscription
+        ) {
+          await savePushSubscription(
+            token,
+            subscription.toJSON(),
+          );
+        }
+      } catch {
+        if (active) {
+          setNotificationState(
+            "disabled",
+          );
+        }
+      }
+    })();
+
+    return () => {
+      active = false;
+    };
+  }, [
+    authorized,
     token,
   ]);
 
@@ -707,16 +766,25 @@ export default function App() {
     const orderId =
       params.get("order");
 
-    if (
-      !orderId ||
-      !orders.some(
+    const targetOrder =
+      orders.find(
         (order) =>
           order.id ===
           orderId,
-      )
+      );
+
+    if (
+      !orderId ||
+      !targetOrder
     ) {
       return;
     }
+
+    setFilter(
+      orderStage(
+        targetOrder,
+      ),
+    );
 
     setExpandedId(
       orderId,
@@ -779,22 +847,159 @@ export default function App() {
 
   const requestNotifications =
     async () => {
+      if (!token) {
+        return;
+      }
+
       if (
         typeof Notification ===
-        "undefined"
+          "undefined" ||
+        !(
+          "serviceWorker" in
+          navigator
+        ) ||
+        !(
+          "PushManager" in
+          window
+        )
       ) {
         setNotificationState(
           "unsupported",
         );
+        setError(
+          "Push-уведомления не поддерживаются на этом устройстве.",
+        );
         return;
       }
 
-      const permission =
-        await Notification.requestPermission();
+      if (
+        isIos() &&
+        !isStandalone()
+      ) {
+        setError(
+          "На iPhone сначала открой admin.swagystan.ru в Safari → Поделиться → На экран «Домой», затем открой приложение с иконки.",
+        );
+        return;
+      }
 
-      setNotificationState(
-        permission,
-      );
+      setError("");
+
+      try {
+        if (
+          notificationState ===
+          "enabled"
+        ) {
+          setNotificationState(
+            "loading",
+          );
+
+          const registration =
+            await navigator
+              .serviceWorker
+              .ready;
+
+          const existing =
+            await registration
+              .pushManager
+              .getSubscription();
+
+          if (existing) {
+            await removePushSubscription(
+              token,
+              existing.endpoint,
+            );
+
+            await existing.unsubscribe();
+          }
+
+          setNotificationState(
+            "disabled",
+          );
+          return;
+        }
+
+        // На iOS запрос разрешения должен идти непосредственно после нажатия.
+        const permission =
+          await Notification.requestPermission();
+
+        if (
+          permission !==
+          "granted"
+        ) {
+          setNotificationState(
+            permission ===
+              "denied"
+              ? "denied"
+              : "disabled",
+          );
+
+          setError(
+            permission ===
+              "denied"
+              ? "Уведомления запрещены в настройках iPhone."
+              : "Разрешение на уведомления не выдано.",
+          );
+
+          return;
+        }
+
+        setNotificationState(
+          "loading",
+        );
+
+        const {
+          publicKey,
+        } =
+          await getPushPublicKey(
+            token,
+          );
+
+        const registration =
+          await navigator
+            .serviceWorker
+            .ready;
+
+        let subscription =
+          await registration
+            .pushManager
+            .getSubscription();
+
+        if (!subscription) {
+          subscription =
+            await registration
+              .pushManager
+              .subscribe({
+                userVisibleOnly:
+                  true,
+
+                applicationServerKey:
+                  urlBase64ToUint8Array(
+                    publicKey,
+                  ),
+              });
+        }
+
+        await savePushSubscription(
+          token,
+          subscription.toJSON(),
+        );
+
+        setNotificationState(
+          "enabled",
+        );
+      } catch (
+        pushError
+      ) {
+        setNotificationState(
+          "disabled",
+        );
+
+        setError(
+          getApiErrorMessage(
+            pushError,
+          ),
+        );
+      }
     };
 
   const changeStage =
@@ -1056,16 +1261,28 @@ export default function App() {
           <button
             className={
               notificationState ===
-              "granted"
+              "enabled"
                 ? "mini-button mini-button--active"
                 : "mini-button"
+            }
+            disabled={
+              notificationState ===
+              "loading" ||
+              notificationState ===
+              "unsupported"
             }
             onClick={() => {
               void requestNotifications();
             }}
             type="button"
           >
-            УВЕД.
+            {notificationState ===
+            "loading"
+              ? "..."
+              : notificationState ===
+                  "enabled"
+                ? "УВЕД. ВКЛ"
+                : "УВЕД."}
           </button>
 
           <button

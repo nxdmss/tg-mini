@@ -16,6 +16,8 @@ import { TelegramModule } from './telegram/telegram.module';
 
 import { ShopsModule } from './shops/shops.module';
 
+import { PushModule } from './push/push.module';
+
 import { AppController } from './app.controller';
 
 import { AppService } from './app.service';
@@ -27,6 +29,8 @@ import { AppService } from './app.service';
     }),
 
     PrismaModule,
+
+    PushModule,
 
     ProductsModule,
 

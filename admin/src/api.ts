@@ -257,6 +257,61 @@ export async function deleteAdminOrder(
   );
 }
 
+export async function getPushPublicKey(
+  token: string,
+) {
+  return request<{
+    publicKey: string;
+  }>(
+    "/push/public-key",
+    {
+      headers:
+        authHeaders(token),
+    },
+  );
+}
+
+export async function savePushSubscription(
+  token: string,
+  subscription:
+    PushSubscriptionJSON,
+) {
+  return request<{
+    ok: true;
+  }>(
+    "/push/subscribe",
+    {
+      method: "POST",
+      headers:
+        authHeaders(token),
+      body:
+        JSON.stringify(
+          subscription,
+        ),
+    },
+  );
+}
+
+export async function removePushSubscription(
+  token: string,
+  endpoint: string,
+) {
+  return request<{
+    ok: true;
+  }>(
+    "/push/unsubscribe",
+    {
+      method: "POST",
+      headers:
+        authHeaders(token),
+      body:
+        JSON.stringify({
+          endpoint,
+        }),
+    },
+  );
+}
+
 export function getApiErrorMessage(
   error: unknown,
 ) {

@@ -3,6 +3,8 @@ import {
   Logger,
 } from '@nestjs/common';
 
+import { PushService } from '../push/push.service';
+
 type OrderNotificationItem = {
   name: string;
   size: string;
@@ -40,65 +42,42 @@ export class NotificationsService {
       NotificationsService.name,
     );
 
+  constructor(
+    private readonly push:
+      PushService,
+  ) {}
+
   async sendOrderCreated(
     order: OrderNotification,
   ) {
-    const botToken =
-      process.env.TELEGRAM_BOT_TOKEN;
+    const results =
+      await Promise.allSettled([
+        this.sendAdminTelegram(
+          order,
+        ),
 
-    const chatId =
-      process.env.ORDER_NOTIFY_CHAT_ID ||
-      process.env.ADMIN_TELEGRAM_CHAT_ID;
+        this.push.sendOrderCreated({
+          id:
+            order.id,
 
-    if (
-      !botToken ||
-      !chatId
+          total:
+            order.total,
+        }),
+      ]);
+
+    for (
+      const result of
+      results
     ) {
-      this.logger.warn(
-        'Telegram order notifications are not configured',
-      );
-
-      return;
-    }
-
-    const response =
-      await fetch(
-        `https://api.telegram.org/bot${botToken}/sendMessage`,
-        {
-          method:
-            'POST',
-
-          headers: {
-            'Content-Type':
-              'application/json',
-          },
-
-          body:
-            JSON.stringify({
-              chat_id:
-                chatId,
-
-              text:
-                this.formatOrder(
-                  order,
-                ),
-
-              parse_mode:
-                'HTML',
-
-              disable_web_page_preview:
-                true,
-            }),
-        },
-      );
-
-    if (!response.ok) {
-      const text =
-        await response.text();
-
-      throw new Error(
-        `Telegram notification failed: ${response.status} ${text}`,
-      );
+      if (
+        result.status ===
+        'rejected'
+      ) {
+        this.logger.error(
+          'Order notification failed',
+          result.reason,
+        );
+      }
     }
   }
 
@@ -147,6 +126,64 @@ export class NotificationsService {
 
       throw new Error(
         `Telegram customer notification failed: ${response.status} ${text}`,
+      );
+    }
+  }
+
+  private async sendAdminTelegram(
+    order: OrderNotification,
+  ) {
+    const botToken =
+      process.env.TELEGRAM_BOT_TOKEN;
+
+    const chatId =
+      process.env.ORDER_NOTIFY_CHAT_ID ||
+      process.env.ADMIN_TELEGRAM_CHAT_ID;
+
+    if (
+      !botToken ||
+      !chatId
+    ) {
+      return;
+    }
+
+    const response =
+      await fetch(
+        `https://api.telegram.org/bot${botToken}/sendMessage`,
+        {
+          method:
+            'POST',
+
+          headers: {
+            'Content-Type':
+              'application/json',
+          },
+
+          body:
+            JSON.stringify({
+              chat_id:
+                chatId,
+
+              text:
+                this.formatOrder(
+                  order,
+                ),
+
+              parse_mode:
+                'HTML',
+
+              disable_web_page_preview:
+                true,
+            }),
+        },
+      );
+
+    if (!response.ok) {
+      const text =
+        await response.text();
+
+      throw new Error(
+        `Telegram notification failed: ${response.status} ${text}`,
       );
     }
   }
