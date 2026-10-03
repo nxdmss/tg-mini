@@ -19,6 +19,7 @@ import {
   isAuthError,
   loginAdmin,
   saveAccessToken,
+  setAdminOrderArchived,
   updateAdminOrderStatus,
 } from "./api";
 
@@ -29,67 +30,42 @@ import type {
 } from "./types";
 
 type Filter =
-  | "all"
   | "new"
   | "work"
-  | "done";
+  | "done"
+  | "archive";
+
+type OrderAction =
+  | {
+      type: "status";
+      status: OrderStatus;
+      label: string;
+    }
+  | {
+      type: "archive";
+      archived: boolean;
+      label: string;
+    };
 
 const FILTERS: Array<{
   key: Filter;
   label: string;
 }> = [
   {
-    key: "all",
-    label: "ALL",
-  },
-  {
     key: "new",
-    label: "NEW",
+    label: "НОВЫЕ",
   },
   {
     key: "work",
-    label: "WORK",
+    label: "В РАБОТЕ",
   },
   {
     key: "done",
-    label: "DONE",
-  },
-];
-
-const STATUS_LABELS: Record<
-  OrderStatus,
-  string
-> = {
-  PENDING: "NEW",
-  PAID: "PAID",
-  SHIPPED: "SHIP",
-  DONE: "DONE",
-  CANCELLED: "CANCEL",
-};
-
-const STATUS_ACTIONS: Array<{
-  value: OrderStatus;
-  label: string;
-}> = [
-  {
-    value: "PENDING",
-    label: "NEW",
+    label: "ГОТОВЫ",
   },
   {
-    value: "PAID",
-    label: "PAID",
-  },
-  {
-    value: "SHIPPED",
-    label: "SHIP",
-  },
-  {
-    value: "DONE",
-    label: "DONE",
-  },
-  {
-    value: "CANCELLED",
-    label: "CANCEL",
+    key: "archive",
+    label: "АРХИВ",
   },
 ];
 
@@ -117,9 +93,11 @@ function orderTotal(
 function money(
   value: number,
 ) {
-  return new Intl.NumberFormat(
-    "ru-RU",
-  ).format(value) + " ₽";
+  return (
+    new Intl.NumberFormat(
+      "ru-RU",
+    ).format(value) + " ₽"
+  );
 }
 
 function orderTime(
@@ -138,33 +116,18 @@ function orderTime(
   ).format(date);
 }
 
-function statusClass(
-  status: OrderStatus,
-) {
-  if (status === "PENDING") {
-    return "new";
-  }
-
-  if (
-    status === "PAID" ||
-    status === "SHIPPED"
-  ) {
-    return "work";
-  }
-
-  if (status === "DONE") {
-    return "done";
-  }
-
-  return "cancelled";
-}
-
 function inFilter(
   order: Order,
   filter: Filter,
 ) {
-  if (filter === "all") {
-    return true;
+  if (filter === "archive") {
+    return Boolean(
+      order.archivedAt,
+    );
+  }
+
+  if (order.archivedAt) {
+    return false;
   }
 
   if (filter === "new") {
@@ -184,8 +147,54 @@ function inFilter(
   }
 
   return (
-    order.status === "DONE"
+    order.status ===
+      "DONE" ||
+    order.status ===
+      "CANCELLED"
   );
+}
+
+function nextAction(
+  order: Order,
+): OrderAction {
+  if (order.archivedAt) {
+    return {
+      type: "archive",
+      archived: false,
+      label:
+        "ВЕРНУТЬ ИЗ АРХИВА",
+    };
+  }
+
+  if (
+    order.status ===
+    "PENDING"
+  ) {
+    return {
+      type: "status",
+      status: "PAID",
+      label: "В РАБОТУ",
+    };
+  }
+
+  if (
+    order.status ===
+      "PAID" ||
+    order.status ===
+      "SHIPPED"
+  ) {
+    return {
+      type: "status",
+      status: "DONE",
+      label: "ГОТОВО",
+    };
+  }
+
+  return {
+    type: "archive",
+    archived: true,
+    label: "В АРХИВ",
+  };
 }
 
 function firstImage(
@@ -370,7 +379,7 @@ export default function App() {
     filter,
     setFilter,
   ] = useState<Filter>(
-    "all",
+    "new",
   );
 
   const [
@@ -394,13 +403,6 @@ export default function App() {
     error,
     setError,
   ] = useState("");
-
-  const [
-    online,
-    setOnline,
-  ] = useState(
-    navigator.onLine,
-  );
 
   const [
     notificationState,
@@ -451,14 +453,6 @@ export default function App() {
           return;
         }
 
-        const title =
-          orderCode(order);
-
-        const body =
-          `NEW · ${money(
-            orderTotal(order),
-          )}`;
-
         try {
           const registration =
             await navigator
@@ -466,9 +460,14 @@ export default function App() {
               .ready;
 
           await registration.showNotification(
-            title,
+            orderCode(order),
             {
-              body,
+              body:
+                money(
+                  orderTotal(
+                    order,
+                  ),
+                ),
               icon: "/icon.svg",
               badge:
                 "/icon.svg",
@@ -482,19 +481,6 @@ export default function App() {
               },
             },
           );
-
-          if (
-            "vibrate" in
-            navigator
-          ) {
-            navigator.vibrate(
-              [
-                80,
-                60,
-                80,
-              ],
-            );
-          }
         } catch {
           // Notifications are optional.
         }
@@ -601,38 +587,6 @@ export default function App() {
         token,
       ],
     );
-
-  useEffect(() => {
-    const markOnline =
-      () =>
-        setOnline(true);
-
-    const markOffline =
-      () =>
-        setOnline(false);
-
-    window.addEventListener(
-      "online",
-      markOnline,
-    );
-
-    window.addEventListener(
-      "offline",
-      markOffline,
-    );
-
-    return () => {
-      window.removeEventListener(
-        "online",
-        markOnline,
-      );
-
-      window.removeEventListener(
-        "offline",
-        markOffline,
-      );
-    };
-  }, []);
 
   useEffect(() => {
     if (!token) {
@@ -804,6 +758,29 @@ export default function App() {
       ],
     );
 
+  const counts =
+    useMemo(
+      () =>
+        Object.fromEntries(
+          FILTERS.map(
+            (item) => [
+              item.key,
+              orders.filter(
+                (order) =>
+                  inFilter(
+                    order,
+                    item.key,
+                  ),
+              ).length,
+            ],
+          ),
+        ) as Record<
+          Filter,
+          number
+        >,
+      [orders],
+    );
+
   const requestNotifications =
     async () => {
       if (
@@ -824,10 +801,8 @@ export default function App() {
       );
     };
 
-  const changeStatus =
-    async (
-      status: OrderStatus,
-    ) => {
+  const advanceOrder =
+    async () => {
       if (
         !selected ||
         !token ||
@@ -836,16 +811,26 @@ export default function App() {
         return;
       }
 
+      const action =
+        nextAction(selected);
+
       setUpdating(true);
       setError("");
 
       try {
         const updated =
-          await updateAdminOrderStatus(
-            token,
-            selected.id,
-            status,
-          );
+          action.type ===
+          "status"
+            ? await updateAdminOrderStatus(
+                token,
+                selected.id,
+                action.status,
+              )
+            : await setAdminOrderArchived(
+                token,
+                selected.id,
+                action.archived,
+              );
 
         setOrders(
           (current) =>
@@ -856,6 +841,10 @@ export default function App() {
                   ? updated
                   : order,
             ),
+        );
+
+        setSelectedId(
+          null,
         );
       } catch (
         updateError
@@ -918,24 +907,11 @@ export default function App() {
           <div className="title">
             ORDERS
           </div>
-
-          <div className="live">
-            <span
-              className={
-                online
-                  ? "live__dot"
-                  : "live__dot live__dot--off"
-              }
-            />
-
-            {online
-              ? "LIVE"
-              : "OFFLINE"}
-          </div>
         </div>
 
         <div className="top__actions">
           <button
+            aria-label="Уведомления"
             className={
               notificationState ===
               "granted"
@@ -952,28 +928,7 @@ export default function App() {
           </button>
 
           <button
-            className="icon"
-            disabled={loading}
-            onClick={() => {
-              setLoading(
-                true,
-              );
-
-              void refreshOrders(
-                false,
-              ).finally(() =>
-                setLoading(
-                  false,
-                ),
-              );
-            }}
-            title="Обновить"
-            type="button"
-          >
-            ↻
-          </button>
-
-          <button
+            aria-label="Выйти"
             className="icon"
             onClick={logout}
             title="Выйти"
@@ -1004,9 +959,19 @@ export default function App() {
               }
               type="button"
             >
-              {
-                current.label
-              }
+              <span>
+                {
+                  current.label
+                }
+              </span>
+
+              <b>
+                {
+                  counts[
+                    current.key
+                  ]
+                }
+              </b>
             </button>
           ),
         )}
@@ -1030,7 +995,7 @@ export default function App() {
           <div className="empty">
             {loading
               ? "..."
-              : "EMPTY"}
+              : "ПУСТО"}
           </div>
         ) : (
           visibleOrders.map(
@@ -1078,14 +1043,7 @@ export default function App() {
                   )}
                 </h2>
 
-                <div className="sheet__status">
-                  {
-                    STATUS_LABELS[
-                      selected
-                        .status
-                    ]
-                  }
-                  {" · "}
+                <div className="sheet__time">
                   {orderTime(
                     selected
                       .createdAt,
@@ -1197,36 +1155,22 @@ export default function App() {
               />
             ) : null}
 
-            <div className="actions">
-              {STATUS_ACTIONS.map(
-                (action) => (
-                  <button
-                    className={
-                      selected.status ===
-                      action.value
-                        ? "act active"
-                        : "act"
-                    }
-                    disabled={
-                      updating
-                    }
-                    key={
-                      action.value
-                    }
-                    onClick={() => {
-                      void changeStatus(
-                        action.value,
-                      );
-                    }}
-                    type="button"
-                  >
-                    {
-                      action.label
-                    }
-                  </button>
-                ),
-              )}
-            </div>
+            <button
+              className="primary-action"
+              disabled={
+                updating
+              }
+              onClick={() => {
+                void advanceOrder();
+              }}
+              type="button"
+            >
+              {updating
+                ? "..."
+                : nextAction(
+                    selected,
+                  ).label}
+            </button>
           </section>
         </div>
       ) : null}
@@ -1254,26 +1198,33 @@ function OrderRow({
       type="button"
     >
       <span className="order__meta">
-        <span className="order__number">
-          {orderCode(
-            order,
-          )}
+        <span>
+          <span className="order__number">
+            {orderCode(
+              order,
+            )}
+          </span>
+
+          <span className="order__time">
+            {orderTime(
+              order.createdAt,
+            )}
+          </span>
         </span>
 
-        <span className="order__small">
-          <i
-            className={
-              `dot ${statusClass(
-                order.status,
-              )}`
-            }
-          />
+        <span className="order__bottom">
+          <span className="order__customer">
+            {order.customerName ||
+              "—"}
+          </span>
 
-          {
-            STATUS_LABELS[
-              order.status
-            ]
-          }
+          <strong>
+            {money(
+              orderTotal(
+                order,
+              ),
+            )}
+          </strong>
         </span>
       </span>
 
