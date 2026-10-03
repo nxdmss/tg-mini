@@ -21,13 +21,27 @@ const orderInclude = {
     include: {
       product: {
         include: {
-          images: true,
+          images: {
+            orderBy: {
+              sortOrder: 'asc',
+            },
+          },
         },
       },
     },
   },
 
-  user: true,
+  user: {
+    select: {
+      id: true,
+      telegramId: true,
+      email: true,
+      name: true,
+      phone: true,
+      role: true,
+      createdAt: true,
+    },
+  },
 } satisfies Prisma.OrderInclude;
 
 type OrderWithItems =
