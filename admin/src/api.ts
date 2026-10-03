@@ -1,5 +1,3 @@
-import axios from "axios";
-
 import type {
   AuthResponse,
   Order,
@@ -14,28 +12,140 @@ const API_URL = (
 const TOKEN_KEY =
   "swa6_admin_access_token";
 
-const client = axios.create({
-  baseURL: API_URL,
-  timeout: 20_000,
-});
+type ErrorPayload = {
+  message?:
+    | string
+    | string[];
+};
+
+export class ApiError extends Error {
+  status: number;
+
+  constructor(
+    status: number,
+    message: string,
+  ) {
+    super(message);
+    this.name =
+      "ApiError";
+    this.status =
+      status;
+  }
+}
 
 export function getAccessToken() {
-  return localStorage.getItem(TOKEN_KEY);
+  return localStorage.getItem(
+    TOKEN_KEY,
+  );
 }
 
 export function saveAccessToken(
   token: string,
 ) {
-  localStorage.setItem(TOKEN_KEY, token);
+  localStorage.setItem(
+    TOKEN_KEY,
+    token,
+  );
 }
 
 export function clearAccessToken() {
-  localStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem(
+    TOKEN_KEY,
+  );
 }
 
-function authHeaders(token: string) {
+async function request<T>(
+  path: string,
+  options: RequestInit = {},
+) {
+  const headers =
+    new Headers(
+      options.headers,
+    );
+
+  if (
+    options.body &&
+    !headers.has(
+      "Content-Type",
+    )
+  ) {
+    headers.set(
+      "Content-Type",
+      "application/json",
+    );
+  }
+
+  let response: Response;
+
+  try {
+    response =
+      await fetch(
+        `${API_URL}${path}`,
+        {
+          ...options,
+          headers,
+        },
+      );
+  } catch {
+    throw new ApiError(
+      0,
+      "Нет соединения с API",
+    );
+  }
+
+  if (!response.ok) {
+    let message =
+      `API ${response.status}`;
+
+    try {
+      const data =
+        (await response.json()) as
+          ErrorPayload;
+
+      if (
+        Array.isArray(
+          data.message,
+        )
+      ) {
+        message =
+          data.message.join(
+            ", ",
+          );
+      } else if (
+        typeof data.message ===
+        "string"
+      ) {
+        message =
+          data.message;
+      }
+    } catch {
+      // Keep the HTTP fallback.
+    }
+
+    throw new ApiError(
+      response.status,
+      message,
+    );
+  }
+
+  if (
+    response.status ===
+    204
+  ) {
+    return undefined as T;
+  }
+
+  return (
+    (await response.json()) as T
+  );
+}
+
+function authHeaders(
+  token: string,
+) {
   return {
-    Authorization: `Bearer ${token}`,
+    Authorization:
+      `Bearer ${token}`,
   };
 }
 
@@ -43,22 +153,22 @@ export async function loginAdmin(
   email: string,
   password: string,
 ) {
-  const response =
-    await client.post<AuthResponse>(
-      "/auth/login",
-      {
+  return request<AuthResponse>(
+    "/auth/login",
+    {
+      method: "POST",
+      body: JSON.stringify({
         email,
         password,
-      },
-    );
-
-  return response.data;
+      }),
+    },
+  );
 }
 
 export async function checkAdmin(
   token: string,
 ) {
-  await client.get(
+  await request(
     "/auth/admin-check",
     {
       headers:
@@ -70,16 +180,13 @@ export async function checkAdmin(
 export async function getAdminOrders(
   token: string,
 ) {
-  const response =
-    await client.get<Order[]>(
-      "/orders/admin",
-      {
-        headers:
-          authHeaders(token),
-      },
-    );
-
-  return response.data;
+  return request<Order[]>(
+    "/orders/admin",
+    {
+      headers:
+        authHeaders(token),
+    },
+  );
 }
 
 export async function updateAdminOrderStatus(
@@ -87,69 +194,45 @@ export async function updateAdminOrderStatus(
   orderId: string,
   status: OrderStatus,
 ) {
-  const response =
-    await client.patch<Order>(
-      `/orders/admin/${orderId}/status`,
-      {
+  return request<Order>(
+    `/orders/admin/${orderId}/status`,
+    {
+      method: "PATCH",
+      headers:
+        authHeaders(token),
+      body: JSON.stringify({
         status,
-      },
-      {
-        headers:
-          authHeaders(token),
-      },
-    );
-
-  return response.data;
+      }),
+    },
+  );
 }
 
 export function getApiErrorMessage(
   error: unknown,
 ) {
-  if (!axios.isAxiosError(error)) {
-    return "Ошибка соединения";
-  }
-
-  const data =
-    error.response?.data as
-      | {
-          message?:
-            | string
-            | string[];
-        }
-      | undefined;
-
   if (
-    Array.isArray(
-      data?.message,
-    )
+    error instanceof ApiError
   ) {
-    return data.message.join(", ");
+    return error.message;
   }
 
   if (
-    typeof data?.message ===
-    "string"
+    error instanceof Error
   ) {
-    return data.message;
+    return error.message;
   }
 
-  if (!error.response) {
-    return "Нет соединения с API";
-  }
-
-  return `API ${error.response.status}`;
+  return "Ошибка соединения";
 }
 
 export function isAuthError(
   error: unknown,
 ) {
   return (
-    axios.isAxiosError(error) &&
+    error instanceof ApiError &&
     (
-      error.response?.status ===
-        401 ||
-      error.response?.status ===
-        403
+      error.status === 401 ||
+      error.status === 403
     )
   );
 }
