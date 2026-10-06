@@ -9,8 +9,7 @@ RUN apt-get update \
 COPY package.json package-lock.json ./
 COPY prisma ./prisma
 
-# npm install специально: patch добавляет web-push, а lock обновится внутри image.
-RUN npm install
+RUN npm ci
 
 COPY nest-cli.json tsconfig.json tsconfig.build.json ./
 COPY src ./src
@@ -31,7 +30,7 @@ RUN apt-get update \
 COPY package.json package-lock.json ./
 COPY prisma ./prisma
 
-RUN npm install --omit=dev \
+RUN npm ci --omit=dev \
   && npm cache clean --force
 
 COPY --from=build /app/dist ./dist
