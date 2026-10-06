@@ -3,7 +3,6 @@ import {
   createHmac,
   randomUUID,
 } from 'node:crypto';
-import { extname } from 'node:path';
 
 const DEFAULT_ENDPOINT =
   'https://storage.yandexcloud.net';
@@ -146,7 +145,6 @@ function publicBaseUrl(
 export async function uploadProductImage(
   body: Buffer,
   contentType = 'application/octet-stream',
-  originalName?: string,
 ) {
   const endpoint = (
     process.env
