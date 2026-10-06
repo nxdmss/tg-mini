@@ -4,22 +4,85 @@ import * as express from 'express';
 import * as path from 'path';
 
 import { AppModule } from './app.module';
+import { rateLimitMiddleware } from './security/rate-limit.middleware';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   const expressApp = app.getHttpAdapter().getInstance();
   expressApp.disable('x-powered-by');
+  expressApp.set('trust proxy', 1);
+
+  const isProduction =
+    process.env.NODE_ENV ===
+    'production';
 
   const origins = (process.env.CORS_ORIGINS ?? '')
     .split(',')
     .map((origin) => origin.trim())
     .filter(Boolean);
 
+  if (
+    isProduction &&
+    origins.length === 0
+  ) {
+    throw new Error(
+      'CORS_ORIGINS is required in production',
+    );
+  }
+
+  const jwtSecret =
+    process.env.JWT_SECRET?.trim();
+
+  if (
+    isProduction &&
+    (!jwtSecret ||
+      jwtSecret.length < 32)
+  ) {
+    throw new Error(
+      'JWT_SECRET must be at least 32 characters in production',
+    );
+  }
+
+  if (
+    isProduction &&
+    process.env
+      .TELEGRAM_AUTH_DISABLED ===
+      'true'
+  ) {
+    throw new Error(
+      'TELEGRAM_AUTH_DISABLED must not be true in production',
+    );
+  }
+
+  const webhookSecret =
+    process.env
+      .TELEGRAM_WEBHOOK_SECRET
+      ?.trim();
+
+  if (
+    isProduction &&
+    process.env
+      .TELEGRAM_BOT_TOKEN &&
+    (!webhookSecret ||
+      webhookSecret.length < 32)
+  ) {
+    throw new Error(
+      'TELEGRAM_WEBHOOK_SECRET must be at least 32 characters in production',
+    );
+  }
+
   app.enableCors({
-    origin: origins.length > 0 ? origins : true,
+    origin:
+      origins.length > 0
+        ? origins
+        : !isProduction,
     credentials: true,
   });
+
+  app.use(
+    rateLimitMiddleware,
+  );
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -30,7 +93,22 @@ async function bootstrap() {
   );
 
   app.use((_: express.Request, res: express.Response, next: express.NextFunction) => {
-    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader(
+      'X-Content-Type-Options',
+      'nosniff',
+    );
+    res.setHeader(
+      'X-Frame-Options',
+      'DENY',
+    );
+    res.setHeader(
+      'Referrer-Policy',
+      'no-referrer',
+    );
+    res.setHeader(
+      'Permissions-Policy',
+      'camera=(), microphone=(), geolocation=()',
+    );
     next();
   });
 
