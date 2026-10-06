@@ -301,7 +301,33 @@ export default function App() {
 
   useEffect(() => {
     document.title = "SWAGYSTAN";
-  }, []);
+
+    const canonicalUrl =
+      new URL(
+        location.pathname,
+        "https://swagystan.ru",
+      );
+
+    const canonical =
+      document.querySelector<HTMLLinkElement>(
+        'link[rel="canonical"]',
+      );
+
+    if (canonical) {
+      canonical.href =
+        canonicalUrl.toString();
+    }
+
+    const ogUrl =
+      document.querySelector<HTMLMetaElement>(
+        'meta[property="og:url"]',
+      );
+
+    if (ogUrl) {
+      ogUrl.content =
+        canonicalUrl.toString();
+    }
+  }, [location.pathname]);
 
   useEffect(() => {
     if (!isProductPage) return;
