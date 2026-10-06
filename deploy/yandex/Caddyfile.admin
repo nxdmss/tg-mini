@@ -13,8 +13,11 @@ admin.swagystan.ru {
   header {
     -Server
     X-Content-Type-Options "nosniff"
-    Referrer-Policy "strict-origin-when-cross-origin"
+    Referrer-Policy "no-referrer"
     X-Frame-Options "DENY"
+    Permissions-Policy "camera=(), microphone=(), geolocation=()"
+    Strict-Transport-Security "max-age=31536000; includeSubDomains"
+    Content-Security-Policy "default-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://api.swagystan.ru; manifest-src 'self'; worker-src 'self'"
   }
 
   file_server
