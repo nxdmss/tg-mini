@@ -72,13 +72,13 @@ export function Header({
           }}
           type="button"
           onClick={handleLogoClick}
-          aria-label="SWA6Y5TAN"
+          aria-label="SWAGYSTAN"
         >
           <span className="brand__logo-mark">
             <img
               className="brand__logo-image brand__logo-image--base"
               src="/logo.png"
-              alt="SWA6Y5TAN"
+              alt="SWAGYSTAN"
             />
             <img
               className="brand__logo-image brand__logo-image--negative"
