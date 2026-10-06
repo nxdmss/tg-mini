@@ -10,7 +10,7 @@ on:
       - ".github/workflows/admin-pwa-check.yml"
   push:
     branches:
-      - "feature/admin-orders-pwa"
+      - "main"
     paths:
       - "admin/**"
       - "backend/**"
