@@ -767,6 +767,99 @@ export class ProductsService {
     return merged;
   }
 
+  private hasValidImageSignature(
+    file: {
+      buffer?: Buffer;
+      mimetype?: string;
+    },
+  ) {
+    const body =
+      file.buffer;
+
+    const type =
+      file.mimetype
+        ?.toLowerCase();
+
+    if (
+      !body ||
+      body.length < 12 ||
+      !type
+    ) {
+      return false;
+    }
+
+    if (
+      type === 'image/jpeg'
+    ) {
+      return (
+        body[0] === 0xff &&
+        body[1] === 0xd8 &&
+        body[2] === 0xff
+      );
+    }
+
+    if (
+      type === 'image/png'
+    ) {
+      return body
+        .subarray(0, 8)
+        .equals(
+          Buffer.from([
+            0x89,
+            0x50,
+            0x4e,
+            0x47,
+            0x0d,
+            0x0a,
+            0x1a,
+            0x0a,
+          ]),
+        );
+    }
+
+    if (
+      type === 'image/gif'
+    ) {
+      const signature =
+        body
+          .subarray(0, 6)
+          .toString('ascii');
+
+      return (
+        signature ===
+          'GIF87a' ||
+        signature ===
+          'GIF89a'
+      );
+    }
+
+    if (
+      type === 'image/webp'
+    ) {
+      return (
+        body
+          .subarray(0, 4)
+          .toString('ascii') ===
+          'RIFF' &&
+        body
+          .subarray(8, 12)
+          .toString('ascii') ===
+          'WEBP'
+      );
+    }
+
+    if (
+      type === 'image/avif'
+    ) {
+      return body
+        .subarray(4, 12)
+        .toString('ascii')
+        .includes('ftyp');
+    }
+
+    return false;
+  }
+
   private async uploadImages(
     imageFiles: any[] = [],
   ) {
@@ -774,6 +867,20 @@ export class ProductsService {
       imageFiles.length === 0
     ) {
       return [];
+    }
+
+    const invalidFile =
+      imageFiles.find(
+        (file) =>
+          !this.hasValidImageSignature(
+            file,
+          ),
+      );
+
+    if (invalidFile) {
+      throw new BadRequestException(
+        'Файл не соответствует заявленному формату изображения',
+      );
     }
 
     try {
@@ -784,15 +891,19 @@ export class ProductsService {
               file.buffer,
               file.mimetype ||
                 'application/octet-stream',
-              file.originalname,
             ),
         ),
       );
     } catch (error) {
+      if (
+        error instanceof
+        BadRequestException
+      ) {
+        throw error;
+      }
+
       throw new InternalServerErrorException(
-        error instanceof Error
-          ? error.message
-          : 'Image upload failed',
+        'Image upload failed',
       );
     }
   }
