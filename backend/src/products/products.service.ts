@@ -851,10 +851,56 @@ export class ProductsService {
     if (
       type === 'image/avif'
     ) {
-      return body
-        .subarray(4, 12)
-        .toString('ascii')
-        .includes('ftyp');
+      if (
+        body
+          .subarray(4, 8)
+          .toString('ascii') !==
+        'ftyp'
+      ) {
+        return false;
+      }
+
+      const declaredBoxSize =
+        body.readUInt32BE(0);
+
+      const boxEnd =
+        Math.min(
+          body.length,
+          declaredBoxSize >= 16
+            ? declaredBoxSize
+            : body.length,
+        );
+
+      const brands = [
+        body
+          .subarray(8, 12)
+          .toString('ascii'),
+      ];
+
+      for (
+        let offset = 16;
+        offset + 4 <=
+        boxEnd;
+        offset += 4
+      ) {
+        brands.push(
+          body
+            .subarray(
+              offset,
+              offset + 4,
+            )
+            .toString('ascii'),
+        );
+      }
+
+      return (
+        brands.includes(
+          'avif',
+        ) ||
+        brands.includes(
+          'avis',
+        )
+      );
     }
 
     return false;
