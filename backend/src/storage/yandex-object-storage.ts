@@ -98,27 +98,7 @@ function encodeKey(
 
 function extensionFor(
   contentType: string,
-  originalName?: string,
 ) {
-  const original =
-    originalName
-      ? extname(
-          originalName,
-        )
-          .toLowerCase()
-          .replace(
-            /[^a-z0-9.]/g,
-            '',
-          )
-      : '';
-
-  if (
-    original &&
-    original.length <= 10
-  ) {
-    return original;
-  }
-
   const normalized =
     contentType
       .split(';')[0]
@@ -214,7 +194,6 @@ export async function uploadProductImage(
   const extension =
     extensionFor(
       contentType,
-      originalName,
     );
 
   const month =
