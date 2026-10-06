@@ -1,6 +1,7 @@
 import { Type } from 'class-transformer';
 
 import {
+  ArrayMaxSize,
   ArrayMinSize,
   IsArray,
   IsEmail,
@@ -9,6 +10,8 @@ import {
   IsOptional,
   IsString,
   Matches,
+  Max,
+  MaxLength,
   Min,
   ValidateIf,
   ValidateNested,
@@ -17,21 +20,25 @@ import {
 export class OrderItemDto {
   @IsString()
   @IsNotEmpty()
+  @MaxLength(128)
   productId: string;
 
   @Type(() => Number)
   @IsInt()
   @Min(1)
+  @Max(10)
   quantity: number;
 
   @IsString()
   @IsNotEmpty()
+  @MaxLength(64)
   size: string;
 }
 
 export class CreateOrderDto {
   @IsString()
   @IsNotEmpty()
+  @MaxLength(120)
   name: string;
 
   @IsEmail(
@@ -40,6 +47,7 @@ export class CreateOrderDto {
       message: 'Введите корректный email',
     },
   )
+  @MaxLength(254)
   email: string;
 
   @IsString()
@@ -50,6 +58,7 @@ export class CreateOrderDto {
 
   @IsOptional()
   @IsString()
+  @MaxLength(32)
   deliveryMethod?: string;
 
   @ValidateIf(
@@ -58,14 +67,17 @@ export class CreateOrderDto {
   )
   @IsString()
   @IsNotEmpty()
+  @MaxLength(500)
   address?: string;
 
   @IsOptional()
   @IsString()
+  @MaxLength(1000)
   comment?: string;
 
   @IsArray()
   @ArrayMinSize(1)
+  @ArrayMaxSize(20)
   @ValidateNested({
     each: true,
   })

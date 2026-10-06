@@ -300,8 +300,8 @@ export default function App() {
   }, [productIdFromUrl, products]);
 
   useEffect(() => {
-    document.title = isShopView && shop ? shop.name : "SWA6Y5TAN";
-  }, [isShopView, shop]);
+    document.title = "SWAGYSTAN";
+  }, []);
 
   useEffect(() => {
     if (!isProductPage) return;

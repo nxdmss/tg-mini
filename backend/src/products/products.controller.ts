@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -25,6 +26,52 @@ import { UpdateProductStockDto } from './update-product-stock.dto';
 
 const PUBLIC_REVALIDATE = 'public, max-age=0, must-revalidate';
 
+const IMAGE_MIME_TYPES =
+  new Set([
+    'image/jpeg',
+    'image/png',
+    'image/webp',
+    'image/gif',
+    'image/avif',
+  ]);
+
+const IMAGE_UPLOAD_OPTIONS = {
+  limits: {
+    files: 10,
+    fileSize:
+      8 * 1024 * 1024,
+  },
+
+  fileFilter: (
+    _request: unknown,
+    file: {
+      mimetype?: string;
+    },
+    callback: (
+      error: Error | null,
+      acceptFile: boolean,
+    ) => void,
+  ) => {
+    if (
+      !file.mimetype ||
+      !IMAGE_MIME_TYPES.has(
+        file.mimetype
+          .toLowerCase(),
+      )
+    ) {
+      callback(
+        new BadRequestException(
+          'Поддерживаются только JPEG, PNG, WebP, GIF и AVIF изображения',
+        ),
+        false,
+      );
+      return;
+    }
+
+    callback(null, true);
+  },
+};
+
 @Controller('products')
 export class ProductsController {
   constructor(
@@ -46,7 +93,13 @@ export class ProductsController {
 
   @Post()
   @UseGuards(TelegramAdminGuard)
-  @UseInterceptors(FilesInterceptor('images', 10))
+  @UseInterceptors(
+    FilesInterceptor(
+      'images',
+      10,
+      IMAGE_UPLOAD_OPTIONS,
+    ),
+  )
   create(
     @Body() body: CreateProductDto,
     @UploadedFiles() images: any[],
@@ -108,7 +161,13 @@ export class ProductsController {
 
   @Patch(':id')
   @UseGuards(TelegramAdminGuard)
-  @UseInterceptors(FilesInterceptor('images', 10))
+  @UseInterceptors(
+    FilesInterceptor(
+      'images',
+      10,
+      IMAGE_UPLOAD_OPTIONS,
+    ),
+  )
   update(
     @Param('id') id: string,
     @Body() body: UpdateProductDto,

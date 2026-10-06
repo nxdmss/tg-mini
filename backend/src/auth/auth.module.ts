@@ -14,14 +14,39 @@ import { WebAuthService } from './web-auth.service';
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        secret:
-          configService.get<string>('JWT_SECRET') ||
-          'local-development-secret-change-me',
-        signOptions: {
-          expiresIn: '30d',
-        },
-      }),
+      useFactory: (configService: ConfigService) => {
+        const configuredSecret =
+          configService
+            .get<string>(
+              'JWT_SECRET',
+            )
+            ?.trim();
+
+        const isProduction =
+          configService.get<string>(
+            'NODE_ENV',
+          ) === 'production';
+
+        if (
+          isProduction &&
+          (!configuredSecret ||
+            configuredSecret.length <
+              32)
+        ) {
+          throw new Error(
+            'JWT_SECRET must be at least 32 characters in production',
+          );
+        }
+
+        return {
+          secret:
+            configuredSecret ||
+            'local-development-secret-change-me',
+          signOptions: {
+            expiresIn: '12h',
+          },
+        };
+      },
     }),
   ],
   controllers: [AuthController],
