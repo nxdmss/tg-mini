@@ -55,23 +55,6 @@ async function bootstrap() {
     );
   }
 
-  const webhookSecret =
-    process.env
-      .TELEGRAM_WEBHOOK_SECRET
-      ?.trim();
-
-  if (
-    isProduction &&
-    process.env
-      .TELEGRAM_BOT_TOKEN &&
-    (!webhookSecret ||
-      webhookSecret.length < 32)
-  ) {
-    throw new Error(
-      'TELEGRAM_WEBHOOK_SECRET must be at least 32 characters in production',
-    );
-  }
-
   app.enableCors({
     origin:
       origins.length > 0
