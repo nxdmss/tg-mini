@@ -542,7 +542,7 @@ export default function App() {
         <footer className="footer">
           <div className="container footer__inner">
             <span className="footer__brand">
-              {isShopView && shop ? shop.name : "SWA6Y5TAN"}
+              {isShopView && shop ? shop.name : "SWAGYSTAN"}
             </span>
           </div>
         </footer>
