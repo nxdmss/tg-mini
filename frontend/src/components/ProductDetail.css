@@ -668,3 +668,35 @@
     );
   }
 }
+
+/* SWAGYSTAN: hand-brushed SVG favorite control on product details only. */
+.product-page__header { position: relative; }
+.product-page__favorite {
+  position: absolute;
+  right: 72px;
+  top: calc(10px + env(safe-area-inset-top));
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  padding: 5px;
+  border: 0;
+  background: transparent;
+  color: #000;
+  cursor: pointer;
+  transition: transform 140ms ease;
+}
+.product-page__favorite img {
+  display: block;
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+}
+.product-page__favorite:active { transform: scale(.90); }
+.product-page__favorite:focus-visible { outline: 2px solid #000; outline-offset: 1px; }
+@media (max-width: 700px) {
+  .product-page__favorite { top: calc(5px + env(safe-area-inset-top)); right: 65px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .product-page__favorite { transition: none; }
+}

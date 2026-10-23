@@ -7,6 +7,7 @@ import {
 import type { Product } from "../types";
 
 import { useCart } from "../cart";
+import { useFavorites } from "../favorites";
 import { formatPrice } from "../utils";
 import { CartIcon } from "./CartIcon";
 
@@ -27,6 +28,7 @@ export function ProductDetail({
     add,
     count,
   } = useCart();
+  const { isFavorite, toggle } = useFavorites();
 
   const [
     imageIndex,
@@ -218,6 +220,21 @@ export function ProductDetail({
           aria-label="Назад"
         >
           ‹
+        </button>
+
+        <button
+          type="button"
+          className="product-page__favorite"
+          onClick={() => toggle(product.id)}
+          aria-pressed={isFavorite(product.id)}
+          aria-label={isFavorite(product.id) ? "Убрать из избранного" : "Добавить в избранное"}
+          title={isFavorite(product.id) ? "Убрать из избранного" : "В избранное"}
+        >
+          <img
+            src={isFavorite(product.id) ? "/icons/swag-heart-filled.svg" : "/icons/swag-heart-outline.svg"}
+            alt=""
+            aria-hidden="true"
+          />
         </button>
 
         <button
