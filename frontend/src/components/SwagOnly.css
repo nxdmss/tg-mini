@@ -1,11 +1,12 @@
 @font-face {
   font-family: "IZLOM Narrow";
-  src:
-    url("/fonts/IZLOM_Narrow-Regular.woff2") format("woff2"),
-    url("/fonts/IZLOM_Narrow-Regular.ttf") format("truetype");
+  src: url("/fonts/IZLOM_Narrow-Regular.woff2") format("woff2"),
+       url("/fonts/IZLOM_Narrow-Regular.ttf") format("truetype");
   font-style: normal;
-  font-weight: 400;
+  font-weight: 100 900;
   font-display: swap;
+  /* IZLOM supplies numerals only; the rest of the text keeps its original face. */
+  unicode-range: U+0030-0039;
 }
 
 /* Single SWAGYSTAN storefront — retain monochrome type and original branding. */
@@ -45,14 +46,14 @@
 
 /* Favorite on catalog cards — top right over the product image. */
 .swag-card-wrap{position:relative}
-.swag-card-like{position:absolute;top:10px;right:10px;z-index:9;width:42px;height:42px;padding:5px;border:0;background:rgba(255,255,255,.92);backdrop-filter:blur(4px);cursor:pointer;display:grid;place-items:center;border-radius:999px;box-shadow:0 2px 12px rgba(0,0,0,.08);transition:transform .16s ease, background .16s ease}
+.swag-card-like{position:absolute;top:10px;right:10px;z-index:9;width:42px;height:42px;padding:5px;border:0;background:transparent;backdrop-filter:none;cursor:pointer;display:grid;place-items:center;border-radius:0;box-shadow:none;transition:transform .16s ease, background .16s ease}
 .swag-card-like:active{transform:scale(.92)}
 .swag-card-like img{display:block;width:28px;height:28px;object-fit:contain}
-.swag-card-like.is-favorite{background:#fff}
+.swag-card-like.is-favorite{background:transparent}
 .swag-card-like:focus-visible{outline:2px solid #000;outline-offset:2px}
 
 /* Favorite on product page — over the image, not near the cart. */
-.product-page__favorite-floating{position:absolute;top:10px;right:10px;z-index:7;width:48px;height:48px;padding:5px;border:0;background:rgba(255,255,255,.92);backdrop-filter:blur(4px);cursor:pointer;display:grid;place-items:center;border-radius:999px;box-shadow:0 2px 12px rgba(0,0,0,.08);transition:transform .16s ease, background .16s ease}
+.product-page__favorite-floating{position:absolute;top:10px;right:10px;z-index:7;width:48px;height:48px;padding:5px;border:0;background:transparent;backdrop-filter:none;cursor:pointer;display:grid;place-items:center;border-radius:0;box-shadow:none;transition:transform .16s ease, background .16s ease}
 .product-page__favorite-floating:active{transform:scale(.92)}
 .product-page__favorite-floating img{display:block;width:33px;height:33px;object-fit:contain}
 .product-page__favorite-floating:focus-visible{outline:2px solid #000;outline-offset:2px}
@@ -83,4 +84,32 @@
   .swag-card-like img{width:25px;height:25px}
   .product-page__favorite-floating{top:8px;right:8px;width:42px;height:42px}
   .product-page__favorite-floating img{width:28px;height:28px}
+}
+
+/* Hearts only: no white circular backing, including the selected state. */
+.swag-only .swag-card-like,
+.swag-only .swag-card-like.is-favorite,
+.swag-only .product-page__favorite-floating,
+.swag-only .product-page__favorite-floating.is-favorite{
+  background:transparent!important;
+  background-color:transparent!important;
+  box-shadow:none!important;
+  border:0!important;
+  border-radius:0!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+}
+
+
+/* EVERY digit across the storefront, including search, cart, checkout and inputs.
+   IZLOM only provides 0-9; all letters fall through to IBM Plex Mono.
+   `!important` is intentional: other component styles set their own fonts. */
+html,
+html body,
+html body *,
+html body *::before,
+html body *::after,
+html body input::placeholder,
+html body textarea::placeholder {
+  font-family: "IZLOM Narrow", "IBM Plex Mono", monospace !important;
 }

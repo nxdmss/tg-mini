@@ -1,22 +1,27 @@
-SWAGYSTAN FINAL REPLACE FILES
+SWAGYSTAN — полная замена исходников (сердца без подложки + цифры IZLOM везде)
 
-Что внутри:
-- frontend/src/App.tsx
-- frontend/src/favorites.ts
-- frontend/src/components/ProductDetail.tsx
-- frontend/src/components/SwagOnly.css
-- frontend/public/icons/swag-heart-outline.svg
-- frontend/public/icons/swag-heart-filled.svg
-- frontend/public/fonts/IZLOM_Narrow-Regular.woff2
-- frontend/public/fonts/IZLOM_Narrow-Regular.ttf
+Распакуй содержимое архива В КОРЕНЬ проекта tg-mini с заменой файлов.
 
-Что изменено:
-1) Лайк на странице товара перенесён поверх фото.
-2) Лайк добавлен на каждую карточку товара сверху справа.
-3) Раздел "О нас" заменён на обычный текст KIZILURT | DAGESTAN сверху и снизу.
-4) Для цифр подключен шрифт IZLOM Narrow.
+Изменения:
+• Сердце без подложки, над фото товара, справа сверху.
+• Сердце без подложки, на каждой карточке каталога, справа сверху.
+• Страница «О нас»: KIZILURT | DAGESTAN обычным текстом сверху и снизу.
+• Цифры 0–9: шрифт IZLOM Narrow глобально по всем текстовым элементам сайта,
+  в названиях/ценах/корзине/поиске/полях ввода/доставке/оформлении заказа,
+  включая динамический ввод и плейсхолдеры. Буквы остаются IBM Plex Mono.
 
-Как применить:
-- Распакуй архив в корень проекта с заменой файлов.
-- Сделай commit/push в GitHub.
-- На сервере: git pull, npm ci, npm run build, затем скопируй dist в /var/www/swagystan.
+ВАЖНО О ШРИФТЕ:
+CSS использует /fonts/IZLOM_Narrow-Regular.woff2 (резервно .ttf).
+В этом архиве нет шрифта: возьми его из своего исходного архива
+IZLOM_Narrow_font(1).zip и положи в frontend/public/fonts/
+(если файлов там ещё нет). Шрифт пользовательский, а не внешний CDN.
+
+После замены файлов:
+1. Отправь изменённые файлы в GitHub (commit + push в main).
+2. На сервере после слияния в main выполни:
+   cd /opt/swa6/app && git pull --ff-only && cd frontend && npm ci && npm run build && sudo cp -a dist/. /var/www/swagystan/
+3. Обнови сайт в браузере Ctrl+Shift+R.
+
+Перед сборкой проверь, что серверный файл
+frontend/.env.production содержит VITE_API_URL=https://api.swagystan.ru.
+Не удаляй его при распаковке. Старую рабочую версию сайта держи в резерве.
