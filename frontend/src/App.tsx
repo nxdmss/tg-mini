@@ -74,7 +74,7 @@ export default function App() {
   const section = readSection(location.pathname);
   const productIdFromUrl = getProductId(location.pathname);
   const isProductPage = Boolean(productIdFromUrl);
-  const { ids: favoriteIds } = useFavorites();
+  const { ids: favoriteIds, isFavorite, toggle } = useFavorites();
 
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
@@ -205,7 +205,9 @@ export default function App() {
     if (!isProductPage) return;
     const previous = document.body.style.overflow;
     document.body.style.overflow = "hidden";
-    return () => { document.body.style.overflow = previous; };
+    return () => {
+      document.body.style.overflow = previous;
+    };
   }, [isProductPage]);
 
   function openProduct(product: Product) {
@@ -293,9 +295,9 @@ export default function App() {
       </div>
 
       {section === "about" ? (
-        <main className="container swag-about swag-about--location">
-          <p className="swag-about__location">KIZILURT | DAGESTAN</p>
-          <p className="swag-about__location">KIZILURT | DAGESTAN</p>
+        <main className="container swag-about swag-about--textonly">
+          <div className="swag-about__cityline">KIZILURT | DAGESTAN</div>
+          <div className="swag-about__cityline swag-about__cityline--bottom">KIZILURT | DAGESTAN</div>
         </main>
       ) : (
         <main className="container store-experience__catalog" id="catalog">
@@ -325,20 +327,47 @@ export default function App() {
             </div>
           ) : (
             <div className="grid">
-              {visibleProducts.map((product, index) => (
-                <motion.div
-                  key={product.id}
-                  className="product-flow-item"
-                  initial={reducedMotion ? false : { opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: reducedMotion ? 0 : 0.3, delay: Math.min(index * 0.025, 0.15) }}
-                >
-                  <ProductCard product={product} index={index} onClick={() => {
-                    sessionStorage.setItem("swagystan:product-from", section);
-                    openProduct(product);
-                  }} />
-                </motion.div>
-              ))}
+              {visibleProducts.map((product, index) => {
+                const favorite = isFavorite(product.id);
+                return (
+                  <motion.div
+                    key={product.id}
+                    className="product-flow-item"
+                    initial={reducedMotion ? false : { opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: reducedMotion ? 0 : 0.3, delay: Math.min(index * 0.025, 0.15) }}
+                  >
+                    <div className="swag-card-wrap">
+                      <button
+                        type="button"
+                        className={`swag-card-like ${favorite ? "is-favorite" : ""}`}
+                        onClick={(event) => {
+                          event.preventDefault();
+                          event.stopPropagation();
+                          toggle(product.id);
+                        }}
+                        aria-label={favorite ? "Убрать из избранного" : "Добавить в избранное"}
+                        aria-pressed={favorite}
+                        title={favorite ? "Убрать из избранного" : "В избранное"}
+                      >
+                        <img
+                          src={favorite ? "/icons/swag-heart-filled.svg" : "/icons/swag-heart-outline.svg"}
+                          alt=""
+                          aria-hidden="true"
+                        />
+                      </button>
+                      <ProductCard
+                        product={product}
+                        index={index}
+                        onClick={() => {
+                          sessionStorage.setItem("swagystan:product-from", section);
+                          openProduct(product);
+                        }}
+                      />
+                    </div>
+                  </motion.div>
+                );
+              })}
             </div>
           )}
         </main>
@@ -346,7 +375,7 @@ export default function App() {
 
       <footer className="footer swag-footer">
         <div className="container footer__inner">
-          <span className="footer__brand">SWAGYSTAN</span>
+          <span className="footer__brand">SWAGYSTAN © <span className="swag-num">{new Date().getFullYear()}</span></span>
           <button type="button" onClick={() => openSection("about")}>О НАС ↗</button>
         </div>
       </footer>

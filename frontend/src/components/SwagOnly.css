@@ -1,3 +1,13 @@
+@font-face {
+  font-family: "IZLOM Narrow";
+  src:
+    url("/fonts/IZLOM_Narrow-Regular.woff2") format("woff2"),
+    url("/fonts/IZLOM_Narrow-Regular.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
 /* Single SWAGYSTAN storefront — retain monochrome type and original branding. */
 .swag-only{--bg:#fff;--text:#000}
 .swag-only .store-top{padding-bottom:0}
@@ -20,45 +30,57 @@
 .swag-footer button{border:0;background:transparent;font:800 12px "IBM Plex Mono",monospace;text-decoration:underline;text-underline-offset:4px;cursor:pointer}
 .swag-section-title{padding:22px 0 8px;border-bottom:2px solid #000;display:flex;align-items:baseline;justify-content:space-between}
 .swag-section-title h1{font-size:clamp(22px,6vw,40px);margin:0}
+.swag-section-title span{font-family:"IZLOM Narrow","IBM Plex Mono",monospace;font-size:18px;letter-spacing:.04em}
 .swag-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:220px;gap:18px;padding:70px 10px;font-size:clamp(24px,6vw,42px);font-weight:900;text-align:center}
 .swag-empty small{font-size:12px;font-weight:600}
 .swag-empty button{border:0;border-bottom:2px solid #000;padding:13px;background:transparent;font-size:13px;font-weight:900;cursor:pointer}
 .swag-about{flex:1;max-width:760px;padding-top:38px;padding-bottom:54px}
-.swag-about__eyebrow{font-size:12px!important;font-weight:800;letter-spacing:.12em}
-.swag-about h1{margin:22px 0 34px;font-size:clamp(42px,11vw,94px);font-weight:800;line-height:.95}
-.swag-about p{max-width:620px;margin:0 0 22px;font-size:clamp(16px,3.3vw,22px);font-weight:600;line-height:1.45}
-.swag-about__links{margin:34px 0}
-.swag-about__links button{width:100%;min-height:62px;border:0;background:#000;color:#fff;font-size:15px;font-weight:900;cursor:pointer}
-.swag-about small{display:block;max-width:600px;color:#777;font-size:11px;line-height:1.5}
+.swag-about--textonly{min-height:64vh;display:flex;flex-direction:column;justify-content:space-between;align-items:center}
+.swag-about__cityline{width:100%;text-align:center;font:900 clamp(28px,7vw,72px)/1 "IBM Plex Mono",monospace;letter-spacing:-.05em;text-transform:uppercase}
+.swag-about__cityline--bottom{margin-top:auto}
 .swag-only .product-page__content{padding-top:0;padding-bottom:38px}
 .swag-only .product-page__gallery{min-height:0;height:auto;padding:0}
-.swag-only .product-page__image-box{width:min(360px,84vw);height:clamp(280px,51vh,470px);aspect-ratio:auto}
+.swag-only .product-page__image-box{position:relative;width:min(360px,84vw);height:clamp(280px,51vh,470px);aspect-ratio:auto}
 .swag-only .product-page__info{margin-top:8px}
-@media(max-width:620px){.swag-only .container{padding-left:14px;padding-right:14px}.swag-only .grid{gap:17px 12px}.swag-only .card__name{font-size:14px}.swag-about{padding-top:26px}.swag-only .product-page__image-box{height:clamp(260px,44vh,400px)}}
 
-/* About page: normal selectable/editable text, upper and lower positions. */
-.swag-only .swag-about--location {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  justify-content: space-between;
-  align-items: center;
-  min-height: clamp(360px, 65vh, 760px);
-  max-width: 1100px;
-  gap: 48px;
-  padding-top: clamp(44px, 9vh, 90px);
-  padding-bottom: clamp(44px, 9vh, 90px);
-}
-.swag-only .swag-about--location .swag-about__location {
-  max-width: 100%;
-  margin: 0;
-  color: #000;
-  font-family: Impact, "Arial Black", "IBM Plex Mono", sans-serif;
-  font-size: clamp(18px, 5.2vw, 62px);
-  font-weight: 900;
-  line-height: 1.06;
-  letter-spacing: -0.02em;
-  text-align: center;
-  text-transform: uppercase;
-  white-space: nowrap;
+/* Favorite on catalog cards — top right over the product image. */
+.swag-card-wrap{position:relative}
+.swag-card-like{position:absolute;top:10px;right:10px;z-index:9;width:42px;height:42px;padding:5px;border:0;background:rgba(255,255,255,.92);backdrop-filter:blur(4px);cursor:pointer;display:grid;place-items:center;border-radius:999px;box-shadow:0 2px 12px rgba(0,0,0,.08);transition:transform .16s ease, background .16s ease}
+.swag-card-like:active{transform:scale(.92)}
+.swag-card-like img{display:block;width:28px;height:28px;object-fit:contain}
+.swag-card-like.is-favorite{background:#fff}
+.swag-card-like:focus-visible{outline:2px solid #000;outline-offset:2px}
+
+/* Favorite on product page — over the image, not near the cart. */
+.product-page__favorite-floating{position:absolute;top:10px;right:10px;z-index:7;width:48px;height:48px;padding:5px;border:0;background:rgba(255,255,255,.92);backdrop-filter:blur(4px);cursor:pointer;display:grid;place-items:center;border-radius:999px;box-shadow:0 2px 12px rgba(0,0,0,.08);transition:transform .16s ease, background .16s ease}
+.product-page__favorite-floating:active{transform:scale(.92)}
+.product-page__favorite-floating img{display:block;width:33px;height:33px;object-fit:contain}
+.product-page__favorite-floating:focus-visible{outline:2px solid #000;outline-offset:2px}
+
+/* Numeric styling with IZLOM. */
+.swag-num,
+.swag-only .card__price,
+.swag-only .product-page__price,
+.swag-only .product-page__size,
+.swag-only .cart-icon__count,
+.swag-only .cart-badge,
+.swag-only .quantity-stepper__value,
+.swag-only .cart-item__price,
+.swag-only .cart-item__qty,
+.swag-only .cart-summary__value,
+.swag-only .checkout-summary__value,
+.swag-only .checkout-item__price,
+.swag-only .checkout-item__qty,
+.swag-only .footer__brand .swag-num{font-family:"IZLOM Narrow","IBM Plex Mono",monospace!important;letter-spacing:.04em}
+
+@media(max-width:620px){
+  .swag-only .container{padding-left:14px;padding-right:14px}
+  .swag-only .grid{gap:17px 12px}
+  .swag-only .card__name{font-size:14px}
+  .swag-about{padding-top:26px}
+  .swag-only .product-page__image-box{height:clamp(260px,44vh,400px)}
+  .swag-card-like{top:8px;right:8px;width:38px;height:38px}
+  .swag-card-like img{width:25px;height:25px}
+  .product-page__favorite-floating{top:8px;right:8px;width:42px;height:42px}
+  .product-page__favorite-floating img{width:28px;height:28px}
 }
