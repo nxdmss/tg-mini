@@ -166,7 +166,7 @@ html, body, .swag-only { font-synthesis: weight; }
 }
 
 
-/* Extra-bold IZLOM numerals across the entire shop.
+/* Slightly softened bold IZLOM numerals across the entire shop.
    The numeric-only font-face above leaves ordinary letters in IBM Plex Mono. */
 html body .swag-only,
 html body .swag-only *,
@@ -205,7 +205,7 @@ html body .swag-only output,
 html body .swag-only time,
 html body .swag-only data {
   font-weight: 900 !important;
-  -webkit-text-stroke: 0.95px currentColor !important;
+  -webkit-text-stroke: 0.65px currentColor !important;
 }
 
 /* About page: exactly one line, quieter lettering, both at top and bottom. */
