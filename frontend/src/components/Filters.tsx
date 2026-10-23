@@ -31,7 +31,7 @@ export function Filters({ categories, query, onChange }: Props) {
         <div className="search-strip">
           <input
             className="search-strip__input"
-            placeholder=""
+            placeholder="ПОИСК ПО ВЕЩАМ"
             aria-label="Поиск вещей и брендов"
             value={query.search ?? ""}
             onChange={(e) => onChange({ ...query, search: e.target.value })}
