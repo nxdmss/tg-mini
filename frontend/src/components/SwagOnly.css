@@ -3,7 +3,7 @@
   src: url("/fonts/IZLOM_Narrow-Regular.woff2") format("woff2"),
        url("/fonts/IZLOM_Narrow-Regular.ttf") format("truetype");
   font-style: normal;
-  font-weight: 100 900;
+  font-weight: 400;
   font-display: swap;
   /* IZLOM supplies numerals only; the rest of the text keeps its original face. */
   unicode-range: U+0030-0039;
@@ -112,4 +112,55 @@ html body *::after,
 html body input::placeholder,
 html body textarea::placeholder {
   font-family: "IZLOM Narrow", "IBM Plex Mono", monospace !important;
+}
+
+/* BOLDER IZLOM DIGITS — let the browser synthesize a bold face from the
+   supplied Regular font. Previously font-weight:100 900 on @font-face
+   prevented synthetic bolding and the numerals stayed thin. */
+html, body, .swag-only { font-synthesis: weight; }
+
+/* Put numeric-heavy UI at bold weight, including search and checkout inputs.
+   The face's unicode-range limits IZLOM to digits; text remains readable in IBM. */
+.swag-only .card__price,
+.swag-only .card__category,
+.swag-only .product-page__price,
+.swag-only .product-page__size,
+.swag-only .swag-num,
+.swag-only .swag-section-title span,
+.swag-only .tag-out,
+.swag-only .header-cart__badge,
+.swag-only .cart-btn__badge,
+.swag-only .cart-icon__count,
+.swag-only .checkout-cart-item__price,
+.swag-only .checkout-cart-item__meta,
+.swag-only .checkout-summary-item__price,
+.swag-only .checkout-summary-item__meta,
+.swag-only .checkout-cart-total,
+.swag-only .checkout-qty span,
+.swag-only .checkout-qty button,
+.swag-only .checkout-totals__row,
+.swag-only .checkout-label,
+.swag-only .checkout-input,
+.swag-only .checkout-input::placeholder,
+.swag-only .field,
+.swag-only .field::placeholder,
+.swag-only .search-strip__input,
+.swag-only .search-strip__input::placeholder,
+.swag-only .cart-item__price,
+.swag-only .cart-item__qty,
+.swag-only .cart-summary__value,
+.swag-only .checkout-item__price,
+.swag-only .checkout-item__qty,
+.swag-only .checkout-summary__value,
+.swag-only input,
+.swag-only input::placeholder,
+.swag-only textarea,
+.swag-only textarea::placeholder,
+.swag-only select,
+.swag-only option,
+.swag-only output,
+.swag-only time,
+.swag-only data {
+  font-weight: 900 !important;
+  font-synthesis: weight !important;
 }
