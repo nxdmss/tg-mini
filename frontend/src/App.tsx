@@ -205,9 +205,7 @@ export default function App() {
     if (!isProductPage) return;
     const previous = document.body.style.overflow;
     document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = previous;
-    };
+    return () => { document.body.style.overflow = previous; };
   }, [isProductPage]);
 
   function openProduct(product: Product) {
@@ -295,15 +293,9 @@ export default function App() {
       </div>
 
       {section === "about" ? (
-        <main className="container swag-about">
-          <p className="swag-about__eyebrow">SWAGYSTAN / INDEPENDENT SELECTION</p>
-          <h1>ОДЕЖДА<br/>С ХАРАКТЕРОМ.</h1>
-          <p>SWAGYSTAN — независимая подборка вещей. Здесь важны силуэт, детали и собственный стиль.</p>
-          <p>Выбирай вещи, рассматривай фотографии, сохраняй понравившееся. Оформляй заказ в магазине.</p>
-          <div className="swag-about__links">
-            <button type="button" onClick={() => openSection("catalog")}>СМОТРЕТЬ КАТАЛОГ ↗</button>
-          </div>
-          <small>По вопросам о заказах, доставке и возврате обращайся по контактам магазина.</small>
+        <main className="container swag-about swag-about--location">
+          <p className="swag-about__location">KIZILURT | DAGESTAN</p>
+          <p className="swag-about__location">KIZILURT | DAGESTAN</p>
         </main>
       ) : (
         <main className="container store-experience__catalog" id="catalog">

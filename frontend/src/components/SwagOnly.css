@@ -35,3 +35,30 @@
 .swag-only .product-page__image-box{width:min(360px,84vw);height:clamp(280px,51vh,470px);aspect-ratio:auto}
 .swag-only .product-page__info{margin-top:8px}
 @media(max-width:620px){.swag-only .container{padding-left:14px;padding-right:14px}.swag-only .grid{gap:17px 12px}.swag-only .card__name{font-size:14px}.swag-about{padding-top:26px}.swag-only .product-page__image-box{height:clamp(260px,44vh,400px)}}
+
+/* About page: normal selectable/editable text, upper and lower positions. */
+.swag-only .swag-about--location {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  min-height: clamp(360px, 65vh, 760px);
+  max-width: 1100px;
+  gap: 48px;
+  padding-top: clamp(44px, 9vh, 90px);
+  padding-bottom: clamp(44px, 9vh, 90px);
+}
+.swag-only .swag-about--location .swag-about__location {
+  max-width: 100%;
+  margin: 0;
+  color: #000;
+  font-family: Impact, "Arial Black", "IBM Plex Mono", sans-serif;
+  font-size: clamp(18px, 5.2vw, 62px);
+  font-weight: 900;
+  line-height: 1.06;
+  letter-spacing: -0.02em;
+  text-align: center;
+  text-transform: uppercase;
+  white-space: nowrap;
+}

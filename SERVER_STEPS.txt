@@ -1,0 +1,16 @@
+ПОСЛЕ PUSH
+
+На сервере:
+
+cd /opt/swa6/app && \
+git pull --ff-only && \
+cd frontend && \
+docker run --rm -e VITE_API_URL="https://api.swagystan.ru" -v "$PWD":/app -w /app node:22-bookworm-slim sh -lc 'npm ci && npm run build' && \
+sudo rm -rf /var/www/swagystan && \
+sudo mkdir -p /var/www/swagystan && \
+sudo cp -a dist/. /var/www/swagystan/ && \
+sudo chmod -R a+rX /var/www/swagystan && \
+echo "ГОТОВО"
+
+После этого:
+Google Search Console -> URL Inspection -> https://swagystan.ru/ -> Request indexing.
