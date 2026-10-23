@@ -5,21 +5,16 @@ import {
   useMemo,
   useState,
 } from "react";
-import type { CSSProperties } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { LayoutGroup, motion, useReducedMotion } from "motion/react";
+import { motion, useReducedMotion } from "motion/react";
 
 import {
   getCategories,
   getProduct,
-  getProducts,
 } from "./api";
 import {
-  getShop,
   getShopProducts,
-  getShops,
 } from "./shopApi";
-import type { Shop } from "./shopApi";
 import type {
   Category,
   Product,
@@ -29,14 +24,12 @@ import type {
 import { Header } from "./components/Header";
 import { ProductCard } from "./components/ProductCard";
 import { Filters } from "./components/Filters";
-import { StoreTabs } from "./components/StoreTabs";
-import { StoreDirectory } from "./components/StoreDirectory";
-import { StoreName } from "./components/StoreName";
-import { ZulfiaRiverBackground } from "./components/ZulfiaRiverBackground";
 
 import "./components/ShopCommerceTheme.css";
 import "./components/ProductOverlay.css";
 import "./components/StoreExperience.css";
+import "./components/SwagOnly.css";
+import { useFavorites } from "./favorites";
 
 import { consumeStartParam } from "./telegram";
 import {
@@ -59,76 +52,18 @@ const PrankProduct = lazy(async () => ({
   default: (await import("./components/PrankProduct")).PrankProduct,
 }));
 
-type RouteState = {
-  valid: boolean;
-  view: "for-you" | "stores" | "shop";
-  shopSlug?: string;
-  productId?: string;
-};
+type Section = "catalog" | "favorites" | "about";
+const SWAG_SHOP_SLUG = "swagystan";
 
-function decodePart(value: string) {
-  try {
-    return decodeURIComponent(value);
-  } catch {
-    return value;
-  }
+function readSection(path: string): Section {
+  if (path === "/favorites") return "favorites";
+  if (path === "/about") return "about";
+  return "catalog";
 }
-
-function parseRoute(pathname: string): RouteState {
-  const parts = pathname.split("/").filter(Boolean).map(decodePart);
-
-  if (parts.length === 0 || (parts.length === 1 && parts[0] === "catalog")) {
-    return { valid: true, view: "for-you" };
-  }
-
-  if (parts.length === 1 && parts[0] === "stores") {
-    return { valid: true, view: "stores" };
-  }
-
-  if (parts.length === 2 && parts[0] === "product" && parts[1]) {
-    return { valid: true, view: "for-you", productId: parts[1] };
-  }
-
-  if (parts.length === 2 && parts[0] === "shop" && parts[1]) {
-    return { valid: true, view: "shop", shopSlug: parts[1] };
-  }
-
-  if (
-    parts.length === 4 &&
-    parts[0] === "shop" &&
-    parts[1] &&
-    parts[2] === "product" &&
-    parts[3]
-  ) {
-    return {
-      valid: true,
-      view: "shop",
-      shopSlug: parts[1],
-      productId: parts[3],
-    };
-  }
-
-  return { valid: false, view: "for-you" };
-}
-
-type ShopThemeStyle = CSSProperties & {
-  "--bg"?: string;
-  "--text"?: string;
-  "--shop-accent"?: string;
-};
-
-function mixProducts(items: Product[]) {
-  return [...items].sort((a, b) => {
-    const score = (value: string) => {
-      let result = 0;
-      for (let i = 0; i < value.length; i += 1) {
-        result = (result * 31 + value.charCodeAt(i)) >>> 0;
-      }
-      return result;
-    };
-
-    return score(a.id) - score(b.id);
-  });
+function getProductId(path: string): string | null {
+  const match = path.match(/^\/product\/([^/]+)\/?$/);
+  if (!match) return null;
+  try { return decodeURIComponent(match[1]); } catch { return match[1]; }
 }
 
 export default function App() {
@@ -136,41 +71,31 @@ export default function App() {
   const navigate = useNavigate();
   const reducedMotion = useReducedMotion();
 
-  const route = useMemo(() => parseRoute(location.pathname), [location.pathname]);
-  const { view, shopSlug, productId: productIdFromUrl } = route;
+  const section = readSection(location.pathname);
+  const productIdFromUrl = getProductId(location.pathname);
   const isProductPage = Boolean(productIdFromUrl);
-  const isStoresView = view === "stores";
-  const isShopView = view === "shop";
-  const isForYouView = view === "for-you";
+  const { ids: favoriteIds } = useFavorites();
 
-  const [shops, setShops] = useState<Shop[]>([]);
-  const [shop, setShop] = useState<Shop | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [query, setQuery] = useState<ProductsQuery>({ sort: "newest" });
   const [loading, setLoading] = useState(true);
-  const [shopLoading, setShopLoading] = useState(false);
   const [error, setError] = useState(false);
-  const [shopError, setShopError] = useState(false);
   const [fetchedProduct, setFetchedProduct] = useState<Product | null>(null);
   const [productLinkError, setProductLinkError] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
 
   useEffect(() => {
-    if (!route.valid) {
+    const path = location.pathname;
+    const oldProduct = path.match(/^\/shop\/([^/]+)\/product\/([^/]+)\/?$/);
+    if (oldProduct) {
+      navigate(oldProduct[1] === SWAG_SHOP_SLUG
+        ? `/product/${oldProduct[2]}`
+        : "/", { replace: true });
+    } else if (!["/", "/catalog", "/favorites", "/about"].includes(path) && !getProductId(path)) {
       navigate("/", { replace: true });
     }
-  }, [route.valid, navigate]);
-
-  useEffect(() => {
-    let active = true;
-    void getShops()
-      .then((data) => active && setShops(data))
-      .catch(() => active && setShops([]));
-    return () => {
-      active = false;
-    };
-  }, []);
+  }, [location.pathname, navigate]);
 
   useEffect(() => {
     let active = true;
@@ -183,82 +108,29 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    if (!isShopView || !shopSlug) {
-      setShop(null);
-      setShopError(false);
-      return;
-    }
-
-    const cached = shops.find((item) => item.slug === shopSlug);
-    if (cached) {
-      setShop(cached);
-      setShopError(false);
-      return;
-    }
-
-    let active = true;
-    setShopLoading(true);
-    setShopError(false);
-
-    void getShop(shopSlug)
-      .then((data) => active && setShop(data))
-      .catch(() => {
-        if (active) {
-          setShop(null);
-          setShopError(true);
-        }
-      })
-      .finally(() => active && setShopLoading(false));
-
-    return () => {
-      active = false;
-    };
-  }, [isShopView, shopSlug, shops]);
-
-  useEffect(() => {
-    if (isStoresView) {
-      setLoading(false);
-      setError(false);
-      return;
-    }
-
     let active = true;
     setLoading(true);
     setError(false);
-
-    const request = isShopView && shopSlug
-      ? getShopProducts(shopSlug, query)
-      : getProducts(query);
-
-    void request
-      .then((data) => {
-        if (!active) return;
-        setProducts(isForYouView ? mixProducts(data) : data);
-      })
-      .catch(() => {
-        if (!active) return;
-        setProducts([]);
-        setError(true);
-      })
-      .finally(() => active && setLoading(false));
-
-    return () => {
-      active = false;
-    };
-  }, [isStoresView, isShopView, isForYouView, shopSlug, query]);
+    const effectiveQuery = section === "favorites"
+      ? { sort: "newest" as const }
+      : query;
+    void getShopProducts(SWAG_SHOP_SLUG, effectiveQuery)
+      .then((data) => { if (active) setProducts(data); })
+      .catch(() => { if (active) { setProducts([]); setError(true); } })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, [section, query]);
 
   useEffect(() => {
     const startParam = consumeStartParam();
     if (!startParam) return;
 
-    const target = shopSlug
-      ? `/shop/${shopSlug}/product/${startParam}`
-      : `/product/${startParam}`;
+    const target = `/product/${encodeURIComponent(startParam)}`;
 
     if (productIdFromUrl !== startParam) {
       navigate(target, { replace: true });
     }
-  }, [productIdFromUrl, shopSlug, navigate]);
+  }, [productIdFromUrl, navigate]);
 
   const selectedProduct = useMemo(() => {
     if (!productIdFromUrl) return null;
@@ -347,46 +219,23 @@ export default function App() {
       stopPrankAudio();
     }
 
-    navigate(
-      shopSlug
-        ? `/shop/${shopSlug}/product/${product.id}`
-        : `/product/${product.id}`,
-    );
+    navigate(`/product/${encodeURIComponent(product.id)}`);
   }
 
   function closeProduct() {
     stopPrankAudio();
     setFetchedProduct(null);
     setProductLinkError(false);
-    navigate(shopSlug ? `/shop/${shopSlug}` : "/");
+    const from = sessionStorage.getItem("swagystan:product-from");
+    navigate(from === "favorites" ? "/favorites" : "/");
   }
-
-  function openShop(nextShop: Shop) {
-    setQuery({ sort: "newest" });
-    navigate(`/shop/${nextShop.slug}`);
+  function openSection(next: Section) {
+    navigate(next === "catalog" ? "/" : `/${next}`);
     window.scrollTo({ top: 0, behavior: "auto" });
   }
-
-  function goForYou() {
-    setQuery({ sort: "newest" });
-    navigate("/");
-    window.scrollTo({ top: 0, behavior: "auto" });
-  }
-
-  function goStores() {
-    navigate("/stores");
-    window.scrollTo({ top: 0, behavior: "auto" });
-  }
-
-  const shopThemeStyle: ShopThemeStyle = isShopView && shop
-    ? {
-        "--bg": shop.backgroundColor,
-        "--text": shop.textColor,
-        "--shop-accent": shop.accentColor,
-        background: shop.backgroundColor,
-        color: shop.textColor,
-      }
-    : {};
+  const visibleProducts = section === "favorites"
+    ? products.filter((product) => favoriteIds.includes(product.id))
+    : products;
 
   const productOverlay = isProductPage ? (
     <div className="product-overlay-shell">
@@ -397,12 +246,7 @@ export default function App() {
           </main>
         }
       >
-        {shopError ? (
-          <main className="product-route-state">
-            <button type="button" className="product-route-state__back" onClick={closeProduct}>‹</button>
-            <div className="product-route-state__text">МАГАЗИН НЕ НАЙДЕН</div>
-          </main>
-        ) : selectedProduct ? (
+        {selectedProduct ? (
           isPrankProduct(selectedProduct) ? (
             <PrankProduct onBack={closeProduct} />
           ) : (
@@ -426,73 +270,49 @@ export default function App() {
     </div>
   ) : null;
 
-  if (!isProductPage && isShopView && shopError) {
-    return (
-      <div className="app">
-        <main className="product-route-state">
-          <button type="button" className="product-route-state__back" onClick={goStores}>←</button>
-          <div className="product-route-state__text">МАГАЗИН НЕ НАЙДЕН</div>
-        </main>
-      </div>
-    );
-  }
-
-  const logoPosition = isStoresView ? "center" : "left";
-  const activeTab = isForYouView ? "for-you" : "stores";
-
   return (
-    <LayoutGroup id="store-name-flight">
-      <div
-        className={`app store-experience${shopSlug === "zulf" ? " app--zulfia" : ""}`}
-        style={shopThemeStyle}
-      >
-        <ZulfiaRiverBackground
-          active={isShopView && shopSlug === "zulf"}
-        />
+    <div className="app store-experience swag-only">
       <div className="store-top store-experience__top">
-        <Header
-          onCartClick={() => setCartOpen(true)}
-          homePath="/"
-          logoNegative={shop?.slug === "zulf"}
-          logoPosition={logoPosition}
-        />
-
-        <StoreTabs
-          active={activeTab}
-          onForYou={goForYou}
-          onStores={goStores}
-        />
-
-        {isShopView && shop && (
-          <div className="store-current">
+        <Header onCartClick={() => setCartOpen(true)} homePath="/" logoPosition="left" />
+        <nav className="swag-nav" aria-label="Навигация магазина">
+          {([
+            ["catalog", "КАТАЛОГ"],
+            ["favorites", "ИЗБРАННОЕ"],
+            ["about", "О НАС"],
+          ] as const).map(([id, title]) => (
             <button
+              key={id}
+              className={`swag-nav__tab ${section === id ? "is-active" : ""}`}
               type="button"
-              className="store-current__name"
-              onClick={goStores}
-            >
-              <StoreName
-                shop={shop}
-                place="current"
-                reducedMotion={Boolean(reducedMotion)}
-              />
-            </button>
-          </div>
-        )}
-
-        {!isStoresView && (
+              onClick={() => openSection(id)}
+              aria-current={section === id ? "page" : undefined}
+            >{title}</button>
+          ))}
+        </nav>
+        {section === "catalog" && (
           <Filters categories={categories} query={query} onChange={setQuery} />
         )}
       </div>
 
-      {isStoresView ? (
-        <StoreDirectory
-          shops={shops}
-          loading={shops.length === 0}
-          onOpen={openShop}
-        />
+      {section === "about" ? (
+        <main className="container swag-about">
+          <p className="swag-about__eyebrow">SWAGYSTAN / INDEPENDENT SELECTION</p>
+          <h1>ОДЕЖДА<br/>С ХАРАКТЕРОМ.</h1>
+          <p>SWAGYSTAN — независимая подборка вещей. Здесь важны силуэт, детали и собственный стиль.</p>
+          <p>Выбирай вещи, рассматривай фотографии, сохраняй понравившееся. Оформляй заказ в магазине.</p>
+          <div className="swag-about__links">
+            <button type="button" onClick={() => openSection("catalog")}>СМОТРЕТЬ КАТАЛОГ ↗</button>
+          </div>
+          <small>По вопросам о заказах, доставке и возврате обращайся по контактам магазина.</small>
+        </main>
       ) : (
-        <main className="container store-experience__catalog">
-          {loading || shopLoading ? (
+        <main className="container store-experience__catalog" id="catalog">
+          {section === "favorites" && (
+            <div className="swag-section-title">
+              <h1>ИЗБРАННОЕ</h1><span>{visibleProducts.length.toString().padStart(2, "0")}</span>
+            </div>
+          )}
+          {loading ? (
             <div className="grid grid--skeleton">
               {Array.from({ length: 6 }).map((_, index) => (
                 <div className="skeleton-card" key={index}>
@@ -503,34 +323,28 @@ export default function App() {
               ))}
             </div>
           ) : error ? (
-            <div className="state">
-              <div className="state__icon">!</div>
-              Не удалось загрузить товары.
-            </div>
-          ) : products.length === 0 ? (
-            <div className="state">
-              <div className="state__icon">∅</div>
-              Пока нет товаров
+            <div className="swag-empty">НЕ УДАЛОСЬ ЗАГРУЗИТЬ ВЕЩИ<br/><small>ОБНОВИ СТРАНИЦУ</small></div>
+          ) : visibleProducts.length === 0 ? (
+            <div className="swag-empty">
+              {section === "favorites" ? "ПОКА ПУСТО" : "ПОКА НЕТ ТОВАРОВ"}
+              {section === "favorites" && (
+                <><small>ОТКРОЙ ВЕЩЬ И НАЖМИ НА СЕРДЦЕ</small><button type="button" onClick={() => openSection("catalog")}>В КАТАЛОГ ↗</button></>
+              )}
             </div>
           ) : (
             <div className="grid">
-              {products.map((product, index) => (
+              {visibleProducts.map((product, index) => (
                 <motion.div
-                  key={`${shopSlug || "for-you"}-${product.id}`}
+                  key={product.id}
                   className="product-flow-item"
-                  initial={reducedMotion ? false : { opacity: 0, y: 22 }}
+                  initial={reducedMotion ? false : { opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{
-                    duration: reducedMotion ? 0 : 0.48,
-                    delay: reducedMotion ? 0 : Math.min(index * 0.035, 0.28),
-                    ease: [0.16, 1, 0.3, 1],
-                  }}
+                  transition={{ duration: reducedMotion ? 0 : 0.3, delay: Math.min(index * 0.025, 0.15) }}
                 >
-                  <ProductCard
-                    product={product}
-                    index={index}
-                    onClick={() => openProduct(product)}
-                  />
+                  <ProductCard product={product} index={index} onClick={() => {
+                    sessionStorage.setItem("swagystan:product-from", section);
+                    openProduct(product);
+                  }} />
                 </motion.div>
               ))}
             </div>
@@ -538,24 +352,18 @@ export default function App() {
         </main>
       )}
 
-      {!isStoresView && (
-        <footer className="footer">
-          <div className="container footer__inner">
-            <span className="footer__brand">
-              {isShopView && shop ? shop.name : "SWAGYSTAN"}
-            </span>
-          </div>
-        </footer>
-      )}
-
+      <footer className="footer swag-footer">
+        <div className="container footer__inner">
+          <span className="footer__brand">SWAGYSTAN</span>
+          <button type="button" onClick={() => openSection("about")}>О НАС ↗</button>
+        </div>
+      </footer>
       {productOverlay}
-
       {cartOpen && (
         <Suspense fallback={null}>
           <CartDrawer onClose={() => setCartOpen(false)} />
         </Suspense>
       )}
-      </div>
-    </LayoutGroup>
+    </div>
   );
 }
