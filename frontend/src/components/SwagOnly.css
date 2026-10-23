@@ -100,126 +100,88 @@
   -webkit-backdrop-filter:none!important;
 }
 
-
-/* EVERY digit across the storefront, including search, cart, checkout and inputs.
-   IZLOM only provides 0-9; all letters fall through to IBM Plex Mono.
-   `!important` is intentional: other component styles set their own fonts. */
-html,
-html body,
-html body *,
-html body *::before,
-html body *::after,
-html body input::placeholder,
-html body textarea::placeholder {
-  font-family: "IZLOM Narrow", "IBM Plex Mono", monospace !important;
-}
-
-/* BOLDER IZLOM DIGITS — let the browser synthesize a bold face from the
-   supplied Regular font. Previously font-weight:100 900 on @font-face
-   prevented synthetic bolding and the numerals stayed thin. */
-html, body, .swag-only { font-synthesis: weight; }
-
-/* Put numeric-heavy UI at bold weight, including search and checkout inputs.
-   The face's unicode-range limits IZLOM to digits; text remains readable in IBM. */
-.swag-only .card__price,
-.swag-only .card__category,
-.swag-only .product-page__price,
-.swag-only .product-page__size,
-.swag-only .swag-num,
-.swag-only .swag-section-title span,
-.swag-only .tag-out,
-.swag-only .header-cart__badge,
-.swag-only .cart-btn__badge,
-.swag-only .cart-icon__count,
-.swag-only .checkout-cart-item__price,
-.swag-only .checkout-cart-item__meta,
-.swag-only .checkout-summary-item__price,
-.swag-only .checkout-summary-item__meta,
-.swag-only .checkout-cart-total,
-.swag-only .checkout-qty span,
-.swag-only .checkout-qty button,
-.swag-only .checkout-totals__row,
-.swag-only .checkout-label,
-.swag-only .checkout-input,
-.swag-only .checkout-input::placeholder,
-.swag-only .field,
-.swag-only .field::placeholder,
-.swag-only .search-strip__input,
-.swag-only .search-strip__input::placeholder,
-.swag-only .cart-item__price,
-.swag-only .cart-item__qty,
-.swag-only .cart-summary__value,
-.swag-only .checkout-item__price,
-.swag-only .checkout-item__qty,
-.swag-only .checkout-summary__value,
-.swag-only input,
-.swag-only input::placeholder,
-.swag-only textarea,
-.swag-only textarea::placeholder,
-.swag-only select,
-.swag-only option,
-.swag-only output,
-.swag-only time,
-.swag-only data {
-  font-weight: 900 !important;
-  font-synthesis: weight !important;
-}
-
-
-/* Slightly softened bold IZLOM numerals across the entire shop.
-   The numeric-only font-face above leaves ordinary letters in IBM Plex Mono. */
+/* Balanced SWAGYSTAN lettering — cohesive weights without heavy outlines.
+   IZLOM is limited to 0–9 by the @font-face unicode-range above.
+   The ₽ sign and words are supplied by IBM Plex Mono, so both are rendered
+   at one moderate weight wherever numbers and ₽ appear together. */
 html body .swag-only,
 html body .swag-only *,
 html body .swag-only *::before,
-html body .swag-only *::after {
-  font-synthesis: weight !important;
-  -webkit-text-stroke: 0.42px currentColor;
+html body .swag-only *::after,
+html body .swag-only input::placeholder,
+html body .swag-only textarea::placeholder {
+  font-family: "IZLOM Narrow", "IBM Plex Mono", monospace !important;
+  font-synthesis: weight;
 }
 
+/* A consistent medium-bold for prices, subtotal, ruble, quantity and badges.
+   Earlier iterations forced 900 weight and thick strokes on every character.
+   Instead, match the two fonts optically without affecting product names. */
 html body .swag-only .card__price,
 html body .swag-only .product-page__price,
 html body .swag-only .swag-num,
+html body .swag-only .checkout-cart-item__price,
+html body .swag-only .checkout-summary-item__price,
+html body .swag-only .checkout-cart-total,
+html body .swag-only .checkout-totals__row,
+html body .swag-only .checkout-totals__row--total,
+html body .swag-only .checkout-qty span,
+html body .swag-only .checkout-qty button,
 html body .swag-only .product-page__size,
 html body .swag-only .swag-section-title span,
 html body .swag-only .header-cart__badge,
 html body .swag-only .cart-btn__badge,
 html body .swag-only .cart-icon__count,
-html body .swag-only .checkout-cart-item__price,
-html body .swag-only .checkout-summary-item__price,
-html body .swag-only .checkout-cart-total,
-html body .swag-only .checkout-totals__row,
-html body .swag-only .checkout-qty span,
-html body .swag-only .checkout-qty button,
-html body .swag-only .checkout-input,
-html body .swag-only .checkout-input::placeholder,
+html body .swag-only .cart-item__price,
+html body .swag-only .cart-item__qty,
+html body .swag-only .cart-summary__value,
+html body .swag-only .checkout-item__price,
+html body .swag-only .checkout-item__qty,
+html body .swag-only .checkout-summary__value,
+html body .swag-only .quantity-stepper__value {
+  font-weight: 650 !important;
+  -webkit-text-stroke: 0.12px currentColor !important;
+  letter-spacing: 0.012em !important;
+  font-variant-numeric: lining-nums tabular-nums;
+}
+
+/* Inputs, search and checkout: readable letters beside IZLOM numbers.
+   Do not embolden form hints, ruble glyphs or every single letter to 900. */
 html body .swag-only .search-strip__input,
-html body .swag-only .search-strip__input::placeholder,
+html body .swag-only .checkout-input,
 html body .swag-only .field,
-html body .swag-only .field::placeholder,
 html body .swag-only input,
-html body .swag-only input::placeholder,
 html body .swag-only textarea,
-html body .swag-only textarea::placeholder,
 html body .swag-only select,
-html body .swag-only output,
-html body .swag-only time,
-html body .swag-only data {
-  font-weight: 900 !important;
-  -webkit-text-stroke: 0.65px currentColor !important;
+html body .swag-only option {
+  font-weight: 550 !important;
+  -webkit-text-stroke: 0 !important;
+  letter-spacing: 0.01em;
+}
+html body .swag-only input::placeholder,
+html body .swag-only textarea::placeholder {
+  font-weight: 500 !important;
+  -webkit-text-stroke: 0 !important;
 }
 
-/* About page: exactly one line, quieter lettering, both at top and bottom. */
+/* Stable information hierarchy in the product grid. */
+html body .swag-only .card__name { font-weight: 700 !important; -webkit-text-stroke: 0 !important; }
+html body .swag-only .card__brand { font-weight: 600 !important; -webkit-text-stroke: 0 !important; }
+html body .swag-only .card__category,
+html body .swag-only .checkout-cart-item__meta,
+html body .swag-only .checkout-summary-item__meta,
+html body .swag-only .checkout-label {
+  font-weight: 550 !important;
+  -webkit-text-stroke: 0 !important;
+}
+
+/* About remains a single uninterrupted line at both positions. */
 html body .swag-only .swag-about--textonly {
-  width: 100%;
-  max-width: 1100px;
-  min-width: 0;
-  box-sizing: border-box;
+  width: 100%; max-width: 1100px; min-width: 0; box-sizing: border-box;
 }
-
 html body .swag-only .swag-about__cityline {
   display: block;
-  width: 100%;
-  max-width: 100%;
+  width: 100%; max-width: 100%;
   font-family: "IBM Plex Mono", monospace !important;
   font-size: clamp(14px, 4.6vw, 41px) !important;
   font-weight: 500 !important;
@@ -230,5 +192,4 @@ html body .swag-only .swag-about__cityline {
   overflow-wrap: normal !important;
   text-align: center;
   -webkit-text-stroke: 0 !important;
-  text-shadow: none !important;
 }
