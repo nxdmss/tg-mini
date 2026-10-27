@@ -139,8 +139,10 @@ html body .swag-only .checkout-item__price,
 html body .swag-only .checkout-item__qty,
 html body .swag-only .checkout-summary__value,
 html body .swag-only .quantity-stepper__value {
-  font-weight: 650 !important;
-  -webkit-text-stroke: 0.12px currentColor !important;
+  font-weight: 750 !important;
+  /* The actual IZLOM number face is regular-only. Make its narrow figures
+     visibly stronger without changing the glyph shape or letter spacing. */
+  -webkit-text-stroke: 0.48px currentColor !important;
   letter-spacing: 0.012em !important;
   font-variant-numeric: lining-nums tabular-nums;
 }
