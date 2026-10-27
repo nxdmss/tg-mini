@@ -54,15 +54,13 @@ export function AdminGate({
     };
   }, []);
 
-  if (
-    access ===
-    "denied"
-  ) {
+  if (access === "denied") {
     return (
-      <Navigate
-        to="/"
-        replace
-      />
+      <main style={{padding: 32, fontFamily: '"IBM Plex Mono", monospace'}}>
+        <h1>НУЖЕН ВХОД АДМИНИСТРАТОРА</h1>
+        <p>Войди в учётную запись администратора или открой админку через Telegram.</p>
+        <Link to="/account">ПЕРЕЙТИ К ВХОДУ</Link>
+      </main>
     );
   }
 
