@@ -369,6 +369,11 @@ export async function createOrder(
   return res.data;
 }
 
+export async function getMyOrders(): Promise<Order[]> {
+  const res = await api.get<Order[]>("/orders/me", { headers: authHeaders() });
+  return res.data;
+}
+
 /* =========================================================
    API ERRORS
 ========================================================= */

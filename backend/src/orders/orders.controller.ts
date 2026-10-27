@@ -15,15 +15,25 @@ import { TelegramAuthGuard } from '../auth/telegram-auth.guard';
 import { ArchiveOrderDto } from './archive-order.dto';
 import { CreateOrderDto } from './create-order.dto';
 import { OrdersService } from './orders.service';
+import { WebAuthService } from '../auth/web-auth.service';
+import { UnauthorizedException } from '@nestjs/common';
 import { UpdateOrderStatusDto } from './update-order-status.dto';
 
 @Controller('orders')
 export class OrdersController {
-  constructor(private readonly ordersService: OrdersService) {}
+  constructor(private readonly ordersService: OrdersService, private readonly webAuth: WebAuthService) {}
 
   @Post()
-  create(@Body() body: CreateOrderDto) {
-    return this.ordersService.create(body);
+  async create(@Body() body: CreateOrderDto, @Req() req: any) {
+    const authorization = req.headers?.authorization;
+    let userId: string | undefined;
+    if (typeof authorization === "string" && authorization.startsWith("Bearer ")) {
+      const token = authorization.slice(7).trim();
+      if (!token) throw new UnauthorizedException("Missing token");
+      const user = await this.webAuth.getUserFromToken(token);
+      userId = user.id;
+    }
+    return this.ordersService.create(body, userId);
   }
 
   @Get('me')
