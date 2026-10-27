@@ -22,6 +22,7 @@ import type {
 } from "./types";
 
 import { Header } from "./components/Header";
+import { Account } from "./components/Account";
 import { ProductCard } from "./components/ProductCard";
 import { Filters } from "./components/Filters";
 
@@ -52,12 +53,13 @@ const PrankProduct = lazy(async () => ({
   default: (await import("./components/PrankProduct")).PrankProduct,
 }));
 
-type Section = "catalog" | "favorites" | "about";
+type Section = "catalog" | "favorites" | "about" | "account";
 const SWAG_SHOP_SLUG = "swagystan";
 
 function readSection(path: string): Section {
   if (path === "/favorites") return "favorites";
   if (path === "/about") return "about";
+  if (path === "/account") return "account";
   return "catalog";
 }
 function getProductId(path: string): string | null {
@@ -92,7 +94,7 @@ export default function App() {
       navigate(oldProduct[1] === SWAG_SHOP_SLUG
         ? `/product/${oldProduct[2]}`
         : "/", { replace: true });
-    } else if (!["/", "/catalog", "/favorites", "/about"].includes(path) && !getProductId(path)) {
+    } else if (!["/", "/catalog", "/favorites", "/about", "/account"].includes(path) && !getProductId(path)) {
       navigate("/", { replace: true });
     }
   }, [location.pathname, navigate]);
@@ -279,6 +281,7 @@ export default function App() {
             ["catalog", "КАТАЛОГ"],
             ["favorites", "ИЗБРАННОЕ"],
             ["about", "О НАС"],
+            ["account", "КАБИНЕТ"],
           ] as const).map(([id, title]) => (
             <button
               key={id}
@@ -294,7 +297,9 @@ export default function App() {
         )}
       </div>
 
-      {section === "about" ? (
+      {section === "account" ? (
+        <Account />
+      ) : section === "about" ? (
         <main className="container swag-about swag-about--textonly">
           <div className="swag-about__cityline">KIZILURT | DAGESTAN</div>
           <div className="swag-about__cityline swag-about__cityline--bottom">KIZILURT | DAGESTAN</div>
