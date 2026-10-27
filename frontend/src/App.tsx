@@ -31,6 +31,7 @@ import "./components/ProductOverlay.css";
 import "./components/StoreExperience.css";
 import "./components/SwagOnly.css";
 import { useFavorites } from "./favorites";
+import { sendVisitorPing } from "./visitorTracking";
 
 import { consumeStartParam } from "./telegram";
 import {
@@ -72,6 +73,25 @@ export default function App() {
   const location = useLocation();
   const navigate = useNavigate();
   const reducedMotion = useReducedMotion();
+
+  // First-party anonymous visits: page changes and heartbeat while visible.
+  useEffect(() => {
+    void sendVisitorPing(location.pathname);
+  }, [location.pathname]);
+
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      void sendVisitorPing(window.location.pathname);
+    }, 60_000);
+    const onVisible = () => {
+      if (!document.hidden) void sendVisitorPing(window.location.pathname);
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      window.clearInterval(timer);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
+  }, []);
 
   const section = readSection(location.pathname);
   const productIdFromUrl = getProductId(location.pathname);
