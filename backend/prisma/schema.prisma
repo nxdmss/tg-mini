@@ -164,3 +164,26 @@ enum OrderStatus {
   SHIPPED
   DONE
 }
+
+model Visitor {
+  id         String         @id
+  firstSeen  DateTime       @default(now())
+  lastSeen   DateTime       @default(now())
+  lastPath   String         @default("/")
+  visitCount Int            @default(0)
+  visits     VisitorVisit[]
+
+  @@index([lastSeen])
+  @@index([firstSeen])
+}
+
+model VisitorVisit {
+  id        String   @id @default(cuid())
+  visitorId String
+  visitor   Visitor  @relation(fields: [visitorId], references: [id], onDelete: Cascade)
+  startedAt DateTime @default(now())
+  lastSeen  DateTime @default(now())
+  path      String   @default("/")
+
+  @@index([visitorId, startedAt])
+}

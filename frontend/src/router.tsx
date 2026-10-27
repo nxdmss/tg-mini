@@ -10,6 +10,7 @@ import {
 } from "react-router-dom";
 
 import App from "./App";
+import { AdminSectionNav } from "./components/AdminSectionNav";
 
 import {
   AdminGate,
@@ -19,6 +20,7 @@ import {
  * Admin and its large CSS/API graph are not part of the storefront startup.
  * The chunk is requested only after AdminGate has allowed access.
  */
+const VisitorAnalytics = lazy(async () => ({ default: (await import("./components/VisitorAnalytics")).VisitorAnalytics }));
 const Admin = lazy(
   () =>
     import(
@@ -46,12 +48,13 @@ export default function Router() {
                   />
                 }
               >
-                <Admin />
+                <><AdminSectionNav /><Admin /></>
               </Suspense>
             </AdminGate>
           }
         />
 
+        <Route path="/admin/visitors" element={<AdminGate><Suspense fallback={null}><AdminSectionNav /><main className="admin-page"><div className="container admin"><VisitorAnalytics /></div></main></Suspense></AdminGate>} />
         {/* Keep one persistent storefront instance. */}
         <Route
           path="/*"

@@ -21,6 +21,7 @@ import { PushModule } from './push/push.module';
 import { AppController } from './app.controller';
 
 import { AppService } from './app.service';
+import { VisitorsModule } from './visitors/visitors.module';
 
 @Module({
   imports: [
@@ -43,6 +44,8 @@ import { AppService } from './app.service';
     TelegramModule,
 
     ShopsModule,
+
+    VisitorsModule,
   ],
 
   controllers: [
