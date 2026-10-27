@@ -17,6 +17,7 @@ import {
   deleteCategory,
   deleteProduct,
   getAdminOrders,
+  api,
   getBrands,
   getCategories,
   getProducts,
@@ -45,12 +46,15 @@ import type {
 } from "../types";
 
 import "./Admin.css";
+import { getAdminAccessHeaders } from "../adminAccessApi";
+import { VisitorAnalytics } from "../components/VisitorAnalytics";
 
 type TabKey =
   | "products"
   | "shops"
   | "catalog"
-  | "orders";
+  | "orders"
+  | "visitors";
 
 type ProductWithShop = Product & {
   shop?: AdminShop | null;
@@ -156,6 +160,9 @@ export default function Admin() {
 
   const [activeTab, setActiveTab] =
     useState<TabKey>("products");
+
+  const [visitorStats, setVisitorStats] = useState<{ online: number; total: number } | null>(null);
+  const [visitorStatsError, setVisitorStatsError] = useState(false);
 
   const [loading, setLoading] =
     useState(true);
@@ -370,6 +377,29 @@ export default function Admin() {
 
   useEffect(() => {
     void loadAdminData();
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    async function refreshVisitorStats() {
+      try {
+        const response = await api.get<{ online: number; total: number }>(
+          "/visitors/admin",
+          { headers: getAdminAccessHeaders(), timeout: 8000 },
+        );
+        if (active) {
+          setVisitorStats({ online: response.data.online, total: response.data.total });
+          setVisitorStatsError(false);
+        }
+      } catch {
+        if (active) {
+          setVisitorStatsError(true);
+        }
+      }
+    }
+    void refreshVisitorStats();
+    const timer = window.setInterval(() => void refreshVisitorStats(), 30000);
+    return () => { active = false; window.clearInterval(timer); };
   }, []);
 
   const filteredProducts =
@@ -1224,6 +1254,12 @@ export default function Admin() {
           <h1 className="admin-header__title">
             SWA6Y5TAN
           </h1>
+          <div className="admin-live-stats" role="status" aria-live="polite">
+            <span>ОНЛАЙН <strong>{visitorStats?.online ?? "—"}</strong></span>
+            <span>ПОСЕТИТЕЛЕЙ <strong>{visitorStats?.total ?? "—"}</strong></span>
+            {visitorStatsError && <span>СТАТИСТИКА НЕДОСТУПНА</span>}
+            <button type="button" onClick={() => setActiveTab("visitors")}>ПОДРОБНЕЕ ↗</button>
+          </div>
         </header>
 
         <div className="admin-tabs">
@@ -1294,6 +1330,14 @@ export default function Admin() {
           >
             Заказы
           </button>
+
+          <button
+            type="button"
+            className={`admin-tabs__button ${activeTab === "visitors" ? "is-active" : ""}`}
+            onClick={() => setActiveTab("visitors")}
+          >
+            Посетители
+          </button>
         </div>
 
         {message && (
@@ -1308,6 +1352,7 @@ export default function Admin() {
           </div>
         ) : (
           <>
+            {activeTab === "visitors" && <VisitorAnalytics />}
             {activeTab ===
               "products" && (
               <div className="admin-stack">
