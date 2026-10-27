@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { api } from "../api";
-import { getTelegramAdminHeaders } from "../adminAuth";
+import { getAdminAccessHeaders } from "../adminAccessApi";
 import "./VisitorAnalytics.css";
 import "../pages/Admin.css";
 
@@ -28,7 +28,7 @@ export function VisitorAnalytics() {
     async function refresh() {
       try {
         const response = await api.get<Dashboard>("/visitors/admin", {
-          headers: getTelegramAdminHeaders(),
+          headers: getAdminAccessHeaders(),
           timeout: 10000,
         });
         if (active) { setData(response.data); setError(""); }
