@@ -1415,6 +1415,6 @@ textarea {
 .header-cart__badge,
 .cart-btn__badge,
 .header-action__badge {
-  -webkit-text-stroke: 0.22px currentColor;
+  -webkit-text-stroke: 0.4px currentColor;
   font-variant-numeric: tabular-nums;
 }
