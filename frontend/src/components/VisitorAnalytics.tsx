@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { api } from "../api";
 import { getTelegramAdminHeaders } from "../adminAuth";
 import "./VisitorAnalytics.css";
+import "../pages/Admin.css";
 
 type Visit = { id: string; startedAt: string; lastSeen: string; path: string };
 type Visitor = {
