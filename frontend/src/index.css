@@ -1402,3 +1402,19 @@ textarea {
   -webkit-user-select: text !important;
   user-select: text !important;
 }
+
+/* Slightly stronger numerals while retaining the same mono proportions.
+   Applied only to price, counts, and explicitly marked numeric fields. */
+.swag-num,
+.card__price,
+.product-page__price,
+.checkout-cart-total,
+.checkout-totals__row--total,
+.checkout-summary-item__price,
+.checkout-cart-item__price,
+.header-cart__badge,
+.cart-btn__badge,
+.header-action__badge {
+  -webkit-text-stroke: 0.22px currentColor;
+  font-variant-numeric: tabular-nums;
+}
