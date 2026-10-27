@@ -26,6 +26,13 @@ SQL="$R/backend/prisma/migrations/20261027140000_visitor_analytics/migration.sql
 [ -s "$R/frontend/dist/index.html" ] && [ -s "$SQL" ]
 EXISTS=$(echo "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='public' AND table_name='Visitor';" | docker exec -i "$P" sh -c 'psql -At -U "$POSTGRES_USER" "$POSTGRES_DB"')
 if [ "$EXISTS" = 0 ]; then docker exec -i "$P" sh -c 'psql -1 -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" "$POSTGRES_DB"' < "$SQL"; fi
+MIG=20261027140000_visitor_analytics
+TRACKED=$(echo "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='public' AND table_name='_prisma_migrations';" | docker exec -i "$P" sh -c 'psql -At -U "$POSTGRES_USER" "$POSTGRES_DB"')
+if [ "$TRACKED" = 1 ]; then
+  ID=$(cat /proc/sys/kernel/random/uuid)
+  SUM=$(sha256sum "$SQL" | cut -d' ' -f1)
+  printf "INSERT INTO \"_prisma_migrations\" (id, checksum, finished_at, migration_name, applied_steps_count) SELECT '%s','%s',CURRENT_TIMESTAMP,'%s',1 WHERE NOT EXISTS (SELECT 1 FROM \"_prisma_migrations\" WHERE migration_name='%s');\n" "$ID" "$SUM" "$MIG" "$MIG" | docker exec -i "$P" sh -c 'psql -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" "$POSTGRES_DB"'
+fi
 docker compose -f "$D" up -d --no-deps --force-recreate "$S"
 for i in $(seq 1 15); do if curl -fsS --max-time 5 'http://127.0.0.1:3000/products?shop=swagystan' > /dev/null; then sudo cp -a "$R/frontend/dist/." /var/www/swagystan/; echo 'SWAGYSTAN UPDATED'; exit 0; fi; sleep 2; done
 docker tag "$OLD" "$IMAGE"
