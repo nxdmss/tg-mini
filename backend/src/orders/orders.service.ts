@@ -69,6 +69,7 @@ export class OrdersService {
 
   async create(
     dto: CreateOrderDto,
+    userId?: string,
   ) {
     const order =
       await this.prisma.$transaction(
@@ -298,6 +299,7 @@ export class OrdersService {
           const createdOrder =
             await tx.order.create({
               data: {
+                ...(userId ? { user: { connect: { id: userId } } } : {}),
                 customerName:
                   dto.name.trim(),
 
