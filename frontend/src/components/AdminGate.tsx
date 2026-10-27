@@ -5,7 +5,7 @@ import {
 } from "react";
 
 import {
-  Navigate,
+  Link,
 } from "react-router-dom";
 
 import {
