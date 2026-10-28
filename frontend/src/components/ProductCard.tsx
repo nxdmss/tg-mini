@@ -4,6 +4,7 @@ import {
   getProductPreviewImage,
   getProductPreviewSrcSet,
 } from "../utils";
+import { NumericText } from "./NumericText";
 
 export function ProductCard({
   product,
@@ -54,12 +55,12 @@ export function ProductCard({
       </div>
 
       <div className="card__body">
-        <span className="card__name">{product.name}</span>
-        <span className="card__brand">{product.brand.name}</span>
+        <span className="card__name"><NumericText text={product.name} /></span>
+        <span className="card__brand"><NumericText text={product.brand.name} /></span>
 
         <div className="card__footer">
           <span className="card__price">{formatPrice(product.price)}</span>
-          <span className="card__category">{product.category.name}</span>
+          <span className="card__category"><NumericText text={product.category.name} /></span>
         </div>
       </div>
     </button>
