@@ -139,8 +139,8 @@ html body .swag-only .checkout-item__price,
 html body .swag-only .checkout-item__qty,
 html body .swag-only .checkout-summary__value,
 html body .swag-only .quantity-stepper__value {
-  font-weight: 650 !important;
-  -webkit-text-stroke: 0.12px currentColor !important;
+  font-weight: 730 !important;
+  -webkit-text-stroke: 0.32px currentColor !important;
   letter-spacing: 0.012em !important;
   font-variant-numeric: lining-nums tabular-nums;
 }
@@ -192,4 +192,36 @@ html body .swag-only .swag-about__cityline {
   overflow-wrap: normal !important;
   text-align: center;
   -webkit-text-stroke: 0 !important;
+}
+
+
+/* SWAGYSTAN catalog: more breathing room under images; product title sits
+   closer to the brand and price, anchored near the bottom of each card. */
+html body .swag-only .card__body {
+  padding-top: 18px;
+  justify-content: flex-end;
+  gap: 2px;
+}
+html body .swag-only .card__name {
+  margin-top: auto;
+}
+html body .swag-only .card__footer {
+  margin-top: 0;
+  padding-top: 1px;
+}
+
+/* Preserve IZLOM's angular numerals but give all amounts and counters
+   stronger ink. Prices in catalog previews get the most emphasis. */
+html body .swag-only .card__price {
+  font-weight: 800 !important;
+  -webkit-text-stroke: 0.56px currentColor !important;
+}
+html body .swag-only .product-page__price {
+  font-weight: 800 !important;
+  -webkit-text-stroke: 0.46px currentColor !important;
+}
+html body .swag-only .swag-inline-number {
+  font-weight: 760 !important;
+  -webkit-text-stroke: 0.32px currentColor !important;
+  font-variant-numeric: lining-nums tabular-nums;
 }
