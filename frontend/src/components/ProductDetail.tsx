@@ -4,6 +4,7 @@ import { useCart } from "../cart";
 import { useFavorites } from "../favorites";
 import { formatPrice } from "../utils";
 import { CartIcon } from "./CartIcon";
+import { NumericText } from "./NumericText";
 import "./ProductDetail.css";
 
 type ProductDetailProps = {
@@ -116,7 +117,7 @@ export function ProductDetail({ product, onBack, onCartClick }: ProductDetailPro
           )}
         </section>
         <section className="product-page__info">
-          <h1 className="product-page__name">{product.name}</h1>
+          <h1 className="product-page__name"><NumericText text={product.name} /></h1>
           <div className="product-page__price swag-num">{formatPrice(product.price)}</div>
           {product.description && <p className="product-page__description">{product.description}</p>}
           <div className="product-page__sizes">
