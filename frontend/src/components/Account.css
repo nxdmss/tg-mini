@@ -1,1 +1,38 @@
 .swag-account{min-height:65vh;padding-top:36px;padding-bottom:90px;color:#111}.swag-account__heading{display:flex;justify-content:space-between;align-items:end;gap:16px;border-bottom:2px solid #111;padding-bottom:16px}.swag-account__heading h1{font-size:clamp(22px,5vw,42px);line-height:1;margin:0;font-weight:800}.swag-account__heading span,.swag-account__label,.swag-account__muted,.swag-account__profile span,.swag-account__order small{font-size:11px;letter-spacing:.05em}.swag-account__heading span{white-space:nowrap;color:#777}.swag-account__section{padding:26px 0;border-bottom:1px solid #aaa}.swag-account__label{color:#777;margin-bottom:20px}.swag-account__profile{display:flex;flex-direction:column;gap:7px}.swag-account__profile strong{font-size:22px}.swag-account__muted{color:#777}.swag-account__order{padding:17px 0;border-top:1px solid #ddd}.swag-account__orderhead,.swag-account__total{display:flex;justify-content:space-between;gap:12px;font-size:13px}.swag-account__orderhead span{font-size:11px}.swag-account__order>small{display:block;color:#777;margin:7px 0 15px}.swag-account__item{display:flex;align-items:center;gap:12px;margin:12px 0;font-size:12px}.swag-account__item img{width:52px;height:65px;object-fit:cover;background:#eee}.swag-account__item div{display:flex;flex:1;flex-direction:column;gap:5px}.swag-account__item small{color:#777}.swag-account__total{padding-top:13px;border-top:1px solid #eee}.swag-account__link{display:flex;justify-content:space-between;color:inherit;text-decoration:none;font-weight:750}.swag-account__exit,.swag-account__switch{border:0;background:transparent;padding:22px 0;font:inherit;cursor:pointer;text-align:left}.swag-account__exit{font-size:12px}.swag-account__auth{max-width:440px}.swag-account__auth form{display:flex;flex-direction:column;gap:18px}.swag-account__auth label{font-size:11px;display:flex;flex-direction:column;gap:8px}.swag-account__auth input{width:100%;box-sizing:border-box;border:1px solid #aaa;border-radius:0;background:white;color:#111;padding:14px;font:inherit;font-size:15px;outline-offset:2px}.swag-account__submit{background:#111;color:white;border:0;padding:16px;font:inherit;cursor:pointer}.swag-account__switch{font-size:11px;text-decoration:underline}.swag-account__error{font-size:12px;color:#a00;margin-top:20px}@media(max-width:600px){.swag-account{padding-top:24px}.swag-account__heading{align-items:start;flex-direction:column;gap:8px}.swag-account__section{padding:22px 0}}
+/* Quiet, spacious account layout. */
+.swag-account{max-width:1180px;margin:0 auto;padding-top:48px}
+.swag-account__heading{border-bottom:1px solid #111;padding-bottom:20px}
+.swag-account__heading h1{font-size:14px;letter-spacing:.12em}
+.swag-account__hero{display:flex;justify-content:space-between;align-items:flex-start;gap:32px;padding:56px 0 48px}
+.swag-account__identity{min-width:0;flex:1}
+.swag-account__identity h2{font-size:clamp(36px,5vw,72px);font-weight:600;letter-spacing:-.055em;line-height:1.1;margin:0 0 20px;overflow-wrap:anywhere;text-transform:none}
+.swag-account__identity p{font-size:14px;color:#666;margin:6px 0;overflow-wrap:anywhere}
+.swag-account__edit-trigger{padding:12px 0;background:none;border:0;border-bottom:1px solid #999;font:inherit;font-size:11px;cursor:pointer;white-space:nowrap}
+.swag-account__nav{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid #111;border-bottom:1px solid #111}
+.swag-account__nav a{display:flex;justify-content:space-between;align-items:center;padding:26px 0;font-size:15px;font-weight:700;text-decoration:none;color:inherit;gap:12px}
+.swag-account__nav a:first-child{padding-right:28px;border-right:1px solid #ccc}
+.swag-account__nav a:last-child{padding-left:28px}
+.swag-account__section{border-bottom:1px solid #ccc;padding:36px 0}
+.swag-account__label{font-size:12px;font-weight:600;letter-spacing:.08em;color:#555;margin:0 0 24px}
+.swag-account__empty{padding:32px 0 48px}
+.swag-account__empty p{font-size:24px;font-weight:500;margin:0 0 24px}
+.swag-account__empty a{font-size:12px;color:inherit;text-underline-offset:6px}
+.swag-account__order{padding:24px 0}
+.swag-account__item{font-size:14px;gap:20px;margin:22px 0}
+.swag-account__item img{width:72px;height:90px;object-fit:contain;background:transparent}
+.swag-account__item div{min-width:0;overflow-wrap:anywhere}
+.swag-account__item>span{white-space:nowrap}
+.swag-account__orderhead{flex-wrap:wrap;font-size:14px}
+.swag-account__orderhead span{border:1px solid #ccc;padding:5px 8px;font-size:10px}
+.swag-account__exit{color:#777;font-size:11px;padding-top:28px}
+.swag-account__auth{margin:40px auto 0;width:100%;max-width:460px;border:0}
+.swag-account__auth input,.swag-account__edit input{border:0;border-bottom:1px solid #aaa;background:transparent;border-radius:0;padding:14px 0;font:inherit;font-size:16px;color:#111;width:100%;box-sizing:border-box}
+.swag-account__auth form{gap:26px}
+.swag-account__submit{margin-top:12px}
+.swag-account__edit{width:280px;max-width:100%;display:grid;gap:12px}
+.swag-account__edit label{font-size:12px}
+.swag-account__edit>div{display:flex;gap:20px}
+.swag-account__edit button{border:0;background:none;padding:10px 0;font:inherit;font-size:11px;cursor:pointer}
+.swag-account__edit button:disabled{opacity:.4;cursor:wait}
+.swag-account button:focus-visible,.swag-account a:focus-visible{outline:2px solid #111;outline-offset:5px}
+@media(max-width:600px){.swag-account{padding-top:28px}.swag-account__hero{flex-direction:column;padding:32px 0;gap:20px}.swag-account__identity h2{font-size:40px}.swag-account__nav a{font-size:12px;padding:22px 0}.swag-account__nav a:first-child{padding-right:16px}.swag-account__nav a:last-child{padding-left:16px}.swag-account__item{gap:12px;font-size:12px}.swag-account__item img{width:54px;height:72px}.swag-account__auth{margin-top:12px}}
