@@ -5,7 +5,6 @@ import { useFavorites } from "../favorites";
 import { formatPrice } from "../utils";
 import { CartIcon } from "./CartIcon";
 import { NumericText } from "./NumericText";
-import { getTrimmedProductImageUrl } from "../productImageTrim";
 import "./ProductDetail.css";
 
 type ProductDetailProps = {
@@ -26,19 +25,6 @@ export function ProductDetail({ product, onBack, onCartClick }: ProductDetailPro
   const [added, setAdded] = useState(false);
   const images = product.images ?? [];
   const currentImage = images[imageIndex]?.url ?? images[0]?.url ?? "";
-  const [processedImage, setProcessedImage] = useState<{ original: string; url: string } | null>(null);
-  const displayImage = processedImage?.original === currentImage
-    ? processedImage.url
-    : currentImage;
-
-  useEffect(() => {
-    if (!currentImage) return;
-    let cancelled = false;
-    getTrimmedProductImageUrl(currentImage).then((url) => {
-      if (!cancelled && url) setProcessedImage({ original: currentImage, url });
-    });
-    return () => { cancelled = true; };
-  }, [currentImage]);
   const selectedSizeData = product.sizes.find((size) => size.size === selectedSize);
   const canAdd = Boolean(selectedSizeData && selectedSizeData.stock > 0);
 
@@ -109,7 +95,7 @@ export function ProductDetail({ product, onBack, onCartClick }: ProductDetailPro
                 aria-hidden="true"
               />
             </button>
-            {currentImage ? <img className="product-page__image" src={displayImage} alt={product.name} /> : (
+            {currentImage ? <img className="product-page__image" src={currentImage} alt={product.name} /> : (
               <div className="product-page__image-empty">SWA6Y5TAN</div>
             )}
           </div>
