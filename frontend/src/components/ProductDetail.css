@@ -52,7 +52,7 @@
 /* Desktop: fit the photo to the viewport and keep purchase details readable. */
 .product-page__content {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) clamp(300px, 27vw, 400px);
+  grid-template-columns: minmax(0, 11fr) minmax(0, 9fr);
   align-items: start;
   gap: clamp(24px, 3vw, 48px);
   width: 100%;
