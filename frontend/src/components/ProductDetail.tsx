@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import type { Product } from "../types";
 import { useCart } from "../cart";
 import { useFavorites } from "../favorites";
-import { formatPrice } from "../utils";
+import { formatPrice, getProductDetailImage } from "../utils";
 import { CartIcon } from "./CartIcon";
 import { NumericText } from "./NumericText";
 import "./ProductDetail.css";
@@ -25,6 +25,7 @@ export function ProductDetail({ product, onBack, onCartClick }: ProductDetailPro
   const [added, setAdded] = useState(false);
   const images = product.images ?? [];
   const currentImage = images[imageIndex]?.url ?? images[0]?.url ?? "";
+  const detailImage = getProductDetailImage(currentImage);
   const selectedSizeData = product.sizes.find((size) => size.size === selectedSize);
   const canAdd = Boolean(selectedSizeData && selectedSizeData.stock > 0);
 
@@ -95,7 +96,11 @@ export function ProductDetail({ product, onBack, onCartClick }: ProductDetailPro
                 aria-hidden="true"
               />
             </button>
-            {currentImage ? <img className="product-page__image" src={currentImage} alt={product.name} /> : (
+            {currentImage ? <img className="product-page__image" src={detailImage} alt={product.name} onError={(event) => {
+              if (detailImage !== currentImage && event.currentTarget.getAttribute("src") !== currentImage) {
+                event.currentTarget.src = currentImage;
+              }
+            }} /> : (
               <div className="product-page__image-empty">SWA6Y5TAN</div>
             )}
           </div>
