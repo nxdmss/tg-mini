@@ -14,6 +14,12 @@ type HeaderProps = {
   homePath?: string;
   logoNegative?: boolean;
   logoPosition?: "left" | "center";
+  navItems?: Array<{
+    id: string;
+    title: string;
+    active: boolean;
+    onSelect: () => void;
+  }>;
 };
 
 export function Header({
@@ -21,6 +27,7 @@ export function Header({
   homePath = "/",
   logoNegative = false,
   logoPosition = "left",
+  navItems,
 }: HeaderProps) {
   const { count } = useCart();
   const navigate = useNavigate();
@@ -88,6 +95,22 @@ export function Header({
             />
           </span>
         </motion.button>
+
+        {navItems && navItems.length > 0 && (
+          <nav className="swag-nav swag-nav--header" aria-label="Навигация магазина">
+            {navItems.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                className={`swag-nav__tab ${item.active ? "is-active" : ""}`}
+                onClick={item.onSelect}
+                aria-current={item.active ? "page" : undefined}
+              >
+                {item.title}
+              </button>
+            ))}
+          </nav>
+        )}
 
         <div className="header__actions">
           <button
