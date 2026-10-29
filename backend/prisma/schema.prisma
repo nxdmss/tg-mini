@@ -15,6 +15,8 @@ model User {
   name              String?
   phone             String?
   role              Role               @default(USER)
+  cartItems         AccountCartItem[]
+  favorites         AccountFavorite[]
   orders            Order[]
   pushSubscriptions PushSubscription[]
   createdAt         DateTime           @default(now())
@@ -186,4 +188,20 @@ model VisitorVisit {
   path      String   @default("/")
 
   @@index([visitorId, startedAt])
+}
+
+model AccountCartItem {
+  userId String
+  productId String
+  size String
+  quantity Int
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@id([userId, productId, size])
+}
+
+model AccountFavorite {
+  userId String
+  productId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@id([userId, productId])
 }

@@ -14,7 +14,7 @@ type ProductDetailProps = {
 };
 
 export function ProductDetail({ product, onBack, onCartClick }: ProductDetailProps) {
-  const { add, count } = useCart();
+  const { add, count, ready } = useCart();
   const { isFavorite, toggle } = useFavorites();
   const [imageIndex, setImageIndex] = useState(0);
   const firstAvailableSize = useMemo(
@@ -27,7 +27,7 @@ export function ProductDetail({ product, onBack, onCartClick }: ProductDetailPro
   const currentImage = images[imageIndex]?.url ?? images[0]?.url ?? "";
   const detailImage = getProductDetailImage(currentImage);
   const selectedSizeData = product.sizes.find((size) => size.size === selectedSize);
-  const canAdd = Boolean(selectedSizeData && selectedSizeData.stock > 0);
+  const canAdd = Boolean(ready && selectedSizeData && selectedSizeData.stock > 0);
 
   useEffect(() => {
     setImageIndex(0);

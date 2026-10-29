@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 
+import { ShoppingController } from './shopping.controller';
 import { AuthController } from './auth.controller';
 import { TelegramAdminGuard } from './telegram-admin.guard';
 import { TelegramAuthGuard } from './telegram-auth.guard';
@@ -49,7 +50,7 @@ import { WebAuthService } from './web-auth.service';
       },
     }),
   ],
-  controllers: [AuthController],
+  controllers: [AuthController, ShoppingController],
   providers: [
     TelegramAuthService,
     WebAuthService,

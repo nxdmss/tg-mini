@@ -40,8 +40,6 @@
 .swag-about__cityline{width:100%;text-align:center;font:900 clamp(28px,7vw,72px)/1 "IBM Plex Mono",monospace;letter-spacing:-.05em;text-transform:uppercase}
 .swag-about__cityline--bottom{margin-top:auto}
 .swag-only .product-page__content{padding-top:0;padding-bottom:38px}
-.swag-only .product-page__gallery{min-height:0;height:auto;padding:0}
-.swag-only .product-page__image-box{position:relative;width:min(360px,84vw);height:clamp(280px,51vh,470px);aspect-ratio:auto}
 .swag-only .product-page__info{margin-top:8px}
 
 /* Favorite on catalog cards — top right over the product image. */
@@ -79,7 +77,6 @@
   .swag-only .grid{gap:17px 12px}
   .swag-only .card__name{font-size:14px}
   .swag-about{padding-top:26px}
-  .swag-only .product-page__image-box{height:clamp(260px,44vh,400px)}
   .swag-card-like{top:8px;right:8px;width:38px;height:38px}
   .swag-card-like img{width:25px;height:25px}
   .product-page__favorite-floating{top:8px;right:8px;width:42px;height:42px}
@@ -1007,4 +1004,22 @@ html body .swag-only .toolbar__chips-row .chip {
     padding-right: 6px !important;
     font-size: clamp(14px, 3.8vw, 16px) !important;
   }
+}
+
+/* Quiet header mark, independent of the navigation hit areas. */
+html body .swag-only .store-top .header .brand__logo img {
+  height: 48px;
+  max-width: 112px;
+}
+@media (max-width: 520px) {
+  html body .swag-only .store-top .header .brand__logo img {
+    height: 36px;
+    max-width: 88px;
+  }
+}
+
+/* Override the old compact gallery rules in this theme. */
+html body .swag-only .product-page__image-box {
+  width: 100%;
+  height: 100%;
 }

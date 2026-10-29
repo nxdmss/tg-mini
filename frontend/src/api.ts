@@ -43,10 +43,12 @@ export function getAccessToken() {
 
 export function setAccessToken(token: string) {
   localStorage.setItem(ACCESS_TOKEN_KEY, token);
+  window.dispatchEvent(new Event("swag:auth"));
 }
 
 export function clearAccessToken() {
   localStorage.removeItem(ACCESS_TOKEN_KEY);
+  window.dispatchEvent(new Event("swag:auth"));
 }
 
 export function isWebLoggedIn() {
@@ -72,7 +74,7 @@ api.interceptors.request.use((config) => {
    AUTH HEADERS
 ========================================================= */
 
-function authHeaders() {
+export function authHeaders() {
   const initData = getTelegramInitData();
 
   if (initData) {
