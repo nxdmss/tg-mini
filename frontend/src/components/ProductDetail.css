@@ -739,7 +739,8 @@
     max-width: none;
     object-fit: contain;
     object-position: center;
-    transform: none;
+    /* The source photo has large white margins; zoom the image itself. */
+    transform: scale(3.2);
     transform-origin: center center;
   }
 
@@ -811,6 +812,11 @@
 }
 /* Tablet and mobile: keep the image first, but scale the whole page up. */
 @media (max-width: 900px) {
+  .product-page__image {
+    transform: scale(2.3);
+    transform-origin: center center;
+  }
+
   .product-page__content {
     width: min(94vw, 760px);
     padding-top: 12px;
