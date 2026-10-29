@@ -28,6 +28,12 @@ function cloudinaryPreview(url: string, width: number) {
   );
 }
 
+/** For transparent Cloudinary cutouts, strip empty edges at delivery (no browser CORS needed). */
+export function getProductDetailImage(url: string): string {
+  if (!isCloudinaryImage(url) || !/\\.(?:png|webp)(?:[?#]|$)/i.test(url)) return url;
+  return url.replace(CLOUDINARY_UPLOAD_MARKER, `${CLOUDINARY_UPLOAD_MARKER}e_trim/`);
+}
+
 export function getProductPreviewImage(product: {
   images: Array<{ url: string }>;
 }) {
