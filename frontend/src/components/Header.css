@@ -73,8 +73,8 @@
   grid-area: 1 / 1;
   display: block;
   width: auto;
-  height: 32px;
-  max-width: min(24vw, 120px);
+  height: 23px;
+  max-width: min(21vw, 90px);
   object-fit: contain;
   transform: translateY(3px) translateZ(0);
   backface-visibility: hidden;
@@ -90,8 +90,8 @@
   .header__actions { right: 13px; }
   .header-action { padding: 0 4px; font-size: 11px; }
   .brand__logo-image {
-    height: 28px;
-    max-width: 22vw;
+    height: 19px;
+    max-width: 20vw;
     transform: translateY(4px) translateZ(0);
   }
 }
