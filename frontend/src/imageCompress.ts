@@ -9,9 +9,9 @@ export async function compressImageFile(file: File): Promise<File> {
     return file;
   }
 
-  // PNG не перекодируем в JPEG,
-  // чтобы не потерять прозрачный фон.
-  if (file.type === "image/png") {
+  // PNG и уже обрезанный WebP не переводим в JPEG,
+  // чтобы сохранить прозрачность фона.
+  if (file.type === "image/png" || file.type === "image/webp") {
     return file;
   }
 
