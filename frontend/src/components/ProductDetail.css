@@ -917,3 +917,23 @@
     font-size: 15px !important;
   }
 }
+
+
+/* PRODUCT PHOTO ZOOM — enlarge the garment inside the existing gallery. */
+.product-page__image {
+  transform: scale(1.95);
+  transform-origin: center center;
+  will-change: transform;
+}
+
+@media (max-width: 900px) {
+  .product-page__image {
+    transform: scale(1.45);
+  }
+}
+
+@media (max-width: 520px) {
+  .product-page__image {
+    transform: scale(1.28);
+  }
+}
