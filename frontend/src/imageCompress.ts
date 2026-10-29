@@ -9,9 +9,8 @@ export async function compressImageFile(file: File): Promise<File> {
     return file;
   }
 
-  // PNG и уже обрезанный WebP не переводим в JPEG,
-  // чтобы сохранить прозрачность фона.
-  if (file.type === "image/png" || file.type === "image/webp") {
+  // Preserve original PNG transparency.
+  if (file.type === "image/png") {
     return file;
   }
 
@@ -70,14 +69,9 @@ export async function compressImageFile(file: File): Promise<File> {
       height,
     );
 
+    const outputType = file.type === "image/webp" ? "image/webp" : "image/jpeg";
     const blob = await new Promise<Blob | null>(
-      (resolve) => {
-        canvas.toBlob(
-          resolve,
-          "image/jpeg",
-          JPEG_QUALITY,
-        );
-      },
+      (resolve) => canvas.toBlob(resolve, outputType, JPEG_QUALITY),
     );
 
     if (!blob || blob.size >= file.size) {
@@ -90,9 +84,9 @@ export async function compressImageFile(file: File): Promise<File> {
 
     return new File(
       [blob],
-      `${baseName}.jpg`,
+      `${baseName}.${outputType === "image/webp" ? "webp" : "jpg"}`,
       {
-        type: "image/jpeg",
+        type: outputType,
         lastModified: Date.now(),
       },
     );
