@@ -1,3 +1,5 @@
+import { trimProductImageFile } from "./productImageTrim";
+
 const MAX_SIDE = 1400;
 const JPEG_QUALITY = 0.82;
 const SKIP_BELOW_BYTES = 320_000;
@@ -101,12 +103,8 @@ export async function compressImageFile(file: File): Promise<File> {
   }
 }
 
-export async function compressImageFiles(
-  files: File[],
-) {
+export async function compressImageFiles(files: File[]) {
   return Promise.all(
-    files.map((file) =>
-      compressImageFile(file),
-    ),
+    files.map(async (file) => compressImageFile(await trimProductImageFile(file))),
   );
 }
