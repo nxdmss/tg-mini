@@ -78,10 +78,6 @@ img {
   padding: 4px 0 0;
 }
 
-.brand__logo img {
-  height: 68px; width: auto;
-}
-
 .header-cart {
   min-height: 40.5px; padding: 0 15px; border-radius: 999px; display: inline-flex; align-items: center;
   justify-content: center; gap: 8.5px; position: relative; background: transparent;
