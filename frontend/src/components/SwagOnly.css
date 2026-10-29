@@ -643,3 +643,258 @@ html body .swag-only .store-experience__catalog .card__category {
     font-size: 12px;
   }
 }
+
+
+/* Larger storefront masthead and controls: scale the whole top zone, not only
+   the logo. Keep the catalogue layout unchanged. */
+html body .swag-only .store-top .header {
+  height: 124px;
+}
+
+html body .swag-only .store-top .header .header__inner {
+  height: 124px;
+  padding-left: clamp(30px, 3.2vw, 64px);
+  padding-right: clamp(30px, 3.2vw, 64px);
+}
+
+html body .swag-only .store-top .header .brand__logo img {
+  height: 98px;
+  max-width: min(32vw, 230px);
+}
+
+html body .swag-only .swag-nav--header {
+  max-width: calc(100% - 360px);
+  gap: clamp(28px, 3.2vw, 58px);
+  min-height: 58px;
+}
+
+html body .swag-only .swag-nav--header .swag-nav__tab {
+  padding: 14px 0 16px;
+  font-size: clamp(16px, 1.25vw, 20px);
+  letter-spacing: 0.015em;
+}
+
+html body .swag-only .swag-nav--header .swag-nav__tab.is-active::after {
+  height: 4px;
+}
+
+html body .swag-only .store-top .header .header__actions {
+  right: clamp(30px, 3.2vw, 64px);
+}
+
+html body .swag-only .store-top .header .header-cart {
+  min-height: 56px;
+  padding-left: 22px;
+  padding-right: 22px;
+}
+
+html body .swag-only .store-top .header .header-cart svg {
+  width: 34px;
+  height: 34px;
+}
+
+html body .swag-only .store-top .toolbar {
+  padding-bottom: 18px;
+}
+
+html body .swag-only .store-top .toolbar .toolbar__inner {
+  padding-left: clamp(30px, 3.2vw, 64px);
+  padding-right: clamp(30px, 3.2vw, 64px);
+  gap: 14px;
+}
+
+html body .swag-only .search-strip {
+  gap: 10px;
+}
+
+html body .swag-only .search-strip__input {
+  height: 48px;
+  min-height: 48px;
+  font-size: clamp(16px, 1.15vw, 19px);
+  letter-spacing: 0.035em;
+}
+
+html body .swag-only .search-strip::after {
+  height: 2px;
+}
+
+html body .swag-only .toolbar__chips-row {
+  gap: 18px;
+  padding-top: 4px;
+}
+
+html body .swag-only .toolbar__chips-row .chips {
+  gap: clamp(14px, 1.4vw, 24px);
+}
+
+html body .swag-only .toolbar__chips-row .chip {
+  min-height: 48px;
+  padding-left: clamp(16px, 1.35vw, 25px);
+  padding-right: clamp(16px, 1.35vw, 25px);
+  font-size: clamp(15px, 1vw, 18px);
+  letter-spacing: 0.015em;
+}
+
+html body .swag-only .toolbar__chips-row .sort-btn {
+  width: 48px;
+  height: 48px;
+}
+
+html body .swag-only .toolbar__chips-row .sort-btn svg {
+  width: 23px;
+  height: 23px;
+}
+
+@media (max-width: 900px) {
+  html body .swag-only .store-top .header {
+    height: 138px;
+  }
+
+  html body .swag-only .store-top .header .header__inner {
+    height: 138px;
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+
+  html body .swag-only .store-top .header .brand__logo img {
+    height: 82px;
+    max-width: min(36vw, 190px);
+  }
+
+  html body .swag-only .store-top .header .header__actions {
+    top: 41px;
+    right: 18px;
+  }
+
+  html body .swag-only .store-top .header .header-cart {
+    min-height: 48px;
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+
+  html body .swag-only .store-top .header .header-cart svg {
+    width: 29px;
+    height: 29px;
+  }
+
+  html body .swag-only .swag-nav--header {
+    left: 18px;
+    right: 18px;
+    min-height: 52px;
+    gap: clamp(8px, 2vw, 20px);
+    padding-bottom: 5px;
+  }
+
+  html body .swag-only .swag-nav--header .swag-nav__tab {
+    padding: 12px 0 13px;
+    font-size: clamp(12px, 2vw, 16px);
+  }
+
+  html body .swag-only .store-top .toolbar .toolbar__inner {
+    padding-left: 18px;
+    padding-right: 18px;
+    gap: 12px;
+  }
+
+  html body .swag-only .search-strip__input {
+    height: 44px;
+    min-height: 44px;
+    font-size: 15px;
+  }
+
+  html body .swag-only .toolbar__chips-row .chip {
+    min-height: 44px;
+    padding-left: 15px;
+    padding-right: 15px;
+    font-size: 14px;
+  }
+
+  html body .swag-only .toolbar__chips-row .sort-btn {
+    width: 44px;
+    height: 44px;
+  }
+}
+
+@media (max-width: 520px) {
+  html body .swag-only .store-top .header {
+    height: 126px;
+  }
+
+  html body .swag-only .store-top .header .header__inner {
+    height: 126px;
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  html body .swag-only .store-top .header .brand__logo img {
+    height: 74px;
+    max-width: 38vw;
+  }
+
+  html body .swag-only .store-top .header .header__actions {
+    top: 36px;
+    right: 10px;
+  }
+
+  html body .swag-only .store-top .header .header-cart {
+    min-height: 44px;
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  html body .swag-only .store-top .header .header-cart svg {
+    width: 26px;
+    height: 26px;
+  }
+
+  html body .swag-only .swag-nav--header {
+    left: 10px;
+    right: 10px;
+    min-height: 48px;
+    gap: 7px;
+    padding-bottom: 4px;
+  }
+
+  html body .swag-only .swag-nav--header .swag-nav__tab {
+    font-size: clamp(10px, 2.75vw, 13px);
+    padding: 11px 0 12px;
+    letter-spacing: 0;
+  }
+
+  html body .swag-only .store-top .toolbar .toolbar__inner {
+    padding-left: 12px;
+    padding-right: 12px;
+    gap: 10px;
+  }
+
+  html body .swag-only .search-strip__input {
+    height: 40px;
+    min-height: 40px;
+    font-size: 13px;
+  }
+
+  html body .swag-only .toolbar__chips-row {
+    gap: 8px;
+  }
+
+  html body .swag-only .toolbar__chips-row .chips {
+    gap: 10px;
+  }
+
+  html body .swag-only .toolbar__chips-row .chip {
+    min-height: 40px;
+    padding-left: 12px;
+    padding-right: 12px;
+    font-size: 12px;
+  }
+
+  html body .swag-only .toolbar__chips-row .sort-btn {
+    width: 40px;
+    height: 40px;
+  }
+
+  html body .swag-only .toolbar__chips-row .sort-btn svg {
+    width: 20px;
+    height: 20px;
+  }
+}
