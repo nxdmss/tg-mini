@@ -476,3 +476,15 @@
 @media (prefers-reduced-motion: reduce) {
   .product-page__favorite-floating { transition: none; }
 }
+
+/* Scale the complete purchase block on desktop. */
+@media (min-width: 901px) {
+  .product-page__name { font-size: clamp(32px, 2.3vw, 44px); }
+  .product-page__price { margin-top: 14px; font-size: clamp(28px, 2vw, 36px); }
+  .product-page__description { margin-top: 24px; font-size: 18px; line-height: 1.6; }
+  .product-page__sizes { margin-top: 32px; gap: 16px; }
+  .product-page__sizes-title { font-size: 18px; }
+  .product-page__sizes-list { gap: 10px; }
+  .product-page__size { min-width: 48px; height: 52px; padding: 0 8px; font-size: 19px; }
+  .product-page__add { min-height: 66px; margin-top: 30px; padding: 0 16px; font-size: 17px; }
+}
