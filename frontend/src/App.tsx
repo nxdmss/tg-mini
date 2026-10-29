@@ -295,23 +295,17 @@ export default function App() {
   return (
     <div className="app store-experience swag-only">
       <div className="store-top store-experience__top">
-        <Header onCartClick={() => setCartOpen(true)} homePath="/" logoPosition="left" />
-        <nav className="swag-nav" aria-label="Навигация магазина">
-          {([
-            ["catalog", "КАТАЛОГ"],
-            ["favorites", "ИЗБРАННОЕ"],
-            ["about", "О НАС"],
-            ["account", "КАБИНЕТ"],
-          ] as const).map(([id, title]) => (
-            <button
-              key={id}
-              className={`swag-nav__tab ${section === id ? "is-active" : ""}`}
-              type="button"
-              onClick={() => openSection(id)}
-              aria-current={section === id ? "page" : undefined}
-            >{title}</button>
-          ))}
-        </nav>
+        <Header
+          onCartClick={() => setCartOpen(true)}
+          homePath="/"
+          logoPosition="left"
+          navItems={[
+            { id: "catalog", title: "КАТАЛОГ", active: section === "catalog", onSelect: () => openSection("catalog") },
+            { id: "favorites", title: "ИЗБРАННОЕ", active: section === "favorites", onSelect: () => openSection("favorites") },
+            { id: "about", title: "О НАС", active: section === "about", onSelect: () => openSection("about") },
+            { id: "account", title: "КАБИНЕТ", active: section === "account", onSelect: () => openSection("account") },
+          ]}
+        />
         {section === "catalog" && (
           <Filters categories={categories} query={query} onChange={setQuery} />
         )}
