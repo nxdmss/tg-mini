@@ -898,3 +898,39 @@ html body .swag-only .toolbar__chips-row .sort-btn svg {
     height: 20px;
   }
 }
+
+
+/* Category selector: tighter spacing, larger labels. */
+html body .swag-only .toolbar__chips-row .chips {
+  gap: clamp(8px, 0.8vw, 13px);
+}
+
+html body .swag-only .toolbar__chips-row .chip {
+  padding-left: clamp(13px, 1vw, 18px);
+  padding-right: clamp(13px, 1vw, 18px);
+  font-size: clamp(18px, 1.2vw, 21px);
+}
+
+@media (max-width: 900px) {
+  html body .swag-only .toolbar__chips-row .chips {
+    gap: 7px;
+  }
+
+  html body .swag-only .toolbar__chips-row .chip {
+    padding-left: 12px;
+    padding-right: 12px;
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 520px) {
+  html body .swag-only .toolbar__chips-row .chips {
+    gap: 5px;
+  }
+
+  html body .swag-only .toolbar__chips-row .chip {
+    padding-left: 9px;
+    padding-right: 9px;
+    font-size: 13px;
+  }
+}
