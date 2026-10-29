@@ -1008,13 +1008,13 @@ html body .swag-only .toolbar__chips-row .chip {
 
 /* Quiet header mark, independent of the navigation hit areas. */
 html body .swag-only .store-top .header .brand__logo img {
-  height: 48px;
-  max-width: 112px;
+  height: 56px;
+  max-width: 130px;
 }
 @media (max-width: 520px) {
   html body .swag-only .store-top .header .brand__logo img {
-    height: 36px;
-    max-width: 88px;
+    height: 42px;
+    max-width: 102px;
   }
 }
 
