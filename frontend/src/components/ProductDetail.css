@@ -702,26 +702,24 @@
 }
 
 
-/* =========================================================
-   PRODUCT DETAIL — LARGE GALLERY
-   Let the photo dominate the page without cropping the garment.
-   ========================================================= */
+/* Product detail gallery: enlarge the garment inside the frame, not just the frame. */
 @media (min-width: 901px) {
   .product-page__content {
     width: 100%;
     max-width: none;
     margin: 0;
-    padding: 0 12px 24px 0;
+    padding: 0 16px 24px 0;
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(220px, 260px);
+    grid-template-columns: minmax(0, 1fr) 250px;
     gap: 18px;
     align-items: start;
   }
 
   .product-page__gallery {
     width: 100%;
-    min-height: 0;
-    aspect-ratio: 1 / 1;
+    height: calc(100dvh - 76px);
+    min-height: 620px;
+    position: relative;
   }
 
   .product-page__image-box {
@@ -740,7 +738,8 @@
     max-width: none;
     object-fit: contain;
     object-position: center;
-    transform: none;
+    transform: scale(3.5);
+    transform-origin: center center;
   }
 
   .product-page__arrow--left { left: 4px; }
@@ -748,27 +747,27 @@
 
   .product-page__info {
     width: 100%;
-    max-width: 260px;
-    margin-top: 0;
+    max-width: 250px;
+    margin-top: 24px;
     align-items: flex-start;
     text-align: left;
   }
 
   .product-page__name {
     max-width: 100%;
-    font-size: clamp(26px, 1.8vw, 34px) !important;
+    font-size: clamp(25px, 1.65vw, 32px) !important;
     line-height: 1.08;
     letter-spacing: 0.01em;
   }
 
   .product-page__price {
     margin-top: 7px;
-    font-size: clamp(22px, 1.5vw, 28px) !important;
+    font-size: clamp(22px, 1.4vw, 27px) !important;
     line-height: 1.1;
   }
 
   .product-page__description {
-    max-width: 260px;
+    max-width: 250px;
     margin-top: 14px;
     font-size: 15px !important;
     line-height: 1.45;
@@ -784,41 +783,37 @@
 
   .product-page__sizes-list {
     justify-content: flex-start;
-    gap: 5px;
+    gap: 4px;
   }
 
   .product-page__size {
-    min-width: 34px;
-    height: 42px;
-    padding: 0 5px;
+    min-width: 32px;
+    height: 40px;
+    padding: 0 4px;
     font-size: 14px !important;
   }
 
   .product-page__add {
     width: 100%;
-    max-width: 260px;
-    min-height: 54px;
+    max-width: 250px;
+    min-height: 52px;
     margin-top: 22px;
-    font-size: 14px !important;
+    font-size: 13px !important;
   }
 }
 
-/* Tablet and mobile: a large square gallery above the product details. */
+/* Smaller screens: keep the gallery dominant and zoom the product itself. */
 @media (max-width: 900px) {
-  .product-page__image {
-    transform: none;
-  }
-
   .product-page__content {
     width: min(98vw, 900px);
     padding-top: 8px;
-    padding-bottom: calc(44px + env(safe-area-inset-bottom));
+    padding-bottom: calc(40px + env(safe-area-inset-bottom));
   }
 
   .product-page__gallery {
     width: 100%;
-    min-height: 0;
-    aspect-ratio: 1 / 1;
+    height: min(86dvh, 900px);
+    min-height: 480px;
   }
 
   .product-page__image-box {
@@ -826,6 +821,15 @@
     height: 100%;
     max-width: none;
     aspect-ratio: auto;
+  }
+
+  .product-page__image {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center;
+    transform: scale(2.5);
+    transform-origin: center center;
   }
 
   .product-page__info {
@@ -856,7 +860,6 @@
   }
 
   .product-page__sizes-title { font-size: 15px !important; }
-
   .product-page__sizes-list { gap: 8px; }
 
   .product-page__size {
@@ -882,13 +885,12 @@
   }
 
   .product-page__gallery {
-    min-height: 0;
-    aspect-ratio: 1 / 1;
+    height: 74dvh;
+    min-height: 390px;
   }
 
-  .product-page__image-box {
-    width: 100%;
-    height: 100%;
+  .product-page__image {
+    transform: scale(2.1);
   }
 
   .product-page__arrow {
