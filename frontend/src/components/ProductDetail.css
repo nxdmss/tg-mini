@@ -739,7 +739,8 @@
     max-width: none;
     object-fit: contain;
     object-position: center;
-    transform: none;
+    transform: scale(2.4);
+    transform-origin: center center;
   }
 
   .product-page__arrow--left {
