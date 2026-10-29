@@ -12,6 +12,7 @@ import {
 } from '@nestjs/common';
 
 import { PrismaService } from '../prisma/prisma.service';
+import { EmailDto, VerifyEmailDto, ResetPasswordDto } from './dto/email-code.dto';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { TelegramAdminGuard } from './telegram-admin.guard';
@@ -26,6 +27,15 @@ export class AuthController {
   register(@Body() dto: RegisterDto) {
     return this.webAuthService.register(dto);
   }
+
+  @Post('register/verify')
+  verify(@Body() dto: VerifyEmailDto) { return this.webAuthService.verifyRegistration(dto.email, dto.code); }
+
+  @Post('password/forgot')
+  forgot(@Body() dto: EmailDto) { return this.webAuthService.forgotPassword(dto.email); }
+
+  @Post('password/reset')
+  reset(@Body() dto: ResetPasswordDto) { return this.webAuthService.resetPassword(dto.email, dto.code, dto.password); }
 
   @Post('login')
   login(@Body() dto: LoginDto) {

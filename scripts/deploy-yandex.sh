@@ -9,6 +9,16 @@ C=swa6-backend-1
 P=swa6-postgres-1
 S=$(docker inspect "$C" --format '{{index .Config.Labels "com.docker.compose.service"}}')
 cd /opt/swa6
+# Do not replace registration until mail delivery is configured in the service.
+docker compose -f "$D" config --format json | python3 -c '
+import json,sys
+service=json.load(sys.stdin)["services"][sys.argv[1]]
+env=service.get("environment", {})
+missing=[key for key in ("SMTP_HOST","SMTP_USER","SMTP_PASS","SMTP_FROM") if not env.get(key)]
+if missing:
+ print("Configure backend mail settings before deployment: " + ", ".join(missing), file=sys.stderr)
+ sys.exit(1)
+' "$S"
 B=$(docker compose -f "$D" config --format json | python3 -c 'import json,sys; b=json.load(sys.stdin)["services"][sys.argv[1]]["build"]; print(b["context"] if isinstance(b,dict) else b)' "$S")
 if [ -f "$B/src/main.ts" ]; then DST="$B"; elif [ -f "$B/backend/src/main.ts" ]; then DST="$B/backend"; else echo 'Unknown backend build context; stopped'; exit 1; fi
 mkdir -p "$HOME/swagystan-backups"
@@ -22,7 +32,7 @@ OLD=$(docker inspect "$C" --format '{{.Image}}')
 IMAGE=$(docker inspect "$C" --format '{{.Config.Image}}')
 docker compose -f "$D" build "$S"
 docker run --rm -e VITE_API_URL=https://api.swagystan.ru -e HOME=/tmp -e NPM_CONFIG_CACHE=/tmp/npm -u "$(id -u):$(id -g)" -v "$R/frontend:/app" -w /app node:22-bookworm-slim sh -c 'npm ci && npm run build'
-for SPEC in '20261027140000_visitor_analytics:Visitor' '20261029220000_account_shopping:AccountCartItem'; do
+for SPEC in '20261027140000_visitor_analytics:Visitor' '20261029220000_account_shopping:AccountCartItem' '20261030000000_email_verification:EmailChallenge'; do
 MIG=${SPEC%%:*}
 TABLE=${SPEC#*:}
 SQL="$R/backend/prisma/migrations/$MIG/migration.sql"

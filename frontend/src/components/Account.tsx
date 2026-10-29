@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { api, authHeaders, getMe, getMyOrders, getApiErrorMessage, isWebLoggedIn, login, logout, register } from "../api";
+import { api, authHeaders, getMe, getMyOrders, getApiErrorMessage, isWebLoggedIn, login, logout, register, verifyRegistration } from "../api";
 import axios from "axios";
 import { NumericText } from "./NumericText";
 import type { AuthUser, Order } from "../types";
@@ -11,10 +11,25 @@ export function Account() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [busy, setBusy] = useState(true);
   const [error, setError] = useState("");
-  const [mode, setMode] = useState<"login" | "register">("login");
+  const [mode, setMode] = useState<"login" | "register" | "forgot" | "reset" | "verify">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+  const [code, setCode] = useState("");
+  const [notice, setNotice] = useState("");
+  const [resendAt, setResendAt] = useState(0);
+  const [sending, setSending] = useState(false);
+  function switchMode(next: typeof mode) { setMode(next); setCode(""); setPassword(""); setError(""); setNotice(""); }
+  async function resend() {
+    if (Date.now() < resendAt) { setError("Повторная отправка доступна через минуту"); return; }
+    setSending(true); setError("");
+    try {
+      if (mode === "verify") await register({ email, password, name });
+      else await api.post("/auth/password/forgot", { email });
+      setResendAt(Date.now() + 60000); setNotice("Код запрошен. Проверь почту и спам.");
+    } catch (e) { setError(getApiErrorMessage(e)); }
+    finally { setSending(false); }
+  }
 
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -44,12 +59,23 @@ export function Account() {
   }
   useEffect(() => { void refresh(); }, []);
   async function submit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault(); setBusy(true); setError("");
+    event.preventDefault(); setSending(true); setError(""); setNotice("");
     try {
-      if (mode === "login") await login({ email, password });
-      else await register({ email, password, name: name.trim() || undefined });
-      await refresh();
-    } catch (e) { setError(getApiErrorMessage(e)); setBusy(false); }
+      if (mode === "login") { await login({ email, password }); await refresh(); }
+      else if (mode === "register") {
+        await register({ email, password, name: name.trim() });
+        setMode("verify"); setCode(""); setResendAt(Date.now() + 60000);
+      } else if (mode === "verify") { await verifyRegistration(email, code); setPassword(""); await refresh(); }
+      else if (mode === "forgot") {
+        await api.post("/auth/password/forgot", { email });
+        setMode("reset"); setCode(""); setPassword(""); setResendAt(Date.now() + 60000);
+        setNotice("Если аккаунт существует, код придёт на почту.");
+      } else {
+        await api.post("/auth/password/reset", { email, code, password });
+        switchMode("login"); setNotice("Пароль изменён. Войди снова.");
+      }
+    } catch (e) { setError(getApiErrorMessage(e)); }
+    finally { setSending(false); }
   }
   return <main className="container swag-account">
     <div className="swag-account__heading"><h1>КАБИНЕТ</h1></div>
@@ -86,14 +112,21 @@ export function Account() {
       </section>
       <button className="swag-account__exit" type="button" onClick={() => { logout(); setUser(null); setOrders([]); setError(""); }}>ВЫЙТИ ↗</button>
     </> : <section className="swag-account__section swag-account__auth">
-      <div className="swag-account__label">{mode === "login" ? "ВХОД" : "РЕГИСТРАЦИЯ"}</div>
+      <div className="swag-account__label">{({ login: "ВХОД", register: "РЕГИСТРАЦИЯ", verify: "ПОДТВЕРДИ ПОЧТУ", forgot: "ВОССТАНОВЛЕНИЕ", reset: "НОВЫЙ ПАРОЛЬ" })[mode]}</div>
       <form onSubmit={submit}>
-        {mode === "register" && <label>ИМЯ<input autoComplete="name" required maxLength={80} value={name} onChange={e => setName(e.target.value)} placeholder="КАК ТЕБЯ ЗОВУТ" /></label>}
-        <label>EMAIL<input type="email" autoComplete="email" required value={email} onChange={e => setEmail(e.target.value)} placeholder="EMAIL" /></label>
-        <label>ПАРОЛЬ<input type="password" autoComplete={mode === "login" ? "current-password" : "new-password"} required minLength={8} value={password} onChange={e => setPassword(e.target.value)} placeholder="ПАРОЛЬ" /></label>
-        <button type="submit" className="swag-account__submit">{mode === "login" ? "ВОЙТИ ↗" : "СОЗДАТЬ АККАУНТ ↗"}</button>
+        {mode === "register" && <label>ИМЯ<input autoComplete="name" required maxLength={80} value={name} onChange={e => setName(e.target.value)} /></label>}
+        <label>EMAIL<input type="email" autoComplete="email" required maxLength={254} readOnly={mode === "verify" || mode === "reset"} value={email} onChange={e => setEmail(e.target.value)} /></label>
+        {(mode === "verify" || mode === "reset") && <label>КОД ИЗ ПИСЬМА<input inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{6}" maxLength={6} required value={code} onChange={e => setCode(e.target.value.replace(/\D/g, ""))} /></label>}
+        {mode !== "forgot" && mode !== "verify" && <label>{mode === "reset" ? "НОВЫЙ ПАРОЛЬ" : "ПАРОЛЬ"}<input type="password" autoComplete={mode === "login" ? "current-password" : "new-password"} required minLength={mode === "login" ? 6 : 8} maxLength={72} value={password} onChange={e => setPassword(e.target.value)} /></label>}
+        <button disabled={sending} type="submit" className="swag-account__submit">{sending ? "ПОДОЖДИ…" : ({ login: "ВОЙТИ ↗", register: "ПОЛУЧИТЬ КОД ↗", verify: "ПОДТВЕРДИТЬ ↗", forgot: "ПОЛУЧИТЬ КОД ↗", reset: "СОХРАНИТЬ ПАРОЛЬ ↗" })[mode]}</button>
       </form>
-      <button type="button" className="swag-account__switch" onClick={() => { setMode(mode === "login" ? "register" : "login"); setError(""); }}>{mode === "login" ? "СОЗДАТЬ АККАУНТ" : "ВОЙТИ"}</button>
+      <div className="swag-account__auth-actions">
+        {mode === "login" && <button disabled={sending} type="button" className="swag-account__switch" onClick={() => switchMode("forgot")}>ЗАБЫЛИ ПАРОЛЬ?</button>}
+        {(mode === "verify" || mode === "reset") && <button disabled={sending} type="button" className="swag-account__switch" onClick={resend}>ОТПРАВИТЬ ЕЩЁ РАЗ</button>}
+        <button disabled={sending} type="button" className="swag-account__switch" onClick={() => switchMode(mode === "login" ? "register" : "login")}>{mode === "login" ? "СОЗДАТЬ АККАУНТ" : "К ВХОДУ"}</button>
+      </div>
+      {mode === "verify" && <p className="swag-account__muted">Код действует 10 минут. Проверь также спам.</p>}
+      {notice && <p className="swag-account__muted" role="status">{notice}</p>}
     </section>}
     {error && <p className="swag-account__error" role="alert">{error}</p>}
   </main>;

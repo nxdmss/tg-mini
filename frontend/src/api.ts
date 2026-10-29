@@ -184,17 +184,14 @@ export type LoginPayload = {
   password: string;
 };
 
-export async function register(
-  payload: RegisterPayload,
-): Promise<WebAuthResponse> {
-  const res = await api.post<WebAuthResponse>(
-    "/auth/register",
-    payload,
-  );
+export async function register(payload: RegisterPayload): Promise<{ sent: boolean }> {
+  return (await api.post<{ sent: boolean }>("/auth/register", payload)).data;
+}
 
-  setAccessToken(res.data.accessToken);
-
-  return res.data;
+export async function verifyRegistration(email: string, code: string) {
+  const { data } = await api.post<WebAuthResponse>("/auth/register/verify", { email, code });
+  setAccessToken(data.accessToken);
+  return data;
 }
 
 export async function login(

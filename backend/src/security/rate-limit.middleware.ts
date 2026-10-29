@@ -27,6 +27,10 @@ const GENERAL_RULE: RateLimitRule = {
 function ruleFor(
   req: Request,
 ): RateLimitRule {
+  if (req.method === 'POST' && ['/auth/register/verify', '/auth/password/forgot', '/auth/password/reset'].includes(req.path)) {
+    return { name: req.path, limit: 10, windowMs: 15 * 60_000 };
+  }
+
   if (
     req.method === 'POST' &&
     req.path === '/auth/login'

@@ -1,3 +1,4 @@
+import { MailService } from './mail.service';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
@@ -52,6 +53,7 @@ import { WebAuthService } from './web-auth.service';
   ],
   controllers: [AuthController, ShoppingController],
   providers: [
+    MailService,
     TelegramAuthService,
     WebAuthService,
     TelegramAuthGuard,

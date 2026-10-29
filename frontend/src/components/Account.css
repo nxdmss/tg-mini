@@ -36,3 +36,5 @@
 .swag-account__edit button:disabled{opacity:.4;cursor:wait}
 .swag-account button:focus-visible,.swag-account a:focus-visible{outline:2px solid #111;outline-offset:5px}
 @media(max-width:600px){.swag-account{padding-top:28px}.swag-account__hero{flex-direction:column;padding:32px 0;gap:20px}.swag-account__identity h2{font-size:40px}.swag-account__nav a{font-size:12px;padding:22px 0}.swag-account__nav a:first-child{padding-right:16px}.swag-account__nav a:last-child{padding-left:16px}.swag-account__item{gap:12px;font-size:12px}.swag-account__item img{width:54px;height:72px}.swag-account__auth{margin-top:12px}}
+
+.swag-account__auth-actions{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}.swag-account__submit:disabled{opacity:.5;cursor:wait}.swag-account__auth input[readonly]{color:#666}.swag-account__auth input[autocomplete="one-time-code"]{letter-spacing:.3em;font-size:24px}
