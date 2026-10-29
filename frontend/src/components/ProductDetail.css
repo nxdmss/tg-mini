@@ -65,8 +65,10 @@
   position: relative;
   min-width: 0;
   width: 100%;
-  height: calc(100dvh - 76px);
-  min-height: 620px;
+  height: auto;
+  aspect-ratio: 4 / 5;
+  max-height: 1400px;
+  min-height: 0;
   display: flex;
   align-items: stretch;
   justify-content: stretch;
