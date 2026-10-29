@@ -971,3 +971,40 @@ html body .swag-only .toolbar__chips-row .chip {
     font-size: clamp(13px, 3.3vw, 15px);
   }
 }
+
+
+/* Final override: index.css sets .chip font-size with !important. */
+html body .swag-only .toolbar__chips-row .chips {
+  gap: clamp(4px, 0.45vw, 8px) !important;
+}
+
+html body .swag-only .toolbar__chips-row .chip {
+  padding-left: clamp(8px, 0.65vw, 12px) !important;
+  padding-right: clamp(8px, 0.65vw, 12px) !important;
+  font-size: clamp(18px, 1.5vw, 22px) !important;
+  line-height: 1.2 !important;
+}
+
+@media (max-width: 900px) {
+  html body .swag-only .toolbar__chips-row .chips {
+    gap: 5px !important;
+  }
+
+  html body .swag-only .toolbar__chips-row .chip {
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+    font-size: 16px !important;
+  }
+}
+
+@media (max-width: 520px) {
+  html body .swag-only .toolbar__chips-row .chips {
+    gap: 3px !important;
+  }
+
+  html body .swag-only .toolbar__chips-row .chip {
+    padding-left: 6px !important;
+    padding-right: 6px !important;
+    font-size: clamp(14px, 3.8vw, 16px) !important;
+  }
+}
