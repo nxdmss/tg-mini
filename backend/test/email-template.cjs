@@ -2,7 +2,7 @@ const {test} = require('node:test');
 const assert = require('node:assert/strict');
 const {inflateSync} = require('node:zlib');
 const nodemailer = require('nodemailer');
-const {renderCodeImage, CODE_IMAGE_WIDTH, CODE_IMAGE_HEIGHT} = require('../dist/auth/email/code-image');
+const {renderCodeImage, renderEmailImage, CODE_IMAGE_WIDTH, CODE_IMAGE_HEIGHT} = require('../dist/auth/email/code-image');
 const {createCodeEmail} = require('../dist/auth/email/code-email');
 
 function decode(png) {
@@ -39,13 +39,13 @@ test('all ten digits render into distinct valid opaque code images',()=>{
 test('template keeps the real expiry, text fallback and inline matching image',()=>{
   const email=createCodeEmail('120589',new Date('2026-10-30T08:10:00Z'));
   assert.match(email.text,/120589/);
-  assert.match(email.html,/alt="120589"/);
+  assert.match(email.html,/alt="120589 · 10 МИНУТ/);
   assert.match(email.html,/ДО 11:10 МСК/);
   assert.match(email.html,/10 МИНУТ/);
   assert.doesNotMatch(email.html,/<script|https?:\/\//);
   assert.equal(email.attachments[0].contentDisposition,'inline');
   assert.ok(email.html.includes('cid:'+email.attachments[0].cid));
-  assert.deepEqual(email.attachments[0].content,renderCodeImage('120589'));
+  assert.deepEqual(email.attachments[0].content,renderEmailImage('120589', '11:10'));
   assert.throws(()=>createCodeEmail('120589',new Date('invalid')));
 });
 
@@ -58,4 +58,27 @@ test('Nodemailer includes the code image in a self-contained multipart message',
   assert.match(raw,/Content-ID: <verification-code@swagystan.ru>/);
   assert.match(raw,/Content-Type: image\/png/);
   transport.close();
+});
+
+
+test('full email canvas includes code and deadline on opaque white pixels',()=>{
+  const image=renderEmailImage('123456','14:03');
+  const width=image.readUInt32BE(16),height=image.readUInt32BE(20);
+  assert.equal(width,1040);assert.equal(height,720);
+  const chunks=[];
+  for(let pos=8;pos<image.length;){
+    const size=image.readUInt32BE(pos);
+    if(image.toString('ascii',pos+4,pos+8)==='IDAT') chunks.push(image.subarray(pos+8,pos+8+size));
+    pos+=12+size;
+  }
+  const pixels=inflateSync(Buffer.concat(chunks)),stride=width+1;
+  for(let y=0;y<height;y++){
+    assert.equal(pixels[y*stride],0);
+    assert.equal(pixels[y*stride+1],255);
+    assert.equal(pixels[y*stride+width],255);
+  }
+  for(const [start,end] of [[160,356],[430,478],[494,542]]) {
+    assert.ok(pixels.subarray(start*stride,end*stride).some((v,i)=>i%stride!==0&&v===0));
+  }
+  assert.notDeepEqual(image,renderEmailImage('123456','14:04'));
 });
