@@ -67,14 +67,14 @@
 }
 .swag-account__exit { margin-top: 32px; min-height: 44px; }
 
-.swag-account__nav { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.swag-account__nav { display: flex; }
 .swag-account__nav a {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 22px 24px;
-  background: #f4f4f4;
+  padding: 10px 0;
+  background: transparent;
   color: #111;
   text-decoration: none;
   font-size: 14px;
@@ -142,7 +142,7 @@
 .swag-account__hero + .swag-account__error { margin-bottom: 24px; }
 
 @media (hover: hover) {
-  .swag-account__nav a:hover { background: #eaeaea; }
+  .swag-account__nav a:hover { text-decoration: underline; text-underline-offset: 5px; }
   .swag-account__submit:hover:not(:disabled) { background: #292929; }
   .swag-account__switch:hover:not(:disabled),
   .swag-account__text-button:hover:not(:disabled),
@@ -155,7 +155,7 @@
   .swag-account__hero { flex-direction: column; gap: 16px; padding: 24px 0 32px; }
   .swag-account__identity h2 { font-size: 36px; }
   .swag-account__nav { gap: 8px; }
-  .swag-account__nav a { padding: 18px 14px; font-size: 11px; gap: 8px; }
+  .swag-account__nav a { padding: 10px 0; font-size: 11px; gap: 8px; }
   .swag-account__nav a > span { font-size: 20px; }
   .swag-account__section { padding-top: 36px; }
   .swag-account__order { padding: 20px 16px; }

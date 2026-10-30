@@ -1,8 +1,8 @@
 import {
-  useEffect,
-  useMemo,
   useState,
 } from "react";
+
+import { CartWindow } from "./cart/CartWindow";
 
 import { useCart } from "../cart";
 import { formatPrice } from "../utils";
@@ -57,8 +57,10 @@ function isValidEmail(
 
 export function CartDrawer({
   onClose,
+  reopenToken,
 }: {
   onClose: () => void;
+  reopenToken: number;
 }) {
   const {
     items,
@@ -127,22 +129,6 @@ export function CartDrawer({
     isPhoneValid &&
     isAddressValid;
 
-  useEffect(() => {
-    document.body.style.overflow =
-      "hidden";
-
-    return () => {
-      document.body.style.overflow =
-        "";
-    };
-  }, []);
-
-  const subtotal =
-    useMemo(
-      () => total,
-      [total],
-    );
-
   async function submit() {
     if (!isNameValid) {
       setError(
@@ -172,6 +158,7 @@ export function CartDrawer({
       return;
     }
 
+    if (submitting || !items.length) return;
     setSubmitting(true);
     setError(null);
 
@@ -234,58 +221,10 @@ export function CartDrawer({
     }
   }
 
-  function backAction() {
-    if (
-      step === "checkout"
-    ) {
-      setStep("cart");
-      return;
-    }
-
-    onClose();
-  }
-
   return (
-    <>
-      <div
-        className="overlay"
-        onClick={onClose}
-      />
-
-      <div className="drawer checkout-modal">
-        <div className="checkout-modal__header">
-          <button
-            className="checkout-icon-btn"
-            onClick={
-              backAction
-            }
-            aria-label={
-              step ===
-              "checkout"
-                ? "Назад"
-                : "Закрыть"
-            }
-            type="button"
-          >
-            ←
-          </button>
-
-          <div className="checkout-modal__title">
-            Корзина
-          </div>
-
-          <button
-            className="checkout-icon-btn"
-            onClick={
-              onClose
-            }
-            aria-label="Закрыть"
-            type="button"
-          >
-            ✕
-          </button>
-        </div>
-
+    <CartWindow title={step === "checkout" ? "ОФОРМЛЕНИЕ" : step === "done" ? "ГОТОВО" : "КОРЗИНА"}
+      count={items.reduce((sum, item) => sum + item.quantity, 0)} reopenToken={reopenToken}
+      onClose={onClose} onBack={step === "checkout" ? () => setStep("cart") : undefined} locked={submitting}>
         {step === "done" ? (
           <div className="checkout-done">
             <div className="checkout-done__title">
@@ -371,6 +310,7 @@ export function CartDrawer({
                                   1,
                               )
                             }
+                            aria-label={`Уменьшить количество: ${i.name}`}
                           >
                             −
                           </button>
@@ -391,6 +331,7 @@ export function CartDrawer({
                                   1,
                               )
                             }
+                            aria-label={`Увеличить количество: ${i.name}`}
                           >
                             +
                           </button>
@@ -443,8 +384,7 @@ export function CartDrawer({
                 )
               }
             >
-              ПЕРЕЙТИ К
-              ОФОРМЛЕНИЮ
+              ОФОРМИТЬ ЗАКАЗ
             </button>
           </div>
         ) : (
@@ -452,8 +392,7 @@ export function CartDrawer({
             <div className="checkout-left">
               <div className="checkout-block">
                 <div className="checkout-section-title">
-                  КОНТАКТНАЯ
-                  ИНФОРМАЦИЯ
+                  КОНТАКТЫ
                 </div>
 
                 <label className="checkout-label">
@@ -652,31 +591,9 @@ export function CartDrawer({
               </div>
 
               <div className="checkout-totals">
-                <div className="checkout-totals__row">
-                  <span>
-                    SUBTOTAL
-                  </span>
-
-                  <span>
-                    {formatPrice(
-                      subtotal,
-                    )}
-                  </span>
-                </div>
-
-                <div className="checkout-totals__row">
-                  <span>
-                    TAXES
-                  </span>
-
-                  <span>
-                    0 ₽
-                  </span>
-                </div>
-
                 <div className="checkout-totals__row checkout-totals__row--total">
                   <span>
-                    TOTAL
+                    ИТОГО
                   </span>
 
                   <span>
@@ -688,7 +605,7 @@ export function CartDrawer({
               </div>
 
               {error && (
-                <div className="checkout-error">
+                <div className="checkout-error" role="alert">
                   {error}
                 </div>
               )}
@@ -701,7 +618,7 @@ export function CartDrawer({
                 }
                 disabled={
                   submitting ||
-                  !canSubmit
+                  !canSubmit || !items.length
                 }
               >
                 {submitting
@@ -711,7 +628,6 @@ export function CartDrawer({
             </div>
           </div>
         )}
-      </div>
-    </>
+    </CartWindow>
   );
 }

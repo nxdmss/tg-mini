@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { api, getMe, getMyOrders, getApiErrorMessage, isWebLoggedIn, login, logout, register, verifyRegistration } from "../api";
 import axios from "axios";
-import { NumericText } from "./NumericText";
 import type { AuthUser, Order } from "../types";
 import "./Account.css";
 
@@ -91,7 +90,6 @@ export function Account() {
         </section>
         {error && <p className="swag-account__error" role="alert">{error}</p>}
         <nav className="swag-account__nav" aria-label="Разделы кабинета">
-          <a href="#account-orders">ЗАКАЗЫ <span><NumericText text={String(orders.length).padStart(2, "0")} /></span></a>
           <a href="/favorites">ИЗБРАННОЕ <span aria-hidden="true">↗</span></a>
         </nav>
         <section className="swag-account__section" aria-labelledby="account-orders">

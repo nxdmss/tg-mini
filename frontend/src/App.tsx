@@ -97,6 +97,8 @@ export default function App() {
   const [fetchedProduct, setFetchedProduct] = useState<Product | null>(null);
   const [productLinkError, setProductLinkError] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
+  const [cartReopenToken, setCartReopenToken] = useState(0);
+  function openCart() { setCartOpen(true); setCartReopenToken(value => value + 1); }
 
   useEffect(() => {
     const path = location.pathname;
@@ -256,7 +258,7 @@ export default function App() {
           <ProductDetail
             product={selectedProduct}
             onBack={closeProduct}
-            onCartClick={() => setCartOpen(true)}
+            onCartClick={openCart}
           />
         ) : productLinkError ? (
           <main className="product-route-state">
@@ -276,7 +278,7 @@ export default function App() {
     <div className="app store-experience swag-only">
       <div className="store-top store-experience__top">
         <Header
-          onCartClick={() => setCartOpen(true)}
+          onCartClick={openCart}
           homePath="/"
           logoPosition="left"
           navItems={[
@@ -381,7 +383,7 @@ export default function App() {
       {productOverlay}
       {cartOpen && (
         <Suspense fallback={null}>
-          <CartDrawer onClose={() => setCartOpen(false)} />
+          <CartDrawer reopenToken={cartReopenToken} onClose={() => setCartOpen(false)} />
         </Suspense>
       )}
     </div>
