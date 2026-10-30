@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 36 36">
+  <!-- A restrained offset echo; the active tip stays at 4,3. -->
+  <path d="M6 5 30 29 17 20 13 29Z" fill="none" stroke="#fff" stroke-width="3" stroke-linejoin="miter"/>
+  <path d="M6 5 30 29 17 20 13 29Z" fill="none" stroke="#000" stroke-width="1" stroke-linejoin="miter"/>
+  <path d="M4 3 28 27 15 18 11 27Z" fill="#fff" stroke="#fff" stroke-width="3" stroke-linejoin="miter"/>
+  <path d="M4 3 28 27 15 18 11 27Z" fill="#fff" stroke="#000" stroke-width="1.25" stroke-linejoin="miter"/>
+</svg>

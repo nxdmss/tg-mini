@@ -1,19 +1,17 @@
-/* Native cursors keep the hotspot exact and require no pointer tracking. */
+/* Native cursors keep the same active tip in both states. */
 @media (hover: hover) and (pointer: fine) {
-  :is(.store-experience, .product-overlay-shell) {
+  :is(.store-experience, .product-overlay-shell, .cart-window, .cart-window-dock) {
     cursor: url('/cursors/swag-arrow.svg') 4 3, default;
   }
-  :is(.store-experience, .product-overlay-shell) :is(button, a, [role='button']) {
-    cursor: url('/cursors/swag-arrow.svg') 4 3, pointer !important;
+  html body :is(.store-experience, .product-overlay-shell, .cart-window, .cart-window-dock) :is(button, a, [role='button']),
+  html body :is(.store-experience, .product-overlay-shell, .cart-window, .cart-window-dock) :is(button, a, [role='button']) * {
+    cursor: url('/cursors/swag-arrow-hover.svg') 4 3, pointer !important;
   }
-  :is(.store-experience, .product-overlay-shell) :is(input, textarea, [contenteditable='true']) {
-    cursor: text;
+  html body :is(.store-experience, .product-overlay-shell, .cart-window) :is(input, textarea, [contenteditable='true']) {
+    cursor: text !important;
   }
-  html body .store-experience button.card,
-  html body .store-experience button.card * {
-    cursor: url('/cursors/swag-product.svg') 23 20, pointer !important;
-  }
-  :is(.store-experience, .product-overlay-shell) :is(button:disabled, [aria-disabled='true']) {
+  html body :is(.store-experience, .product-overlay-shell, .cart-window, .cart-window-dock) :is(button:disabled, [aria-disabled='true']),
+  html body :is(.store-experience, .product-overlay-shell, .cart-window, .cart-window-dock) :is(button:disabled, [aria-disabled='true']) * {
     cursor: not-allowed !important;
   }
 }
