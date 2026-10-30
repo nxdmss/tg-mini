@@ -18,7 +18,7 @@ for char in '0123456789':
         else: raise ValueError(f'Unexpected curve: {op}')
     shape = Polygon(contours[0], contours[1:])
     assert shape.is_valid
-    bold = shape.buffer(17.5, join_style=2)
+    bold = shape.buffer(32, join_style=2)
     assert bold.is_valid and bold.geom_type == 'Polygon'
     assert len(bold.interiors) == len(shape.interiors), 'Counter closed'
     bold = orient(bold, sign=-1)
@@ -34,8 +34,8 @@ for char in '0123456789':
     assert bold.bounds[0] >= 0 and bold.bounds[2] < advance
 for rec in f['name'].names:
     if rec.nameID in (1, 2, 4, 6):
-        value = {1:'IZLOM Narrow Readable',2:'Regular',4:'IZLOM Narrow Readable',6:'IZLOMNarrow-Readable'}[rec.nameID]
+        value = {1:'IZLOM Narrow Heavy',2:'Regular',4:'IZLOM Narrow Heavy',6:'IZLOMNarrow-Heavy'}[rec.nameID]
         rec.string = value.encode(rec.getEncoding())
 f.flavor=None
-f.save(root / 'frontend/public/fonts/IZLOM_Narrow-Readable.ttf')
+f.save(root / 'frontend/public/fonts/IZLOM_Narrow-Heavy.ttf')
 print('10 digits thickened; counters and fixed advances preserved')
