@@ -30,17 +30,23 @@ def main():
     query = 'libquery_engine-debian-openssl-3.0.x.so.node'
     schema = 'schema-engine-debian-openssl-3.0.x'
     check = '''const fs=require('fs');
-for(const f of process.argv.slice(1)) fs.accessSync('/app/node_modules/@prisma/engines/'+f);
-console.log(require('/app/node_modules/@prisma/engines-version/package.json').version);'''
+const paths=['/opt/prisma-engines','/app/node_modules/@prisma/engines'];
+const directory=paths.find(p=>process.argv.slice(1).every(f=>fs.existsSync(p+'/'+f)));
+if(!directory) throw new Error('Existing image has no reusable Prisma engines');
+console.log(JSON.stringify({directory,version:require('/app/node_modules/@prisma/engines-version/package.json').version}));'''
     actual = capture('docker', 'run', '--rm', '--network', 'none', '--entrypoint', 'node', image, '-e', check, query, schema)
-    if actual != expected:
+    existing = json.loads(actual)
+    if existing['version'] != expected:
         raise RuntimeError('Engine version mismatch; deployment stopped before any changes.')
+    engines_directory = existing['directory']
+    if engines_directory not in ['/opt/prisma-engines', '/app/node_modules/@prisma/engines']:
+        raise RuntimeError('Unexpected engine directory')
     tag = 'swagystan-prisma-recovery:' + image.split(':')[-1][:16]
     subprocess.run(['docker', 'tag', image, tag], check=True)
     dockerfile = capture('git', 'show', revision + ':backend/Dockerfile') + '\n'
     deploy = capture('git', 'show', revision + ':scripts/deploy-yandex.sh') + '\n'
     additions = ('WORKDIR /app\n'
-        'COPY --from=existing_engines /app/node_modules/@prisma/engines /opt/prisma-engines\n'
+        f'COPY --from=existing_engines {engines_directory} /opt/prisma-engines\n'
         f'ENV PRISMA_QUERY_ENGINE_LIBRARY=/opt/prisma-engines/{query}\n'
         f'ENV PRISMA_SCHEMA_ENGINE_BINARY=/opt/prisma-engines/{schema}\n')
     if dockerfile.count('WORKDIR /app') != 2 or dockerfile.count('RUN npm ci') != 2:

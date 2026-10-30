@@ -16,12 +16,13 @@ function setup() {
  }};
  db.$transaction=async fn=>{const snapshot=structuredClone([...challenges]);try{return await fn(db)}catch(e){challenges.clear();for(const [k,v]of snapshot)challenges.set(k,v);throw e}};
  const jwt={signAsync:async p=>JSON.stringify(p),verifyAsync:async s=>JSON.parse(s)};
- const service=new WebAuthService(db,jwt,{sendCode:async(email,code,purpose)=>sent.push({email,code,purpose})});
+ const service=new WebAuthService(db,jwt,{sendCode:async(email,code,purpose,expiresAt)=>sent.push({email,code,purpose,expiresAt})});
  return {service,users,challenges,sent};
 }
 const dto={email:' TEST@example.com ',password:'test-password-123',name:'Test'};
 test('account and token only issued after email proof; code is single use',async()=>{
  const s=setup();assert.deepEqual(await s.service.register(dto),{sent:true});assert.equal(s.users.size,0);
+ assert.equal(s.sent[0].expiresAt.getTime(), [...s.challenges.values()][0].expiresAt.getTime());
  assert.equal([...s.challenges.values()][0].codeHash.includes(s.sent[0].code),false);
  await assert.rejects(s.service.verifyRegistration('test@example.com','000000'));
  const auth=await s.service.verifyRegistration('test@example.com',s.sent[0].code);

@@ -197,7 +197,7 @@ export OBJECT_STORAGE_SECRET_ACCESS_KEY='...'
 2. Старые изображения перенесены.
 3. Новый API прошел smoke test.
 4. Новый frontend проверен обычным браузером.
-5. Проверить `/shop/zulf`, товар, корзину, заказ, `/admin`.
+5. Проверить `/`, товар, корзину, заказ, `/account`, `/admin`.
 6. Переключить Telegram Mini App URL на новый frontend.
 7. Старые Vercel/Render не удалять 48 часов — оставить rollback.
 8. После проверки отключить Render/Vercel/Cloudinary.

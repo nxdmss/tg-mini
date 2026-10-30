@@ -1,168 +1,50 @@
-# SWA6Y5TAN
+# SWAGYSTAN
 
-Telegram Mini App + web storefront for a multi-shop clothing marketplace.
+Магазин одежды swagystan.ru. Одна публичная витрина, аккаунты с подтверждением почты, корзина, избранное и заказы.
 
-## Stack
+## Структура
 
-- Frontend: React 19, TypeScript, Vite, Motion
-- Backend: NestJS, Prisma, PostgreSQL
-- Images: Cloudinary
-- Production frontend: Vercel
-- Production backend: Render
-- Auth: signed Telegram `initData`
-- Admin: exactly one Telegram user ID from `ADMIN_TELEGRAM_IDS`
+- `frontend/` — React, TypeScript, Vite: магазин и веб-админка.
+- `backend/` — NestJS, Prisma, PostgreSQL: API и серверная авторизация.
+- `backend/src/auth/email/` — шаблон письма и отрисовка фирменных цифр.
+- `admin/` — отдельная PWA для управления заказами.
+- `deploy/yandex/` — настройки Caddy, контейнеров и инструкции для сервера.
+- `scripts/` — обновление сервера и сборка ресурсов шрифта.
 
-## Project structure
+## Разработка
 
-```text
-frontend/   storefront, product pages, cart, checkout, admin UI
-backend/    API, Telegram auth, products, shops, orders, Prisma
-```
+Нужны Node.js 22 и PostgreSQL. Настройки берутся из `.env.example` соответствующего приложения. Рабочие `.env` и пароли не коммитятся.
 
-## Requirements
-
-- Node.js 22
-- PostgreSQL
-- Telegram bot token
-- Cloudinary account
-
-## Install
-
-From the project root:
-
-```bash
+```sh
 npm run setup
-```
-
-Or separately:
-
-```bash
-cd backend && npm ci
-cd ../frontend && npm ci
-```
-
-## Environment
-
-Create local files from the examples:
-
-```text
-backend/.env.example  -> backend/.env
-frontend/.env.example -> frontend/.env
-```
-
-Never commit `.env` files.
-
-### Backend essentials
-
-```text
-DATABASE_URL=
-TELEGRAM_BOT_TOKEN=
-ADMIN_TELEGRAM_IDS=
-TELEGRAM_AUTH_DISABLED=false
-CORS_ORIGINS=
-BACKEND_URL=
-CLOUDINARY_URL=
-```
-
-`ADMIN_TELEGRAM_IDS` must contain exactly one numeric Telegram user ID.
-
-### Frontend essentials
-
-```text
-VITE_API_URL=
-VITE_BOT_USERNAME=
-VITE_MINI_APP_SHORT_NAME=
-```
-
-## Build
-
-```bash
 npm run build
+node --test backend/test/email-auth.cjs backend/test/email-template.cjs backend/test/shopping.cjs
 ```
 
-Or separately:
+Основные маршруты: `/`, `/favorites`, `/about`, `/account`, `/product/:id`, `/admin`, `/admin/visitors`.
 
-```bash
-npm --prefix backend run build
-npm --prefix frontend run build
+## Продакшен
+
+Сайт работает на Яндекс-сервере. Caddy обслуживает `/var/www/swagystan`, API работает в контейнере `swa6-backend-1`. Настройки backend находятся в `/opt/swa6/app/backend/.env` и подключены через Compose. Настройка писем описана в [backend/EMAIL_AUTH.md](backend/EMAIL_AUTH.md).
+
+Обновление с повторным использованием движков Prisma из работающего образа:
+
+```sh
+(
+set -e
+cd /opt/swa6/app
+git fetch origin main
+UPDATE_SCRIPT=$(mktemp)
+trap 'rm -f "$UPDATE_SCRIPT"' EXIT
+git show origin/main:scripts/deploy-yandex-reuse-prisma.py > "$UPDATE_SCRIPT"
+python3 "$UPDATE_SCRIPT"
+)
 ```
 
-## Database
+Скрипт проверяет совпадение версий движков, делает резервные копии, собирает приложения и проверяет API перед публикацией витрины. Устаревшие публичные ресурсы удаляются только по явному списку `scripts/retired-frontend-assets.txt`. Старые хешированные JS/CSS временно сохраняются для открытых вкладок.
 
-Production database changes must use committed Prisma migrations:
+Стандартный `scripts/deploy-yandex.sh` требует доступного скачивания движков Prisma. `scripts/deploy-digits.sh` нужен только для отдельного обновления типографики, `scripts/refresh-frontend.sh` — только для изменений интерфейса при совместимом backend.
 
-```bash
-cd backend
-npx prisma migrate deploy
-```
+## Совместимость данных
 
-Do not use `prisma db push` or the old seed workflow against production data.
-
-## Production
-
-### Render backend
-
-Root directory:
-
-```text
-backend
-```
-
-Build:
-
-```text
-npm ci && npm run build
-```
-
-Start:
-
-```text
-npm run start:prod
-```
-
-Important production settings:
-
-```text
-TELEGRAM_AUTH_DISABLED=false
-ADMIN_TELEGRAM_IDS=<one numeric Telegram user id>
-```
-
-### Vercel frontend
-
-Root directory:
-
-```text
-frontend
-```
-
-Build:
-
-```text
-npm run build
-```
-
-Output:
-
-```text
-dist
-```
-
-Set `VITE_API_URL` to the public backend URL.
-
-## Routes
-
-```text
-/                              main SWA6Y5TAN catalog
-/shop/:shopSlug                seller catalog
-/product/:id                   legacy SWA6Y5TAN product route
-/shop/:shopSlug/product/:id    seller product
-/admin                         Telegram-owner-only admin
-```
-
-## Important implementation rules
-
-- Storefront state stays mounted when a product opens, so back navigation restores instantly.
-- Store switching uses an in-memory cache only. Do not reintroduce scene/sessionStorage catalog caches.
-- Product card images use Cloudinary responsive previews; product pages keep original image URLs.
-- Admin mutations are protected on the backend, not only by the frontend route.
-- One order belongs to one shop in the current model.
+Таблицы магазинов, существующие связи товаров/заказов, API админки и история миграций сохранены. Публичная витрина показывает SWAGYSTAN. Удаление старого интерфейса не удаляет записи из базы и не переносит товары между магазинами.

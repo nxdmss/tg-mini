@@ -26,3 +26,18 @@ Checks from repository root:
   npm --prefix frontend run build
   npm --prefix backend run build
   node --test backend/test/email-auth.cjs
+
+## Email appearance
+
+The HTML email uses an opaque white inline PNG for the six-digit code, rendered
+from the same IZLOM Heavy digits as the storefront. No remote fonts, scripts or
+image downloads are needed. The image has the code as alt text; a plain-text
+alternative contains the code too. Mail clients may still hide inline images.
+The two captions show 10 minutes and the actual database expiry in Moscow time.
+There is deliberately no animated countdown: email clients cannot reliably keep
+it in sync with the server expiry, especially when a message is reopened.
+
+`backend/src/auth/email/` contains the template, PNG renderer and generated glyph
+masks. Rebuild the masks after changing the storefront font with
+`python3 scripts/build-email-digits.py` (Pillow required only for regeneration).
+SMTP production delivery and rendering in a real inbox require a separate smoke test.

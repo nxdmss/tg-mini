@@ -13,3 +13,7 @@ uploads/
 npm-debug.log*
 yarn-debug.log*
 pnpm-debug.log*
+
+# Python build helpers
+__pycache__/
+*.pyc

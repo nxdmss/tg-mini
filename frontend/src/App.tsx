@@ -34,11 +34,6 @@ import { useFavorites } from "./favorites";
 import { sendVisitorPing } from "./visitorTracking";
 
 import { consumeStartParam } from "./telegram";
-import {
-  isPrankProduct,
-  playPrankLaugh,
-  stopPrankAudio,
-} from "./prank";
 
 const loadProductDetail = () => import("./components/ProductDetail");
 const ProductDetail = lazy(async () => ({
@@ -48,10 +43,6 @@ const ProductDetail = lazy(async () => ({
 const loadCartDrawer = () => import("./components/CartDrawer");
 const CartDrawer = lazy(async () => ({
   default: (await loadCartDrawer()).CartDrawer,
-}));
-
-const PrankProduct = lazy(async () => ({
-  default: (await import("./components/PrankProduct")).PrankProduct,
 }));
 
 type Section = "catalog" | "favorites" | "about" | "account";
@@ -235,17 +226,10 @@ export default function App() {
   function openProduct(product: Product) {
     setProductLinkError(false);
 
-    if (isPrankProduct(product)) {
-      void playPrankLaugh();
-    } else {
-      stopPrankAudio();
-    }
-
     navigate(`/product/${encodeURIComponent(product.id)}`);
   }
 
   function closeProduct() {
-    stopPrankAudio();
     setFetchedProduct(null);
     setProductLinkError(false);
     const from = sessionStorage.getItem("swagystan:product-from");
@@ -269,15 +253,11 @@ export default function App() {
         }
       >
         {selectedProduct ? (
-          isPrankProduct(selectedProduct) ? (
-            <PrankProduct onBack={closeProduct} />
-          ) : (
-            <ProductDetail
-              product={selectedProduct}
-              onBack={closeProduct}
-              onCartClick={() => setCartOpen(true)}
-            />
-          )
+          <ProductDetail
+            product={selectedProduct}
+            onBack={closeProduct}
+            onCartClick={() => setCartOpen(true)}
+          />
         ) : productLinkError ? (
           <main className="product-route-state">
             <button type="button" className="product-route-state__back" onClick={closeProduct}>‹</button>

@@ -47,7 +47,15 @@ if [ "$TRACKED" = 1 ]; then
 fi
 done
 docker compose -f "$D" up -d --no-deps --force-recreate "$S"
-for i in $(seq 1 15); do if curl -fsS --max-time 5 'http://127.0.0.1:3000/products?shop=swagystan' > /dev/null; then sudo cp -a "$R/frontend/dist/." /var/www/swagystan/; echo 'SWAGYSTAN UPDATED'; exit 0; fi; sleep 2; done
+for i in $(seq 1 15); do if curl -fsS --max-time 5 'http://127.0.0.1:3000/products?shop=swagystan' > /dev/null; then sudo cp -a "$R/frontend/dist/." /var/www/swagystan/
+  # Keep old hashed bundles for open tabs; remove only explicitly retired files.
+  if [ -f "$R/scripts/retired-frontend-assets.txt" ]; then
+    while IFS= read -r asset; do
+      case "$asset" in ""|/*|*..*) echo 'Invalid retired asset path' >&2; exit 1;; esac
+      sudo rm -f -- "/var/www/swagystan/$asset"
+    done < "$R/scripts/retired-frontend-assets.txt"
+  fi
+  echo 'SWAGYSTAN UPDATED'; exit 0; fi; sleep 2; done
 docker tag "$OLD" "$IMAGE"
 docker compose -f "$D" up -d --no-deps --force-recreate "$S"
 echo 'Backend rolled back; storefront unchanged' >&2

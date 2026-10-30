@@ -120,8 +120,6 @@
   height: 28px;
 }
 
-.app--zulfia .sketch-cart__body,
-.app--zulfia .sketch-cart__digit,
 .brand__logo--negative ~ .header__actions .sketch-cart__body,
 .brand__logo--negative ~ .header__actions .sketch-cart__digit {
   filter: brightness(0) invert(1);

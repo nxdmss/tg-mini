@@ -1,6 +1,3 @@
-const ZULF_RE =
-  /\bZULF\b/gi;
-
 const SWAG_RE =
   /\b(?:SWA6Y5TAN|SWAGYSTAN)\b/gi;
 
@@ -24,25 +21,6 @@ function installBrandStyles() {
   style.id = STYLE_ID;
 
   style.textContent = `
-    .brand-zulfia {
-      display: inline-block !important;
-      font-family:
-        "Snell Roundhand",
-        "Segoe Script",
-        "Brush Script MT",
-        "URW Chancery L",
-        cursive !important;
-      font-size: 1.79em !important;
-      font-weight: 400 !important;
-      font-style: normal !important;
-      line-height: 0.92 !important;
-      letter-spacing: -0.006em !important;
-      text-transform: none !important;
-      white-space: nowrap;
-      transform: translateY(0.02em);
-      transform-origin: center;
-    }
-
     /*
      * New SWAGYSTAN lettering.
      * The wordmark is an SVG outline generated from the supplied font,
@@ -105,10 +83,6 @@ function normalizeText(
 ) {
   return value
     .replace(
-      ZULF_RE,
-      "Zulfia",
-    )
-    .replace(
       SWAG_RE,
       "SWAGYSTAN",
     );
@@ -119,14 +93,6 @@ function classForText(
 ) {
   const normalized =
     value.trim();
-
-  if (
-    /^Zulfia$/i.test(
-      normalized,
-    )
-  ) {
-    return "brand-zulfia";
-  }
 
   if (
     /^(SWAGYSTAN|SWA6Y5TAN)$/i.test(
@@ -221,19 +187,6 @@ function normalizeTextNode(
   parent.classList.add(
     brandClass,
   );
-
-  if (
-    brandClass ===
-      "brand-zulfia"
-  ) {
-    parent.classList.remove(
-      "brand-swagystan",
-    );
-  } else {
-    parent.classList.remove(
-      "brand-zulfia",
-    );
-  }
 }
 
 function normalizeElement(

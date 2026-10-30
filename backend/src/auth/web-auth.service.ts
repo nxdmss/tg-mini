@@ -33,16 +33,17 @@ export class WebAuthService {
     const code = String(randomInt(100000, 1000000));
     const codeHash = this.digest(email, purpose, code);
     const now = new Date();
+    const expiresAt = new Date(now.getTime() + 600000);
     // Atomic cooldown: concurrent requests cannot keep rotating the code.
     await this.prisma.$transaction(async tx => {
       await tx.emailChallenge.upsert({ where: { email_purpose: { email, purpose } },
         create: { email, purpose, codeHash: '', expiresAt: new Date(0), sentAt: new Date(0) }, update: {} });
       const reserved = await tx.emailChallenge.updateMany({ where: { email, purpose, sentAt: { lt: new Date(now.getTime() - 60000) } },
-        data: { codeHash, expiresAt: new Date(now.getTime() + 600000), sentAt: now, attempts: 0,
+        data: { codeHash, expiresAt, sentAt: now, attempts: 0,
           passwordHash: passwordHash ?? null, name: name ?? null } });
       if (!reserved.count) throw new BadRequestException('Новый код можно запросить через минуту');
     });
-    try { await this.mail.sendCode(email, code, purpose); }
+    try { await this.mail.sendCode(email, code, purpose, expiresAt); }
     catch (e) {
       await this.prisma.emailChallenge.deleteMany({ where: { email, purpose, codeHash } });
       throw e;
