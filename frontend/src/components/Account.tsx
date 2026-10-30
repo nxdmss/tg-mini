@@ -19,7 +19,8 @@ export function Account() {
   const [notice, setNotice] = useState("");
   const [resendAt, setResendAt] = useState(0);
   const [sending, setSending] = useState(false);
-  function switchMode(next: typeof mode) { setMode(next); setCode(""); setPassword(""); setError(""); setNotice(""); }
+  const [showPassword, setShowPassword] = useState(false);
+  function switchMode(next: typeof mode) { setMode(next); setShowPassword(false); setCode(""); setPassword(""); setError(""); setNotice(""); }
   async function resend() {
     if (Date.now() < resendAt) { setError("Повторная отправка доступна через минуту"); return; }
     setSending(true); setError("");
@@ -77,57 +78,100 @@ export function Account() {
     } catch (e) { setError(getApiErrorMessage(e)); }
     finally { setSending(false); }
   }
-  return <main className="container swag-account">
-    <div className="swag-account__heading"><h1>КАБИНЕТ</h1></div>
-    {busy ? <p className="swag-account__muted">ЗАГРУЗКА...</p> : user ? <>
-      <section className="swag-account__hero">
-        <div className="swag-account__identity">
-          <h2>{displayName}</h2>
-          {user.email && <p>{user.email}</p>}
-          {user.phone && <p>{user.phone}</p>}
+  const authTitle = {
+    login: "ВХОД", register: "РЕГИСТРАЦИЯ", verify: "ПОДТВЕРДИ ПОЧТУ",
+    forgot: "ВОССТАНОВЛЕНИЕ", reset: "НОВЫЙ ПАРОЛЬ",
+  }[mode];
+  const submitLabel = {
+    login: "ВОЙТИ", register: "ПОЛУЧИТЬ КОД", verify: "ПОДТВЕРДИТЬ",
+    forgot: "ПОЛУЧИТЬ КОД", reset: "СОХРАНИТЬ ПАРОЛЬ",
+  }[mode];
+  const confirming = mode === "verify" || mode === "reset";
+
+  return (
+    <main className={`container swag-account${user ? "" : " swag-account--auth"}`}>
+      {busy ? <p className="swag-account__muted" role="status">ЗАГРУЗКА…</p> : user ? <>
+        <div className="swag-account__heading"><h1>КАБИНЕТ</h1></div>
+        <section className="swag-account__hero">
+          <div className="swag-account__identity">
+            <h2>{displayName}</h2>
+            {user.email && <p>{user.email}</p>}
+            {user.phone && <p>{user.phone}</p>}
+          </div>
+          {editing ? <form className="swag-account__edit" onSubmit={saveName} aria-busy={saving}>
+            <label htmlFor="profile-name">ИМЯ</label>
+            <input id="profile-name" autoComplete="name" required maxLength={80} value={name} onChange={e => setName(e.target.value)} autoFocus />
+            <div className="swag-account__edit-actions">
+              <button disabled={saving || !name.trim()} type="submit">{saving ? "СОХРАНЕНИЕ…" : "СОХРАНИТЬ"}</button>
+              <button disabled={saving} type="button" onClick={() => setEditing(false)}>ОТМЕНА</button>
+            </div>
+          </form> : <button className="swag-account__edit-trigger" type="button" onClick={() => {
+            setName(user.name?.trim() || [user.firstName, user.lastName].filter(Boolean).join(" "));
+            setEditing(true);
+          }}>ИЗМЕНИТЬ ИМЯ</button>}
+        </section>
+        {error && <p className="swag-account__error" role="alert">{error}</p>}
+        <nav className="swag-account__nav" aria-label="Разделы кабинета">
+          <a href="#account-orders">ЗАКАЗЫ <span><NumericText text={String(orders.length).padStart(2, "0")} /></span></a>
+          <a href="/favorites">ИЗБРАННОЕ <span aria-hidden="true">↗</span></a>
+        </nav>
+        <section className="swag-account__section" aria-labelledby="account-orders">
+          <h2 id="account-orders" className="swag-account__label">МОИ ЗАКАЗЫ</h2>
+          {orders.length === 0 ? <div className="swag-account__empty">
+            <p>Пока без заказов</p><a href="/catalog">В КАТАЛОГ <span aria-hidden="true">↗</span></a>
+          </div> : orders.map(order => <article className="swag-account__order" key={order.id}>
+            <div className="swag-account__orderhead">
+              <strong>ЗАКАЗ № {order.id.slice(0, 8).toUpperCase()}</strong>
+              <span>{statusNames[order.status] || order.status}</span>
+            </div>
+            {order.createdAt && <small>{new Date(order.createdAt).toLocaleDateString("ru-RU")}</small>}
+            {order.items.map(item => <div className="swag-account__item" key={item.id}>
+              {item.product?.images?.[0]?.url && <img src={item.product.images[0].url} alt="" loading="lazy" />}
+              <div><strong>{item.product?.name || "ТОВАР"}</strong><small>РАЗМЕР {item.size} · {item.quantity} ШТ.</small></div>
+              <span>{(item.price * item.quantity).toLocaleString("ru-RU")} ₽</span>
+            </div>)}
+            <div className="swag-account__total"><span>ИТОГО</span><strong>{order.items.reduce((s, i) => s + i.price * i.quantity, 0).toLocaleString("ru-RU")} ₽</strong></div>
+          </article>)}
+        </section>
+        <button className="swag-account__exit" type="button" onClick={() => {
+          logout(); setUser(null); setOrders([]); setError(""); setShowPassword(false);
+        }}>ВЫЙТИ ИЗ АККАУНТА</button>
+      </> : <section className="swag-account__auth" aria-labelledby="account-auth-title">
+        <h1 id="account-auth-title" className="swag-account__auth-title">{authTitle}</h1>
+        {confirming && <p className="swag-account__destination">{email}</p>}
+        <form onSubmit={submit} aria-busy={sending}>
+          {mode === "register" && <div className="swag-account__field">
+            <label htmlFor="account-name">ИМЯ</label>
+            <input id="account-name" autoComplete="name" placeholder="Как к тебе обращаться" required maxLength={80} value={name} onChange={e => setName(e.target.value)} />
+          </div>}
+          {!confirming && <div className="swag-account__field">
+            <label htmlFor="account-email">EMAIL</label>
+            <input id="account-email" type="email" autoComplete="email" placeholder="you@example.com" autoCapitalize="none" spellCheck={false} required maxLength={254} value={email} onChange={e => setEmail(e.target.value)} />
+          </div>}
+          {confirming && <div className="swag-account__field">
+            <label htmlFor="account-code">КОД ИЗ ПИСЬМА</label>
+            <input id="account-code" className="swag-account__code" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{6}" maxLength={6} required value={code} onChange={e => setCode(e.target.value.replace(/\D/g, ""))} aria-describedby="account-code-hint" />
+            <p id="account-code-hint" className="swag-account__hint">Действует 10 минут</p>
+          </div>}
+          {mode !== "forgot" && mode !== "verify" && <div className="swag-account__field">
+            <div className="swag-account__field-heading">
+              <label htmlFor="account-password">{mode === "reset" ? "НОВЫЙ ПАРОЛЬ" : "ПАРОЛЬ"}</label>
+              {mode === "login" && <button disabled={sending} type="button" className="swag-account__text-button" onClick={() => switchMode("forgot")}>Забыли?</button>}
+            </div>
+            <div className="swag-account__password">
+              <input id="account-password" type={showPassword ? "text" : "password"} autoComplete={mode === "login" ? "current-password" : "new-password"} placeholder={mode === "login" ? "Твой пароль" : "Не меньше 8 символов"} required minLength={mode === "login" ? 6 : 8} maxLength={72} value={password} onChange={e => setPassword(e.target.value)} />
+              <button type="button" aria-label={showPassword ? "Скрыть пароль" : "Показать пароль"} aria-pressed={showPassword} onClick={() => setShowPassword(value => !value)}>{showPassword ? "СКРЫТЬ" : "ПОКАЗАТЬ"}</button>
+            </div>
+          </div>}
+          {error && <p className="swag-account__error" role="alert">{error}</p>}
+          {notice && <p className="swag-account__notice" role="status">{notice}</p>}
+          <button disabled={sending} type="submit" className="swag-account__submit">{sending ? "ПОДОЖДИ…" : submitLabel}<span aria-hidden="true">↗</span></button>
+        </form>
+        <div className="swag-account__auth-actions">
+          {confirming && <button disabled={sending} type="button" className="swag-account__switch" onClick={resend}>ОТПРАВИТЬ ЕЩЁ РАЗ</button>}
+          <button disabled={sending} type="button" className="swag-account__switch" onClick={() => switchMode(mode === "login" ? "register" : "login")}>{mode === "login" ? "СОЗДАТЬ АККАУНТ" : "К ВХОДУ"}</button>
         </div>
-        {editing ? <form className="swag-account__edit" onSubmit={saveName}>
-          <label htmlFor="profile-name">Имя</label>
-          <input id="profile-name" autoComplete="name" required maxLength={80} value={name} onChange={e => setName(e.target.value)} autoFocus />
-          <div><button disabled={saving || !name.trim()} type="submit">{saving ? "СОХРАНЕНИЕ…" : "СОХРАНИТЬ"}</button>
-          <button disabled={saving} type="button" onClick={() => setEditing(false)}>ОТМЕНА</button></div>
-        </form> : <button className="swag-account__edit-trigger" onClick={() => { setName(user.name?.trim() || [user.firstName, user.lastName].filter(Boolean).join(" ")); setEditing(true); }}>ИЗМЕНИТЬ ИМЯ ↗</button>}
-      </section>
-      <nav className="swag-account__nav" aria-label="Разделы кабинета">
-        <a href="#account-orders">ЗАКАЗЫ <span><NumericText text={String(orders.length)} /></span></a>
-        <a href="/favorites">ИЗБРАННОЕ <span>↗</span></a>
-      </nav>
-      <section className="swag-account__section">
-        <h2 id="account-orders" className="swag-account__label">МОИ ЗАКАЗЫ</h2>
-        {orders.length === 0 ? <div className="swag-account__empty"><p>Пока без заказов</p><a href="/catalog">В КАТАЛОГ ↗</a></div> : orders.map(order => <article className="swag-account__order" key={order.id}>
-          <div className="swag-account__orderhead"><strong>ЗАКАЗ № {order.id.slice(0, 8).toUpperCase()}</strong><span>{statusNames[order.status] || order.status}</span></div>
-          {order.createdAt && <small>{new Date(order.createdAt).toLocaleDateString("ru-RU")}</small>}
-          {order.items.map(item => <div className="swag-account__item" key={item.id}>
-            {item.product?.images?.[0]?.url && <img src={item.product.images[0].url} alt="" />}
-            <div><strong>{item.product?.name || "ТОВАР"}</strong><small>РАЗМЕР {item.size} · {item.quantity} ШТ.</small></div>
-            <span>{(item.price * item.quantity).toLocaleString("ru-RU")} ₽</span>
-          </div>)}
-          <div className="swag-account__total">ИТОГО <strong>{order.items.reduce((s, i) => s + i.price * i.quantity, 0).toLocaleString("ru-RU")} ₽</strong></div>
-        </article>)}
-      </section>
-      <button className="swag-account__exit" type="button" onClick={() => { logout(); setUser(null); setOrders([]); setError(""); }}>ВЫЙТИ ↗</button>
-    </> : <section className="swag-account__section swag-account__auth">
-      <div className="swag-account__label">{({ login: "ВХОД", register: "РЕГИСТРАЦИЯ", verify: "ПОДТВЕРДИ ПОЧТУ", forgot: "ВОССТАНОВЛЕНИЕ", reset: "НОВЫЙ ПАРОЛЬ" })[mode]}</div>
-      <form onSubmit={submit}>
-        {mode === "register" && <label>ИМЯ<input autoComplete="name" required maxLength={80} value={name} onChange={e => setName(e.target.value)} /></label>}
-        <label>EMAIL<input type="email" autoComplete="email" required maxLength={254} readOnly={mode === "verify" || mode === "reset"} value={email} onChange={e => setEmail(e.target.value)} /></label>
-        {(mode === "verify" || mode === "reset") && <label>КОД ИЗ ПИСЬМА<input inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{6}" maxLength={6} required value={code} onChange={e => setCode(e.target.value.replace(/\D/g, ""))} /></label>}
-        {mode !== "forgot" && mode !== "verify" && <label>{mode === "reset" ? "НОВЫЙ ПАРОЛЬ" : "ПАРОЛЬ"}<input type="password" autoComplete={mode === "login" ? "current-password" : "new-password"} required minLength={mode === "login" ? 6 : 8} maxLength={72} value={password} onChange={e => setPassword(e.target.value)} /></label>}
-        <button disabled={sending} type="submit" className="swag-account__submit">{sending ? "ПОДОЖДИ…" : ({ login: "ВОЙТИ ↗", register: "ПОЛУЧИТЬ КОД ↗", verify: "ПОДТВЕРДИТЬ ↗", forgot: "ПОЛУЧИТЬ КОД ↗", reset: "СОХРАНИТЬ ПАРОЛЬ ↗" })[mode]}</button>
-      </form>
-      <div className="swag-account__auth-actions">
-        {mode === "login" && <button disabled={sending} type="button" className="swag-account__switch" onClick={() => switchMode("forgot")}>ЗАБЫЛИ ПАРОЛЬ?</button>}
-        {(mode === "verify" || mode === "reset") && <button disabled={sending} type="button" className="swag-account__switch" onClick={resend}>ОТПРАВИТЬ ЕЩЁ РАЗ</button>}
-        <button disabled={sending} type="button" className="swag-account__switch" onClick={() => switchMode(mode === "login" ? "register" : "login")}>{mode === "login" ? "СОЗДАТЬ АККАУНТ" : "К ВХОДУ"}</button>
-      </div>
-      {mode === "verify" && <p className="swag-account__muted">Код действует 10 минут. Проверь также спам.</p>}
-      {notice && <p className="swag-account__muted" role="status">{notice}</p>}
-    </section>}
-    {error && <p className="swag-account__error" role="alert">{error}</p>}
-  </main>;
+      </section>}
+    </main>
+  );
 }
