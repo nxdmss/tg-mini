@@ -7,6 +7,7 @@ import "@fontsource/ibm-plex-mono/600.css";
 import "@fontsource/ibm-plex-mono/700.css";
 
 import "./index.css";
+import "./cursors.css";
 import "./searchTypography.css";
 import "./brandRuntime";
 
