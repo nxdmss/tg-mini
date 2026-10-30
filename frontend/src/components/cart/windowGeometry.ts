@@ -16,8 +16,8 @@ export function fitWindow(rect: Rect, viewport: Viewport): Rect {
 }
 
 export function initialWindow(viewport: Viewport): Rect {
-  const width = Math.min(720, viewport.width - 24);
-  const height = Math.min(680, viewport.height * .84);
+  const width = Math.min(960, viewport.width - 24);
+  const height = Math.min(820, viewport.height * .90);
   return fitWindow({ x: (viewport.width - width) / 2, y: (viewport.height - height) / 2, width, height }, viewport);
 }
 
