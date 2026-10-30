@@ -4,17 +4,17 @@ cd /opt/swa6/app
 git fetch origin main
 DIGITS_TMP=$(mktemp -d)
 trap 'rm -rf "$DIGITS_TMP"' EXIT
-git archive origin/main frontend/public/fonts/IZLOM_Narrow-Heavy.ttf frontend/public/typography-numbers-v4.css | tar -x -C "$DIGITS_TMP"
+git archive origin/main frontend/public/fonts/IZLOM_Narrow-Heavy.ttf frontend/public/typography-numbers-v5.css | tar -x -C "$DIGITS_TMP"
 sudo mkdir -p /var/www/swagystan/fonts
 sudo cp "$DIGITS_TMP/frontend/public/fonts/IZLOM_Narrow-Heavy.ttf" /var/www/swagystan/fonts/
-sudo cp "$DIGITS_TMP/frontend/public/typography-numbers-v4.css" /var/www/swagystan/
+sudo cp "$DIGITS_TMP/frontend/public/typography-numbers-v5.css" /var/www/swagystan/
 sudo cp -a /var/www/swagystan/index.html "/var/www/swagystan/index.html.before-digits-$(date +%s)"
 sudo python3 - <<'PY'
 from pathlib import Path
 p=Path('/var/www/swagystan/index.html')
-s=p.read_text().replace("/typography-numbers-v3.css", "/typography-numbers-v4.css").replace("/typography-numbers-v2.css", "/typography-numbers-v4.css")
-link='<link rel="stylesheet" href="/typography-numbers-v4.css" />'
-if '/typography-numbers-v4.css' not in s:
+s=p.read_text().replace("/typography-numbers-v4.css", "/typography-numbers-v5.css").replace("/typography-numbers-v3.css", "/typography-numbers-v5.css").replace("/typography-numbers-v2.css", "/typography-numbers-v5.css")
+link='<link rel="stylesheet" href="/typography-numbers-v5.css" />'
+if '/typography-numbers-v5.css' not in s:
     if '</head>' not in s: raise SystemExit('Missing HTML head; stopped')
     s=s.replace('</head>',link+'\n</head>')
 p.write_text(s)
