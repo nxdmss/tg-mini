@@ -57,10 +57,11 @@ html body .swag-only.swag-only textarea::placeholder {
 }
 html body .swag-only.swag-only .store-top .search-strip__input {
  font-family: "IZLOM Search", "SWAG Search Letters", "IBM Plex Mono", monospace !important;
- font-style: italic !important;
+ font-style: normal !important;
+ text-transform: uppercase;
  font-size: clamp(24px, 1.8vw, 28px) !important;
- font-weight: 800 !important;
- -webkit-text-stroke: .35px currentColor !important;
+ font-weight: 700 !important;
+ -webkit-text-stroke: 0 !important;
  height: 60px;
  min-height: 60px;
  line-height: 1.4;
@@ -70,7 +71,8 @@ html body .swag-only.swag-only .store-top .search-strip__input {
 html body .swag-only.swag-only .store-top .search-strip__input::placeholder {
  font-family: "IZLOM Search", "SWAG Search Letters", "IBM Plex Mono", monospace !important;
  font-weight: 700 !important;
- font-style: italic !important;
+ font-style: normal !important;
+ text-transform: uppercase;
  color: #666;
  -webkit-text-stroke: 0 !important;
 }
