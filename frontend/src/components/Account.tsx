@@ -86,12 +86,8 @@ export function Account() {
             {user.email && <p>{user.email}</p>}
             {user.phone && <p>{user.phone}</p>}
           </div>
-
         </section>
         {error && <p className="swag-account__error" role="alert">{error}</p>}
-        <nav className="swag-account__nav" aria-label="Разделы кабинета">
-          <a href="/favorites">ИЗБРАННОЕ <span aria-hidden="true">↗</span></a>
-        </nav>
         <section className="swag-account__section" aria-labelledby="account-orders">
           <h2 id="account-orders" className="swag-account__label">МОИ ЗАКАЗЫ</h2>
           {orders.length === 0 ? <div className="swag-account__empty">
