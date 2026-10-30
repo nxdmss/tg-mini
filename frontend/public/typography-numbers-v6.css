@@ -56,7 +56,8 @@ html body .swag-only.swag-only textarea::placeholder {
  size-adjust: 115%;
 }
 html body .swag-only.swag-only .store-top .search-strip__input {
- font-family: "IZLOM Search", "IBM Plex Mono", monospace !important;
+ font-family: "IZLOM Search", "SWAG Search Letters", "IBM Plex Mono", monospace !important;
+ font-style: italic !important;
  font-size: clamp(24px, 1.8vw, 28px) !important;
  font-weight: 800 !important;
  -webkit-text-stroke: .35px currentColor !important;
@@ -67,8 +68,9 @@ html body .swag-only.swag-only .store-top .search-strip__input {
  letter-spacing: .025em;
 }
 html body .swag-only.swag-only .store-top .search-strip__input::placeholder {
- font-family: "IZLOM Search", "IBM Plex Mono", monospace !important;
+ font-family: "IZLOM Search", "SWAG Search Letters", "IBM Plex Mono", monospace !important;
  font-weight: 700 !important;
+ font-style: italic !important;
  color: #666;
  -webkit-text-stroke: 0 !important;
 }
