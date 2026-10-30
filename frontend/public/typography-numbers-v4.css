@@ -1,0 +1,81 @@
+/* One physical digit weight at every text size, including input fields. */
+@font-face {
+ font-family: "IZLOM Readable";
+ src: url("/fonts/IZLOM_Narrow-Heavy.ttf") format("truetype");
+ font-weight: 100 900;
+ font-style: normal;
+ font-display: swap;
+ unicode-range: U+0030-0039;
+}
+html body .swag-only.swag-only .card__price,
+html body .swag-only.swag-only .product-page__price,
+html body .swag-only.swag-only .swag-num,
+html body .swag-only.swag-only .checkout-cart-item__price,
+html body .swag-only.swag-only .checkout-summary-item__price,
+html body .swag-only.swag-only .checkout-cart-total,
+html body .swag-only.swag-only .checkout-totals__row,
+html body .swag-only.swag-only .checkout-totals__row--total,
+html body .swag-only.swag-only .checkout-qty span,
+html body .swag-only.swag-only .checkout-qty button,
+html body .swag-only.swag-only .product-page__size,
+html body .swag-only.swag-only .swag-section-title span,
+html body .swag-only.swag-only .header-cart__badge,
+html body .swag-only.swag-only .cart-btn__badge,
+html body .swag-only.swag-only .cart-icon__count,
+html body .swag-only.swag-only .cart-item__price,
+html body .swag-only.swag-only .cart-item__qty,
+html body .swag-only.swag-only .cart-summary__value,
+html body .swag-only.swag-only .checkout-item__price,
+html body .swag-only.swag-only .checkout-item__qty,
+html body .swag-only.swag-only .checkout-summary__value,
+html body .swag-only.swag-only .quantity-stepper__value,
+html body .swag-only.swag-only .swag-inline-number,
+html body .swag-only.swag-only .card__price .card__ruble {
+ -webkit-text-stroke: 0 !important;
+ font-weight: 700 !important;
+ font-variant-numeric: lining-nums tabular-nums;
+}
+
+html body .swag-only.swag-only,
+html body .swag-only.swag-only *,
+html body .swag-only.swag-only *::before,
+html body .swag-only.swag-only *::after,
+html body .swag-only.swag-only input::placeholder,
+html body .swag-only.swag-only textarea::placeholder {
+ font-family: "IZLOM Readable", "IBM Plex Mono", monospace !important;
+}
+
+/* Search: larger, darker input and enlarged custom numerals. */
+@font-face {
+ font-family: "IZLOM Search";
+ src: url("/fonts/IZLOM_Narrow-Heavy.ttf") format("truetype");
+ font-weight: 100 900;
+ font-style: normal;
+ font-display: swap;
+ unicode-range: U+0030-0039;
+ size-adjust: 115%;
+}
+html body .swag-only.swag-only .store-top .search-strip__input {
+ font-family: "IZLOM Search", "IBM Plex Mono", monospace !important;
+ font-size: clamp(26px, 2vw, 32px) !important;
+ font-weight: 800 !important;
+ -webkit-text-stroke: .35px currentColor !important;
+ height: 60px;
+ min-height: 60px;
+ line-height: 1.4;
+ color: #000;
+ letter-spacing: .025em;
+}
+html body .swag-only.swag-only .store-top .search-strip__input::placeholder {
+ font-family: "IZLOM Search", "IBM Plex Mono", monospace !important;
+ font-weight: 700 !important;
+ color: #666;
+ -webkit-text-stroke: 0 !important;
+}
+@media(max-width:520px) {
+ html body .swag-only.swag-only .store-top .search-strip__input {
+  font-size: 22px !important;
+  height: 54px;
+  min-height: 54px;
+ }
+}
