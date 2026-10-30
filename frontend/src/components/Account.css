@@ -50,7 +50,6 @@
 .swag-account a:focus-visible,
 .swag-account input:focus-visible { outline: 2px solid #111; outline-offset: 4px; }
 
-.swag-account__edit-trigger,
 .swag-account__exit,
 .swag-account__switch,
 .swag-account__text-button {
@@ -66,7 +65,6 @@
   text-align: left;
   text-underline-offset: 5px;
 }
-.swag-account__edit-trigger { flex-shrink: 0; margin-top: 4px; }
 .swag-account__exit { margin-top: 32px; min-height: 44px; }
 
 .swag-account__nav { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
@@ -88,7 +86,6 @@
 .swag-account__label { margin-bottom: 24px; scroll-margin-top: 120px; }
 .swag-account__empty { padding: 20px 0 28px; }
 .swag-account__empty p { margin: 0 0 24px; font-size: 24px; font-weight: 500; letter-spacing: -.035em; }
-.swag-account__empty a { display: inline-flex; gap: 28px; align-items: center; min-height: 44px; color: #111; font-size: 12px; font-weight: 600; text-decoration: none; }
 
 .swag-account__order { padding: 28px; margin-top: 16px; background: #f7f7f7; }
 .swag-account__orderhead { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; font-size: 14px; line-height: 1.5; }
@@ -108,12 +105,10 @@
 .swag-account__destination { margin: -20px 0 32px; }
 .swag-account__auth form { display: flex; flex-direction: column; gap: 24px; }
 .swag-account__field { display: flex; flex-direction: column; gap: 10px; }
-.swag-account__field label,
-.swag-account__edit label { font-size: 11px; font-weight: 600; line-height: 1.5; letter-spacing: .06em; color: #555; }
+.swag-account__field label { font-size: 11px; font-weight: 600; line-height: 1.5; letter-spacing: .06em; color: #555; }
 .swag-account__field-heading { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
 .swag-account__text-button { padding: 0; font-size: 12px; }
-.swag-account__auth input,
-.swag-account__edit input {
+.swag-account__auth input {
   display: block;
   width: 100%;
   min-width: 0;
@@ -145,18 +140,13 @@
 .swag-account__notice { margin: 0; }
 .swag-account__error { margin: 0; color: #a11919; font-size: 13px; line-height: 1.6; overflow-wrap: anywhere; }
 .swag-account__hero + .swag-account__error { margin-bottom: 24px; }
-.swag-account__edit { flex-shrink: 0; display: grid; gap: 10px; width: 280px; max-width: 100%; }
-.swag-account__edit-actions { display: flex; gap: 20px; }
-.swag-account__edit-actions button { min-height: 44px; padding: 10px 0; border: 0; background: transparent; color: #111; font: inherit; font-size: 11px; font-weight: 600; }
 
 @media (hover: hover) {
   .swag-account__nav a:hover { background: #eaeaea; }
   .swag-account__submit:hover:not(:disabled) { background: #292929; }
   .swag-account__switch:hover:not(:disabled),
   .swag-account__text-button:hover:not(:disabled),
-  .swag-account__edit-trigger:hover,
-  .swag-account__exit:hover,
-  .swag-account__empty a:hover { color: #111; text-decoration: underline; }
+  .swag-account__exit:hover { color: #111; text-decoration: underline; }
 }
 
 @media (max-width: 600px) {
@@ -164,7 +154,6 @@
   .swag-account--auth { padding-top: 40px; }
   .swag-account__hero { flex-direction: column; gap: 16px; padding: 24px 0 32px; }
   .swag-account__identity h2 { font-size: 36px; }
-  .swag-account__edit-trigger { margin: 0; }
   .swag-account__nav { gap: 8px; }
   .swag-account__nav a { padding: 18px 14px; font-size: 11px; gap: 8px; }
   .swag-account__nav a > span { font-size: 20px; }
@@ -176,5 +165,4 @@
   .swag-account__item > span { margin-left: auto; }
   .swag-account__auth-title { margin-bottom: 30px; }
   .swag-account__destination { margin-top: -16px; }
-  .swag-account__edit { width: 100%; }
 }

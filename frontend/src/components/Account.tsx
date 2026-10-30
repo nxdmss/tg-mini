@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { api, authHeaders, getMe, getMyOrders, getApiErrorMessage, isWebLoggedIn, login, logout, register, verifyRegistration } from "../api";
+import { api, getMe, getMyOrders, getApiErrorMessage, isWebLoggedIn, login, logout, register, verifyRegistration } from "../api";
 import axios from "axios";
 import { NumericText } from "./NumericText";
 import type { AuthUser, Order } from "../types";
@@ -32,18 +32,7 @@ export function Account() {
     finally { setSending(false); }
   }
 
-  const [editing, setEditing] = useState(false);
-  const [saving, setSaving] = useState(false);
   const displayName = user?.name?.trim() || [user?.firstName, user?.lastName].filter(Boolean).join(" ") || user?.username || "Твой профиль";
-  async function saveName(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault(); setSaving(true); setError("");
-    try {
-      const { data } = await api.patch<AuthUser>("/auth/me", { name: name.trim() }, { headers: authHeaders() });
-      setUser(data); setEditing(false);
-    } catch (e) { setError(getApiErrorMessage(e)); }
-    finally { setSaving(false); }
-  }
-
   async function refresh() {
     setBusy(true); setError("");
     try {
@@ -98,17 +87,7 @@ export function Account() {
             {user.email && <p>{user.email}</p>}
             {user.phone && <p>{user.phone}</p>}
           </div>
-          {editing ? <form className="swag-account__edit" onSubmit={saveName} aria-busy={saving}>
-            <label htmlFor="profile-name">ИМЯ</label>
-            <input id="profile-name" autoComplete="name" required maxLength={80} value={name} onChange={e => setName(e.target.value)} autoFocus />
-            <div className="swag-account__edit-actions">
-              <button disabled={saving || !name.trim()} type="submit">{saving ? "СОХРАНЕНИЕ…" : "СОХРАНИТЬ"}</button>
-              <button disabled={saving} type="button" onClick={() => setEditing(false)}>ОТМЕНА</button>
-            </div>
-          </form> : <button className="swag-account__edit-trigger" type="button" onClick={() => {
-            setName(user.name?.trim() || [user.firstName, user.lastName].filter(Boolean).join(" "));
-            setEditing(true);
-          }}>ИЗМЕНИТЬ ИМЯ</button>}
+
         </section>
         {error && <p className="swag-account__error" role="alert">{error}</p>}
         <nav className="swag-account__nav" aria-label="Разделы кабинета">
@@ -118,7 +97,7 @@ export function Account() {
         <section className="swag-account__section" aria-labelledby="account-orders">
           <h2 id="account-orders" className="swag-account__label">МОИ ЗАКАЗЫ</h2>
           {orders.length === 0 ? <div className="swag-account__empty">
-            <p>Пока без заказов</p><a href="/catalog">В КАТАЛОГ <span aria-hidden="true">↗</span></a>
+            <p>Пока без заказов</p>
           </div> : orders.map(order => <article className="swag-account__order" key={order.id}>
             <div className="swag-account__orderhead">
               <strong>ЗАКАЗ № {order.id.slice(0, 8).toUpperCase()}</strong>
