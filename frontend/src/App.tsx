@@ -30,6 +30,7 @@ import "./components/ShopCommerceTheme.css";
 import "./components/ProductOverlay.css";
 import "./components/StoreExperience.css";
 import "./components/SwagOnly.css";
+import "./components/MobileRefinement.css";
 import { useFavorites } from "./favorites";
 import { sendVisitorPing } from "./visitorTracking";
 
