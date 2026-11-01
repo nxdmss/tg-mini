@@ -45,10 +45,10 @@ html body .swag-only.swag-only textarea::placeholder {
  font-family: "IZLOM Readable", "IBM Plex Mono", monospace !important;
 }
 
-/* Search: balanced scale with a dedicated heavier IZLOM numeral cut. */
+/* Search: compact mobile sizing and strong IZLOM numeral glyphs. */
 @font-face {
  font-family: "IZLOM Search";
- src: url("/fonts/IZLOM_Narrow-SearchHeavy.ttf") format("truetype");
+ src: url("/fonts/IZLOM_Narrow-SearchStrong.ttf") format("truetype");
  font-weight: 700;
  font-style: normal;
  font-display: swap;
@@ -78,8 +78,10 @@ html body .swag-only.swag-only .store-top .search-strip__input::placeholder {
 }
 @media(max-width:520px) {
  html body .swag-only.swag-only .store-top .search-strip__input {
-  font-size: 15px !important;
-  height: 38px !important;
-  min-height: 38px !important;
+  font-size: 16px !important; /* Avoid automatic input zoom in iOS Safari. */
+  height: 32px !important;
+  min-height: 32px !important;
+  line-height: 1.1 !important;
+  padding-block: 0 !important;
  }
 }
