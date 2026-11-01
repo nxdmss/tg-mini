@@ -1,0 +1,277 @@
+/* Consolidated responsive storefront rules.
+   This file loads after the legacy theme overrides so phone sizing stays predictable. */
+
+@media (max-width: 900px) {
+  html body .swag-only .store-top .header {
+    height: 120px !important;
+  }
+
+  html body .swag-only .store-top .header .header__inner {
+    height: 120px !important;
+    padding: 8px 18px 0 !important;
+    align-items: flex-start !important;
+  }
+
+  html body .swag-only .store-top .header .brand__logo {
+    min-height: 66px !important;
+    padding: 0 !important;
+    align-items: center;
+  }
+
+  html body .swag-only .store-top .header .brand__logo img {
+    height: 64px !important;
+    max-width: 180px !important;
+    transform: none !important;
+  }
+
+  html body .swag-only .store-top .header .header__actions {
+    top: 30px !important;
+    right: 18px !important;
+  }
+
+  html body .swag-only .store-top .header .header-cart {
+    min-height: 42px !important;
+    padding: 0 10px !important;
+  }
+
+  html body .swag-only .store-top .header .header-cart svg {
+    width: 25px !important;
+    height: 25px !important;
+  }
+
+  html body .swag-only .swag-nav--header {
+    left: 18px !important;
+    right: 18px !important;
+    top: auto !important;
+    bottom: 0 !important;
+    transform: none !important;
+    width: auto !important;
+    max-width: none !important;
+    min-height: 42px !important;
+    padding: 0 0 3px !important;
+    gap: clamp(8px, 1.8vw, 16px) !important;
+    justify-content: space-between !important;
+  }
+
+  html body .swag-only .swag-nav--header .swag-nav__tab {
+    padding: 9px 0 10px !important;
+    font-size: clamp(11px, 1.7vw, 14px) !important;
+    line-height: 1.15 !important;
+  }
+
+  html body .swag-only .store-top .toolbar {
+    padding: 0 0 9px !important;
+  }
+
+  html body .swag-only .store-top .toolbar .toolbar__inner {
+    padding-left: 18px !important;
+    padding-right: 18px !important;
+    gap: 7px !important;
+  }
+
+  html body .swag-only .search-strip {
+    gap: 5px !important;
+  }
+
+  html body .swag-only .toolbar__chips-row {
+    gap: 8px !important;
+    padding-top: 0 !important;
+  }
+
+  html body .swag-only .toolbar__chips-row .chips {
+    min-width: 0 !important;
+    gap: 7px !important;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  html body .swag-only .toolbar__chips-row .chips::-webkit-scrollbar {
+    display: none;
+  }
+
+  html body .swag-only .toolbar__chips-row .chip {
+    flex: 0 0 auto;
+    min-height: 36px !important;
+    padding: 0 10px !important;
+    font-size: 12px !important;
+    line-height: 1.1 !important;
+    white-space: nowrap;
+  }
+
+  html body .swag-only .toolbar__chips-row .sort-btn {
+    width: 38px !important;
+    height: 38px !important;
+    min-width: 38px !important;
+    min-height: 38px !important;
+    padding: 8px !important;
+  }
+
+  html body .swag-only .toolbar__chips-row .sort-btn svg {
+    width: 19px !important;
+    height: 19px !important;
+  }
+
+  html body .swag-only .store-experience__catalog {
+    padding-left: 18px !important;
+    padding-right: 18px !important;
+  }
+
+  html body .swag-only .store-experience__catalog .grid {
+    column-gap: 14px !important;
+    row-gap: 20px !important;
+  }
+
+  html body .swag-only .store-experience__catalog .card__media {
+    aspect-ratio: 4 / 5 !important;
+    padding: 3px !important;
+  }
+
+  html body .swag-only .store-experience__catalog .card__body {
+    padding-top: 16px !important;
+    gap: 3px !important;
+  }
+
+  html body .swag-only .store-experience__catalog .card__name {
+    font-size: clamp(14px, 2.1vw, 16px) !important;
+    line-height: 1.18 !important;
+  }
+
+  html body .swag-only .store-experience__catalog .card__brand {
+    font-size: 10px !important;
+  }
+
+  html body .swag-only .store-experience__catalog .card__price {
+    font-size: clamp(15px, 2.2vw, 17px) !important;
+  }
+
+  html body .swag-only .store-experience__catalog .card__category {
+    font-size: 10px !important;
+  }
+}
+
+@media (max-width: 520px) {
+  html body .swag-only .store-top .header {
+    height: 108px !important;
+  }
+
+  html body .swag-only .store-top .header .header__inner {
+    height: 108px !important;
+    padding: 6px 13px 0 !important;
+  }
+
+  html body .swag-only .store-top .header .brand__logo {
+    min-height: 60px !important;
+  }
+
+  html body .swag-only .store-top .header .brand__logo img {
+    height: 60px !important;
+    max-width: 148px !important;
+  }
+
+  html body .swag-only .store-top .header .header__actions {
+    top: 24px !important;
+    right: 12px !important;
+  }
+
+  html body .swag-only .store-top .header .header-cart {
+    min-height: 38px !important;
+    padding: 0 7px !important;
+  }
+
+  html body .swag-only .store-top .header .header-cart svg {
+    width: 23px !important;
+    height: 23px !important;
+  }
+
+  html body .swag-only .swag-nav--header {
+    left: 12px !important;
+    right: 12px !important;
+    min-height: 38px !important;
+    padding-bottom: 2px !important;
+    gap: clamp(5px, 1.7vw, 8px) !important;
+  }
+
+  html body .swag-only .swag-nav--header .swag-nav__tab {
+    padding: 7px 0 8px !important;
+    font-size: clamp(10px, 2.8vw, 11.5px) !important;
+    letter-spacing: 0 !important;
+  }
+
+  html body .swag-only .store-top .toolbar {
+    padding-bottom: 7px !important;
+  }
+
+  html body .swag-only .store-top .toolbar .toolbar__inner {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+    gap: 5px !important;
+  }
+
+  html body .swag-only .search-strip {
+    gap: 4px !important;
+  }
+
+  html body .swag-only .toolbar__chips-row {
+    gap: 5px !important;
+  }
+
+  html body .swag-only .toolbar__chips-row .chips {
+    gap: 5px !important;
+  }
+
+  html body .swag-only .toolbar__chips-row .chip {
+    min-height: 32px !important;
+    padding: 0 7px !important;
+    font-size: 11px !important;
+  }
+
+  html body .swag-only .toolbar__chips-row .sort-btn {
+    width: 34px !important;
+    height: 34px !important;
+    min-width: 34px !important;
+    min-height: 34px !important;
+    padding: 7px !important;
+  }
+
+  html body .swag-only .toolbar__chips-row .sort-btn svg {
+    width: 18px !important;
+    height: 18px !important;
+  }
+
+  html body .swag-only .store-experience__catalog {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+
+  html body .swag-only .store-experience__catalog .grid {
+    column-gap: 9px !important;
+    row-gap: 17px !important;
+  }
+
+  html body .swag-only .store-experience__catalog .card__media {
+    padding: 2px !important;
+  }
+
+  html body .swag-only .store-experience__catalog .card__body {
+    padding-top: 14px !important;
+    gap: 3px !important;
+  }
+
+  html body .swag-only .store-experience__catalog .card__name {
+    font-size: clamp(13px, 3.7vw, 15px) !important;
+  }
+
+  html body .swag-only .store-experience__catalog .card__brand {
+    font-size: 9.5px !important;
+  }
+
+  html body .swag-only .store-experience__catalog .card__price {
+    font-size: clamp(14px, 3.8vw, 16px) !important;
+  }
+
+  html body .swag-only .store-experience__catalog .card__category {
+    font-size: 9.5px !important;
+  }
+}
