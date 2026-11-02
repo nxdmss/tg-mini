@@ -30,14 +30,13 @@
   cursor: not-allowed;
 }
 
-.swag-card-quickadd__trigger svg {
-  display: block;
-  width: 27px;
-  height: 27px;
-  stroke: currentColor;
-  stroke-width: 1.7;
-  stroke-linecap: round;
-  stroke-linejoin: round;
+.swag-card-quickadd__icon {
+  width: 42px;
+  height: 32px;
+}
+
+.swag-card-quickadd__icon .sketch-cart__body {
+  object-fit: contain;
 }
 
 .swag-card-quickadd__sizes {
@@ -94,9 +93,9 @@
     padding: 6px;
   }
 
-  .swag-card-quickadd__trigger svg {
-    width: 25px;
-    height: 25px;
+  .swag-card-quickadd__icon {
+    width: 38px;
+    height: 29px;
   }
 
   .swag-card-quickadd__sizes {

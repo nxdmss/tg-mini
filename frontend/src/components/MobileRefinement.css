@@ -295,3 +295,71 @@
     height: 1px !important;
   }
 }
+
+
+/* Compact the complete search row, not just its text input. */
+html body .swag-only .store-top .toolbar {
+  padding-bottom: 8px !important;
+}
+
+html body .swag-only .store-top .toolbar .toolbar__inner {
+  gap: 6px !important;
+}
+
+html body .swag-only .search-strip {
+  box-sizing: border-box !important;
+  height: 34px !important;
+  min-height: 34px !important;
+  max-height: 34px !important;
+  flex: 0 0 34px !important;
+  gap: 2px !important;
+  overflow: visible !important;
+}
+
+html body .swag-only .search-strip__input {
+  box-sizing: border-box !important;
+  height: 31px !important;
+  min-height: 31px !important;
+  max-height: 31px !important;
+  padding: 0 3px !important;
+  line-height: 31px !important;
+}
+
+html body .swag-only .search-strip::after {
+  height: 1px !important;
+  min-height: 1px !important;
+  flex: 0 0 1px !important;
+}
+
+@media (max-width: 900px) {
+  html body .swag-only .store-top .toolbar .toolbar__inner {
+    gap: 5px !important;
+  }
+}
+
+@media (max-width: 520px) {
+  html body .swag-only .store-top .toolbar {
+    padding-bottom: 6px !important;
+  }
+
+  html body .swag-only .store-top .toolbar .toolbar__inner {
+    gap: 4px !important;
+  }
+
+  html body .swag-only .search-strip {
+    height: 28px !important;
+    min-height: 28px !important;
+    max-height: 28px !important;
+    flex-basis: 28px !important;
+    gap: 2px !important;
+  }
+
+  html body .swag-only .search-strip__input {
+    height: 25px !important;
+    min-height: 25px !important;
+    max-height: 25px !important;
+    padding: 0 2px !important;
+    font-size: 12px !important;
+    line-height: 25px !important;
+  }
+}
