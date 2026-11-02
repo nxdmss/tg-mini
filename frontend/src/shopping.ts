@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from 'react';
-import { api, authHeaders, getAccessToken } from './api';
+import axios from 'axios';
+import { api, authHeaders, clearAccessToken, getAccessToken } from './api';
 import { getTelegramInitData } from './telegram';
 import type { CartItem } from './types';
 
@@ -38,9 +39,16 @@ async function refresh(reset = false) {
     const { data } = await api.get('/account/shopping', { headers: authHeaders() });
     if (version === generation && !pending && before === state)
       emit({ ...data, ready: true, error: '' });
-  } catch {
-    if (version === generation && !pending)
-      emit({ ...state, error: 'Не удалось загрузить корзину и избранное. Проверьте вход и обновите страницу.' });
+  } catch (error) {
+    if (version !== generation || pending) return;
+    if (axios.isAxiosError(error) && error.response?.status === 401) {
+      // A visitor without a valid account session uses the local guest cart.
+      // Expired web tokens are cleared so anonymous browsing stays quiet.
+      if (!getTelegramInitData() && getAccessToken()) clearAccessToken();
+      else emit(guest());
+      return;
+    }
+    emit({ ...state, error: 'Не удалось синхронизировать корзину и избранное. Попробуйте позже.' });
   }
 }
 function change(operation: Operation, next: State) {

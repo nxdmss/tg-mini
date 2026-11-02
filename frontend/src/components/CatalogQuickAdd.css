@@ -1,0 +1,118 @@
+.swag-card-quickadd {
+  position: absolute;
+  top: 10px;
+  right: 56px;
+  z-index: 10;
+  width: 42px;
+  height: 42px;
+}
+
+.swag-card-quickadd__trigger {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  padding: 7px;
+  place-items: center;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: #111;
+  cursor: pointer;
+  transition: transform .16s ease, opacity .16s ease;
+}
+
+.swag-card-quickadd__trigger:active {
+  transform: scale(.92);
+}
+
+.swag-card-quickadd__trigger:disabled {
+  opacity: .25;
+  cursor: not-allowed;
+}
+
+.swag-card-quickadd__trigger svg {
+  display: block;
+  width: 27px;
+  height: 27px;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.swag-card-quickadd__sizes {
+  position: absolute;
+  top: 43px;
+  right: -56px;
+  z-index: 20;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 5px;
+  width: min(168px, calc(100vw - 28px));
+  padding: 9px;
+  border: 1px solid #111;
+  background: #fff;
+  color: #111;
+  box-shadow: 0 5px 18px rgb(0 0 0 / 12%);
+}
+
+.swag-card-quickadd__label {
+  grid-column: 1 / -1;
+  padding-bottom: 3px;
+  font: 600 9px/1.2 "IBM Plex Mono", monospace;
+  letter-spacing: .04em;
+}
+
+.swag-card-quickadd__size {
+  min-width: 0;
+  min-height: 30px;
+  padding: 4px 3px;
+  border: 1px solid #d2d2d2;
+  border-radius: 0;
+  background: #fff;
+  color: #111;
+  font: 600 11px/1 "IBM Plex Mono", monospace;
+  cursor: pointer;
+}
+
+.swag-card-quickadd__size:active {
+  background: #111;
+  color: #fff;
+}
+
+@media (max-width: 520px) {
+  .swag-card-quickadd {
+    top: 8px;
+    right: 48px;
+    width: 38px;
+    height: 38px;
+  }
+
+  .swag-card-quickadd__trigger {
+    width: 38px;
+    height: 38px;
+    padding: 6px;
+  }
+
+  .swag-card-quickadd__trigger svg {
+    width: 25px;
+    height: 25px;
+  }
+
+  .swag-card-quickadd__sizes {
+    right: -48px;
+    top: 39px;
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .swag-card-quickadd__trigger:hover:not(:disabled) {
+    opacity: .58;
+  }
+
+  .swag-card-quickadd__size:hover {
+    border-color: #111;
+    background: #111;
+    color: #fff;
+  }
+}
