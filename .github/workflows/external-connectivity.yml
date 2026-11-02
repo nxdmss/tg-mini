@@ -1,0 +1,55 @@
+name: SWAGYSTAN external connectivity check
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/external-connectivity.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  connectivity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: DNS / HTTPS / API from external runner
+        shell: bash
+        run: |
+          set +e
+          echo "::group::DNS records"
+          for domain in swagystan.ru www.swagystan.ru api.swagystan.ru; do
+            echo "### ${domain}"
+            dig +time=3 +tries=1 +short A "$domain"
+            dig +time=3 +tries=1 +short AAAA "$domain"
+          done
+          echo "::endgroup::"
+
+          echo "::group::Main HTTPS through DNS"
+          curl -4 -I -sS --connect-timeout 8 --max-time 15 \
+            -w '\nResult http=%{http_code} ip=%{remote_ip} tls=%{ssl_verify_result} total=%{time_total}\n' \
+            https://swagystan.ru/
+          echo "curl exit=$?"
+          echo "::endgroup::"
+
+          echo "::group::HTTPS direct known former VM IP"
+          curl -4 -I -sS --connect-timeout 8 --max-time 15 \
+            --resolve swagystan.ru:443:158.160.138.84 \
+            -w '\nResult http=%{http_code} ip=%{remote_ip} tls=%{ssl_verify_result} total=%{time_total}\n' \
+            https://swagystan.ru/
+          echo "curl exit=$?"
+          echo "::endgroup::"
+
+          echo "::group::API HTTPS"
+          curl -4 -sS -o /dev/null --connect-timeout 8 --max-time 15 \
+            -w 'Result http=%{http_code} ip=%{remote_ip} tls=%{ssl_verify_result} total=%{time_total}\n' \
+            'https://api.swagystan.ru/products?shop=swagystan'
+          echo "curl exit=$?"
+          echo "::endgroup::"
+
+          echo "::group::Static CSS"
+          curl -4 -sS -o /dev/null --connect-timeout 8 --max-time 15 \
+            -w 'Result http=%{http_code} ip=%{remote_ip} tls=%{ssl_verify_result} total=%{time_total}\n' \
+            'https://swagystan.ru/typography-numbers-v7.css?v=20261101-strong-search'
+          echo "curl exit=$?"
+          echo "::endgroup::"
