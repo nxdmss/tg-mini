@@ -275,3 +275,23 @@
     font-size: 9.5px !important;
   }
 }
+
+
+/* Compact phone search field: keep the catalog header light and unobtrusive. */
+@media (max-width: 520px) {
+  html body .swag-only .search-strip {
+    gap: 2px !important;
+  }
+
+  html body .swag-only .search-strip__input {
+    height: 27px !important;
+    min-height: 27px !important;
+    padding: 0 2px !important;
+    font-size: 12px !important;
+    line-height: 1.1 !important;
+  }
+
+  html body .swag-only .search-strip::after {
+    height: 1px !important;
+  }
+}

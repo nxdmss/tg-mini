@@ -24,6 +24,7 @@ import type {
 import { Header } from "./components/Header";
 import { Account } from "./components/Account";
 import { ProductCard } from "./components/ProductCard";
+import { CatalogQuickAdd } from "./components/CatalogQuickAdd";
 import { Filters } from "./components/Filters";
 
 import "./components/ShopCommerceTheme.css";
@@ -358,6 +359,7 @@ export default function App() {
                           aria-hidden="true"
                         />
                       </button>
+                      {section === "catalog" && <CatalogQuickAdd product={product} />}
                       <ProductCard
                         product={product}
                         index={index}
