@@ -3,11 +3,13 @@ import "./CartIcon.css";
 type CartIconProps = {
   count: number;
   className?: string;
+  showCount?: boolean;
 };
 
 export function CartIcon({
   count,
   className = "",
+  showCount = true,
 }: CartIconProps) {
   const safeCount = Math.max(
     0,
@@ -34,19 +36,21 @@ export function CartIcon({
         draggable={false}
       />
 
-      <span className={countClass}>
-        {digits.map(
-          (digit, index) => (
-            <img
-              key={`${digit}-${index}`}
-              className="sketch-cart__digit"
-              src={`/cart/${digit}.png`}
-              alt=""
-              draggable={false}
-            />
-          ),
-        )}
-      </span>
+      {showCount && (
+        <span className={countClass}>
+          {digits.map(
+            (digit, index) => (
+              <img
+                key={`${digit}-${index}`}
+                className="sketch-cart__digit"
+                src={`/cart/${digit}.png`}
+                alt=""
+                draggable={false}
+              />
+            ),
+          )}
+        </span>
+      )}
     </span>
   );
 }

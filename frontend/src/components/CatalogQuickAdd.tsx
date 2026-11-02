@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { Product, ProductSize } from "../types";
 import { useCart } from "../cart";
+import { CartIcon } from "./CartIcon";
 import "./CatalogQuickAdd.css";
 
 export function CatalogQuickAdd({ product }: { product: Product }) {
@@ -47,12 +48,7 @@ export function CatalogQuickAdd({ product }: { product: Product }) {
         aria-haspopup={availableSizes.length > 1 ? "true" : undefined}
         title={availableSizes.length > 1 ? "Выбрать размер" : "Добавить в корзину"}
       >
-        <svg viewBox="0 0 28 28" fill="none" aria-hidden="true">
-          <path d="M3.5 5h2.2l2.1 11.1a2 2 0 0 0 2 1.6h9.1a2 2 0 0 0 2-1.6L23 9H7" />
-          <circle cx="11" cy="22" r="1.35" />
-          <circle cx="19.2" cy="22" r="1.35" />
-          <path d="M15 4.5v6m-3-3h6" />
-        </svg>
+        <CartIcon count={0} showCount={false} className="swag-card-quickadd__icon" />
       </button>
 
       {sizesOpen && (
