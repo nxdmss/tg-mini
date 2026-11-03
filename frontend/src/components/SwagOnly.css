@@ -1023,3 +1023,10 @@ html body .swag-only .product-page__image-box {
   width: 100%;
   height: 100%;
 }
+
+
+/* Active shop section: emphasize the text only, never draw an underline. */
+html body .swag-only .swag-nav__tab.is-active::after {
+  display: none !important;
+  content: none !important;
+}
