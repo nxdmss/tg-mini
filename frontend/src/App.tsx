@@ -34,6 +34,7 @@ import "./components/ProductOverlay.css";
 import "./components/StoreExperience.css";
 import "./components/SwagOnly.css";
 import "./components/MobileRefinement.css";
+import "./components/CatalogCardStates.css";
 import { useFavorites } from "./favorites";
 import { sendVisitorPing } from "./visitorTracking";
 
@@ -349,7 +350,7 @@ export default function App() {
                       ease: [0.16, 1, 0.3, 1],
                     }}
                   >
-                    <div className="swag-card-wrap">
+                    <div className={`swag-card-wrap${product.inStock ? "" : " is-sold-out"}`}>
                       <button
                         type="button"
                         className={`swag-card-like ${favorite ? "is-favorite" : ""}`}
@@ -377,6 +378,9 @@ export default function App() {
                           openProduct(product);
                         }}
                       />
+                      {!product.inStock && (
+                        <span className="swag-card-sold-out" aria-label="Нет в наличии">SOLD OUT</span>
+                      )}
                     </div>
                   </motion.div>
                 );
