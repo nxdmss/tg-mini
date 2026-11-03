@@ -24,6 +24,7 @@ import type {
 import { Header } from "./components/Header";
 import { Account } from "./components/Account";
 import { ProductCard } from "./components/ProductCard";
+import { StoreIntro } from "./components/StoreIntro";
 import { CatalogQuickAdd } from "./components/CatalogQuickAdd";
 import { Filters } from "./components/Filters";
 
@@ -278,6 +279,7 @@ export default function App() {
 
   return (
     <div className="app store-experience swag-only">
+      <StoreIntro catalogLoading={loading} />
       <div className="store-top store-experience__top">
         <Header
           onCartClick={openCart}
