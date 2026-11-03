@@ -397,9 +397,19 @@ img {
 }
 
 .tag-out {
-  position: absolute; top: 10.5px; left: 10.5px; padding: 6.5px 10.5px; border-radius: 999px;
-  background: rgba(17,17,19,0.8); color: #fff; font-size: 11.5px; font-weight: 700;
-  backdrop-filter: var(--glass); -webkit-backdrop-filter: var(--glass);
+  position: absolute;
+  top: 10.5px;
+  left: 10.5px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: #111;
+  font-size: 11.5px;
+  font-weight: 700;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: none;
 }
 
 .grid--skeleton .skeleton-card {

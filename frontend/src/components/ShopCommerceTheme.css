@@ -122,14 +122,12 @@
 }
 
 .app .tag-out {
-  border-color: var(--shop-line);
-  background:
-    color-mix(
-      in srgb,
-      var(--bg) 74%,
-      transparent
-    );
+  border: 0;
+  background: transparent;
   color: var(--text);
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 
 /* =========================================================
