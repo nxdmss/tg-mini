@@ -35,24 +35,7 @@ html body .swag-only .store-experience__catalog .card__name {
   flex: 0 0 2.36em;
 }
 
-/* Strong SOLD OUT treatment is painted OVER the product photo.
-   The underlying clothing is only faintly visible through the gray layer.
-   Keep favorite and cart buttons outside this overlay and fully interactive. */
-.swag-only .store-experience__catalog .swag-card-wrap.is-sold-out .card__media {
-  isolation: isolate;
-}
-
-.swag-only .store-experience__catalog .card__sold-out-mask {
-  position: absolute;
-  inset: 0;
-  z-index: 5;
-  display: block;
-  background: rgba(158, 158, 158, 0.83);
-  -webkit-backdrop-filter: grayscale(1) contrast(.75);
-  backdrop-filter: grayscale(1) contrast(.75);
-  pointer-events: none;
-}
-
+/* Plain oversized SOLD OUT type over an untouched product photo. */
 .swag-only .store-experience__catalog .card__sold-out-stamp {
   position: absolute;
   top: 50%;

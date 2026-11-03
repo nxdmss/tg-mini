@@ -132,7 +132,6 @@ export function ProductCard({
 
         {!product.inStock && (
           <>
-            <span className="card__sold-out-mask" aria-hidden="true" />
             <span className="card__sold-out-stamp">SOLD OUT</span>
           </>
         )}
