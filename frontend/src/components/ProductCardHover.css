@@ -1,41 +1,35 @@
-/* The secondary catalog image is only fetched on pointer hover or keyboard focus. */
+/* Switch exactly one visible photo at a time; no two-image ghosting.
+   AnimatePresence mode="wait" fades the old image out before revealing the next. */
 .card__image-stack {
   position: relative;
   display: block;
+  isolation: isolate;
   width: 100%;
   height: 100%;
   min-width: 0;
   min-height: 0;
+  overflow: hidden;
 }
 
 .card__image-stack .card__image--primary,
 .card__image-stack .card__image--alternate {
+  position: absolute;
+  inset: 0;
   display: block;
   width: 100%;
   height: 100%;
+  max-width: 100%;
+  max-height: 100%;
   object-fit: contain;
   object-position: center;
-  transition: opacity 220ms ease;
-}
-
-.card__image-stack .card__image--alternate {
-  position: absolute;
-  inset: 0;
-  opacity: 0;
   pointer-events: none;
-}
-
-.card__image-stack.is-hovered .card__image--primary {
-  opacity: 0;
-}
-
-.card__image-stack.is-hovered .card__image--alternate {
-  opacity: 1;
+  backface-visibility: hidden;
 }
 
 @media (prefers-reduced-motion: reduce) {
   .card__image-stack .card__image--primary,
   .card__image-stack .card__image--alternate {
+    animation: none;
     transition: none;
   }
 }

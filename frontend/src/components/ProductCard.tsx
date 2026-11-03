@@ -1,12 +1,16 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { AnimatePresence, motion } from "motion/react";
 import type { Product } from "../types";
 import {
   formatPrice,
   getProductPreviewImage,
   getProductPreviewSrcSet,
 } from "../utils";
+import { onCardNearViewport, preloadHoverImage } from "../hoverImageCache";
 import { NumericText } from "./NumericText";
 import "./ProductCardHover.css";
+
+const IMAGE_SIZES = "(max-width: 699px) 50vw, (max-width: 1019px) 33vw, 25vw";
 
 export function ProductCard({
   product,
@@ -19,32 +23,67 @@ export function ProductCard({
 }) {
   const image = getProductPreviewImage(product);
   const srcSet = getProductPreviewSrcSet(product);
-  // The second gallery image is the catalog's on-model hover slot.
-  // No alternate image means the original image remains visible.
   const hasAlternate = Boolean(
     product.images[1]?.url && product.images[1].url !== product.images[0]?.url,
   );
   const alternateImage = hasAlternate ? getProductPreviewImage(product, 1) : undefined;
   const alternateSrcSet = hasAlternate ? getProductPreviewSrcSet(product, 1) : undefined;
-  const [alternateRequested, setAlternateRequested] = useState(false);
-  const [alternateLoaded, setAlternateLoaded] = useState(false);
-  const [alternateFailed, setAlternateFailed] = useState(false);
   const [hovering, setHovering] = useState(false);
+  const [readyImage, setReadyImage] = useState<string | null>(null);
+  const [failedImage, setFailedImage] = useState<string | null>(null);
+  const cardRef = useRef<HTMLButtonElement>(null);
 
-  function startPreview() {
-    if (!hasAlternate || alternateFailed) return;
-    setAlternateRequested(true);
-    setHovering(true);
-  }
-
-  const showAlternate = hovering && alternateLoaded && !alternateFailed;
-
+  const alternateReady = Boolean(alternateImage && readyImage === alternateImage);
+  const alternateFailed = Boolean(alternateImage && failedImage === alternateImage);
+  const showAlternate = hovering && alternateReady && !alternateFailed;
   const isDesktop = window.innerWidth >= 768;
   const eagerCount = isDesktop ? 8 : 4;
   const highPriorityCount = isDesktop ? 4 : 2;
 
+  useEffect(() => {
+    if (!alternateImage || !cardRef.current ||
+        !window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
+      return;
+    }
+    let mounted = true;
+    let timeout: number | undefined;
+    const unsubscribe = onCardNearViewport(cardRef.current, () => {
+      // Let visible primary images and the intro finish before idle preloads.
+      timeout = window.setTimeout(() => {
+        void preloadHoverImage(alternateImage, alternateSrcSet, IMAGE_SIZES)
+          .then((success) => {
+            if (!mounted) return;
+            if (success) setReadyImage(alternateImage);
+            else setFailedImage(alternateImage);
+          });
+      }, 300);
+    });
+
+    return () => {
+      mounted = false;
+      if (timeout !== undefined) window.clearTimeout(timeout);
+      unsubscribe();
+    };
+  }, [alternateImage, alternateSrcSet]);
+
+  function startPreview() {
+    if (!alternateImage || alternateFailed) return;
+    setHovering(true);
+    if (!alternateReady) {
+      void preloadHoverImage(alternateImage, alternateSrcSet, IMAGE_SIZES, true)
+        .then((success) => {
+          if (success) setReadyImage(alternateImage);
+          else setFailedImage(alternateImage);
+        });
+    }
+  }
+
+  const displayedImage = showAlternate ? alternateImage : image;
+  const displayedSrcSet = showAlternate ? alternateSrcSet : srcSet;
+
   return (
     <button
+      ref={cardRef}
       className="card"
       onClick={onClick}
       onPointerEnter={(event) => {
@@ -64,31 +103,28 @@ export function ProductCard({
       }}
     >
       <div className="card__media">
-        {image ? (
-          <span className={`card__image-stack${showAlternate ? " is-hovered" : ""}`}>
-            <img
-              className="card__image--primary"
-              src={image}
-              srcSet={srcSet}
-              sizes="(max-width: 699px) 50vw, (max-width: 1019px) 33vw, 25vw"
-              alt={product.name}
-              loading={index < eagerCount ? "eager" : "lazy"}
-              fetchPriority={index < highPriorityCount ? "high" : "auto"}
-              decoding="async"
-            />
-            {alternateRequested && alternateImage && !alternateFailed && (
-              <img
-                className="card__image--alternate"
-                src={alternateImage}
-                srcSet={alternateSrcSet}
-                sizes="(max-width: 699px) 50vw, (max-width: 1019px) 33vw, 25vw"
-                alt=""
-                aria-hidden="true"
+        {image && displayedImage ? (
+          <span className="card__image-stack">
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.img
+                key={`${product.id}:${displayedImage}`}
+                className={showAlternate ? "card__image--alternate" : "card__image--primary"}
+                src={displayedImage}
+                srcSet={displayedSrcSet}
+                sizes={IMAGE_SIZES}
+                alt={showAlternate ? `${product.name} на модели` : product.name}
+                loading={showAlternate || index < eagerCount ? "eager" : "lazy"}
+                fetchPriority={showAlternate || index < highPriorityCount ? "high" : "auto"}
                 decoding="async"
-                onLoad={() => setAlternateLoaded(true)}
-                onError={() => setAlternateFailed(true)}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.20, ease: [0.25, 0.1, 0.25, 1] }}
+                onError={() => {
+                  if (showAlternate && alternateImage) setFailedImage(alternateImage);
+                }}
               />
-            )}
+            </AnimatePresence>
           </span>
         ) : (
           <div className="media-fallback">SWA6Y5TAN</div>

@@ -1,6 +1,7 @@
 import {
   lazy,
   Suspense,
+  useCallback,
   useEffect,
   useMemo,
   useState,
@@ -24,7 +25,7 @@ import type {
 import { Header } from "./components/Header";
 import { Account } from "./components/Account";
 import { ProductCard } from "./components/ProductCard";
-import { StoreIntro } from "./components/StoreIntro";
+import { StoreIntro, wasIntroSeen } from "./components/StoreIntro";
 import { CatalogQuickAdd } from "./components/CatalogQuickAdd";
 import { Filters } from "./components/Filters";
 
@@ -67,6 +68,8 @@ export default function App() {
   const location = useLocation();
   const navigate = useNavigate();
   const reducedMotion = useReducedMotion();
+  const [introRevealed, setIntroRevealed] = useState(wasIntroSeen);
+  const revealIntro = useCallback(() => setIntroRevealed(true), []);
 
   // First-party anonymous visits: page changes and heartbeat while visible.
   useEffect(() => {
@@ -278,8 +281,8 @@ export default function App() {
   ) : null;
 
   return (
-    <div className="app store-experience swag-only">
-      <StoreIntro catalogLoading={loading} />
+    <div className={`app store-experience swag-only ${introRevealed ? "swag-intro-revealed" : "swag-intro-hidden"}`}>
+      <StoreIntro catalogLoading={loading} onReveal={revealIntro} />
       <div className="store-top store-experience__top">
         <Header
           onCartClick={openCart}
@@ -338,9 +341,13 @@ export default function App() {
                   <motion.div
                     key={product.id}
                     className="product-flow-item"
-                    initial={reducedMotion ? false : { opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: reducedMotion ? 0 : 0.3, delay: Math.min(index * 0.025, 0.15) }}
+                    initial={reducedMotion ? false : { opacity: 0, y: 18 }}
+                    animate={introRevealed ? { opacity: 1, y: 0 } : { opacity: 0, y: 18 }}
+                    transition={{
+                      duration: reducedMotion ? 0 : 0.62,
+                      delay: introRevealed && !reducedMotion ? Math.min(index * 0.045, 0.36) : 0,
+                      ease: [0.16, 1, 0.3, 1],
+                    }}
                   >
                     <div className="swag-card-wrap">
                       <button
