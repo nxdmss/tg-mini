@@ -92,19 +92,24 @@ export function Account() {
           <h2 id="account-orders" className="swag-account__label">МОИ ЗАКАЗЫ</h2>
           {orders.length === 0 ? <div className="swag-account__empty">
             <p>Пока без заказов</p>
-          </div> : orders.map(order => <article className="swag-account__order" key={order.id}>
-            <div className="swag-account__orderhead">
-              <strong>ЗАКАЗ № {order.id.slice(0, 8).toUpperCase()}</strong>
-              <span>{statusNames[order.status] || order.status}</span>
+          </div> : orders.map(order => <details className="swag-account__order" key={order.id}>
+            <summary className="swag-account__order-summary">
+              <span className="swag-account__orderhead">
+                <strong>ЗАКАЗ № {order.id.slice(0, 8).toUpperCase()}</strong>
+                <span>{statusNames[order.status] || order.status}</span>
+              </span>
+              <span className="swag-account__order-chevron" aria-hidden="true">+</span>
+            </summary>
+            <div className="swag-account__order-details">
+              {order.createdAt && <small className="swag-account__order-date">{new Date(order.createdAt).toLocaleDateString("ru-RU")}</small>}
+              {order.items.map(item => <div className="swag-account__item" key={item.id}>
+                {item.product?.images?.[0]?.url && <img src={item.product.images[0].url} alt="" loading="lazy" />}
+                <div><strong>{item.product?.name || "ТОВАР"}</strong><small>РАЗМЕР {item.size} · {item.quantity} ШТ.</small></div>
+                <span>{(item.price * item.quantity).toLocaleString("ru-RU")} ₽</span>
+              </div>)}
+              <div className="swag-account__total"><span>ИТОГО</span><strong>{order.items.reduce((s, i) => s + i.price * i.quantity, 0).toLocaleString("ru-RU")} ₽</strong></div>
             </div>
-            {order.createdAt && <small>{new Date(order.createdAt).toLocaleDateString("ru-RU")}</small>}
-            {order.items.map(item => <div className="swag-account__item" key={item.id}>
-              {item.product?.images?.[0]?.url && <img src={item.product.images[0].url} alt="" loading="lazy" />}
-              <div><strong>{item.product?.name || "ТОВАР"}</strong><small>РАЗМЕР {item.size} · {item.quantity} ШТ.</small></div>
-              <span>{(item.price * item.quantity).toLocaleString("ru-RU")} ₽</span>
-            </div>)}
-            <div className="swag-account__total"><span>ИТОГО</span><strong>{order.items.reduce((s, i) => s + i.price * i.quantity, 0).toLocaleString("ru-RU")} ₽</strong></div>
-          </article>)}
+          </details>)}
         </section>
         <button className="swag-account__exit" type="button" onClick={() => {
           logout(); setUser(null); setOrders([]); setError(""); setShowPassword(false);

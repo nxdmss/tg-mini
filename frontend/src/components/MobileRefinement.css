@@ -759,3 +759,31 @@ html body .swag-only .toolbar__chips-row .chip {
     right: 7px !important;
   }
 }
+
+
+/* Bring the bottom navigation pair close to the top pair on mobile. */
+@media (max-width: 699px) {
+  html body .swag-only .swag-nav--header {
+    grid-template-rows: repeat(2, 20px);
+    height: 42px !important;
+    gap: 1px 4px !important;
+  }
+  html body .swag-only .swag-nav--header .swag-nav__tab {
+    height: 20px !important;
+    min-height: 20px !important;
+    padding: 1px 0 !important;
+    line-height: 1.1 !important;
+  }
+}
+
+/* Search focus line stays put; the centered text is raised above it. */
+html body .swag-only .search-strip__input {
+  position: relative;
+  top: -8px;
+}
+html body .swag-only .search-strip::after {
+  bottom: 0 !important;
+}
+@media (max-width: 520px) {
+  html body .swag-only .search-strip__input { top: -6px; }
+}

@@ -71,10 +71,60 @@
 .swag-account__empty { padding: 20px 0 28px; }
 .swag-account__empty p { margin: 0 0 24px; font-size: 24px; font-weight: 500; letter-spacing: -.035em; }
 
-.swag-account__order { padding: 28px; margin-top: 16px; background: #f7f7f7; }
-.swag-account__orderhead { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; font-size: 14px; line-height: 1.5; }
-.swag-account__orderhead span { font-size: 11px; color: #555; }
-.swag-account__order > small { display: block; margin-top: 8px; font-size: 12px; color: #666; }
+/* Closed order rows, expandable through the native details/summary control. */
+.swag-account__order { margin-top: 10px; border: 1px solid #dedede; background: #fff; }
+.swag-account__order[open] { border-color: #b9b9b9; }
+.swag-account__order-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 64px;
+  padding: 16px 22px;
+  list-style: none;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.swag-account__order-summary::-webkit-details-marker { display: none; }
+.swag-account__order-summary::marker { content: ""; }
+.swag-account__order-summary:focus-visible { outline: 2px solid #111; outline-offset: 3px; }
+.swag-account__orderhead {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  min-width: 0;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.swag-account__orderhead strong { font-weight: 700; }
+.swag-account__orderhead span { font-size: 11px; color: #666; }
+.swag-account__order-chevron {
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 24px;
+  width: 24px;
+  height: 24px;
+  font-size: 24px;
+  font-weight: 400;
+  line-height: 1;
+  transition: transform 180ms ease;
+}
+.swag-account__order[open] .swag-account__order-chevron { transform: rotate(45deg); }
+.swag-account__order-details {
+  border-top: 1px solid #e8e8e8;
+  padding: 18px 22px 22px;
+  animation: swag-order-reveal 200ms ease-out both;
+}
+.swag-account__order-date { display: block; font-size: 12px; color: #666; }
+@keyframes swag-order-reveal {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@media (hover: hover) {
+  .swag-account__order-summary:hover { background: #f8f8f8; }
+}
 .swag-account__item { display: flex; align-items: center; gap: 20px; margin-top: 28px; font-size: 14px; line-height: 1.5; }
 .swag-account__item img { width: 64px; height: 80px; object-fit: contain; }
 .swag-account__item div { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; overflow-wrap: anywhere; }
@@ -138,11 +188,17 @@
   .swag-account__hero { flex-direction: column; gap: 16px; padding: 24px 0 32px; }
   .swag-account__identity h2 { font-size: 36px; }
   .swag-account__section { padding-top: 12px; }
-  .swag-account__order { padding: 20px 16px; }
-  .swag-account__orderhead { font-size: 12px; }
+  .swag-account__order-summary { min-height: 58px; padding: 14px; }
+  .swag-account__order-details { padding: 14px 14px 18px; }
+  .swag-account__orderhead { font-size: 12px; gap: 4px 10px; }
   .swag-account__item { gap: 12px; font-size: 12px; flex-wrap: wrap; }
   .swag-account__item img { width: 48px; height: 64px; }
   .swag-account__item > span { margin-left: auto; }
   .swag-account__auth-title { margin-bottom: 30px; }
   .swag-account__destination { margin-top: -16px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .swag-account__order-details { animation: none; }
+  .swag-account__order-chevron { transition: none; }
 }
