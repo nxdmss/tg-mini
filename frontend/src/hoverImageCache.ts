@@ -35,7 +35,7 @@ function loadImage(job: Job): Promise<boolean> {
     image.fetchPriority = job.urgent ? "high" : "low";
     if (job.srcSet) image.setAttribute("srcset", job.srcSet);
     image.sizes = job.sizes;
-    image.onload = () => {
+    const onLoaded = () => {
       if (typeof image.decode === "function") {
         void image.decode().then(
           () => finish(true),
@@ -45,10 +45,11 @@ function loadImage(job: Job): Promise<boolean> {
         finish(image.naturalWidth > 0);
       }
     };
+    image.onload = onLoaded;
     image.onerror = () => finish(false);
     image.src = job.url;
     if (image.complete && image.naturalWidth > 0) {
-      image.onload();
+      onLoaded();
     }
   });
 }
