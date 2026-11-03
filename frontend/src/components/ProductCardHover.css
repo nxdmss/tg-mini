@@ -1,0 +1,41 @@
+/* The secondary catalog image is only fetched on pointer hover or keyboard focus. */
+.card__image-stack {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+}
+
+.card__image-stack .card__image--primary,
+.card__image-stack .card__image--alternate {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  transition: opacity 220ms ease;
+}
+
+.card__image-stack .card__image--alternate {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.card__image-stack.is-hovered .card__image--primary {
+  opacity: 0;
+}
+
+.card__image-stack.is-hovered .card__image--alternate {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card__image-stack .card__image--primary,
+  .card__image-stack .card__image--alternate {
+    transition: none;
+  }
+}

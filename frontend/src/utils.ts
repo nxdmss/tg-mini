@@ -36,8 +36,8 @@ export function getProductDetailImage(url: string): string {
 
 export function getProductPreviewImage(product: {
   images: Array<{ url: string }>;
-}) {
-  const url = product.images[0]?.url;
+}, imageIndex = 0) {
+  const url = product.images[imageIndex]?.url;
 
   if (!url) {
     return undefined;
@@ -51,8 +51,8 @@ export function getProductPreviewImage(product: {
 
 export function getProductPreviewSrcSet(product: {
   images: Array<{ url: string }>;
-}) {
-  const url = product.images[0]?.url;
+}, imageIndex = 0) {
+  const url = product.images[imageIndex]?.url;
 
   if (!url || !isCloudinaryImage(url)) {
     return undefined;
