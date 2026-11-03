@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { motion, useReducedMotion } from "motion/react";
 import "./StoreIntro.css";
 
-const SEEN_KEY = "swagystan:intro:seen:v2";
+const SEEN_KEY = "swagystan:intro:seen:v3";
 const MIN_DURATION_MS = 1350;
 const MAX_DURATION_MS = 4000;
 const EXIT_DURATION_MS = 740;
@@ -109,7 +109,7 @@ export function StoreIntro({
       <div className="swag-intro__mark">
         <motion.img
           className="swag-intro__logo"
-          src="/logo.png"
+          src="/favicon.svg"
           alt=""
           draggable={false}
           fetchPriority="high"
@@ -120,9 +120,9 @@ export function StoreIntro({
           transition={{ duration: reducedMotion ? 0 : leaving ? 0.45 : 0.67, ease: [0.16, 1, 0.3, 1] }}
         />
         <img className="swag-intro__glitch swag-intro__glitch--a"
-          src="/logo.png" alt="" draggable={false} />
+          src="/favicon.svg" alt="" draggable={false} />
         <img className="swag-intro__glitch swag-intro__glitch--b"
-          src="/logo.png" alt="" draggable={false} />
+          src="/favicon.svg" alt="" draggable={false} />
       </div>
       <span className="swag-intro__static" />
       <span className="swag-intro__scanline" />

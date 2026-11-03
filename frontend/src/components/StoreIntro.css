@@ -19,8 +19,8 @@
 
 .swag-intro__mark {
   position: relative;
-  width: min(96vw, 1120px);
-  max-height: 70dvh;
+  width: min(78vmin, 780px);
+  max-height: 80dvh;
 }
 
 .swag-intro__logo,
@@ -28,7 +28,7 @@
   display: block;
   width: 100%;
   height: auto;
-  max-height: 70dvh;
+  max-height: 80dvh;
   object-fit: contain;
   user-select: none;
   pointer-events: none;
@@ -139,8 +139,8 @@
 }
 
 @media (max-width: 520px) {
-  .swag-intro__mark { width: 98vw; max-height: 56dvh; }
-  .swag-intro__logo, .swag-intro__glitch { max-height: 56dvh; }
+  .swag-intro__mark { width: min(84vw, 70dvh); max-height: 72dvh; }
+  .swag-intro__logo, .swag-intro__glitch { max-height: 72dvh; }
 }
 
 @media (prefers-reduced-motion: reduce) {
