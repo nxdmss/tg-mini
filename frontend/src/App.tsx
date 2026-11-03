@@ -378,9 +378,6 @@ export default function App() {
                           openProduct(product);
                         }}
                       />
-                      {!product.inStock && (
-                        <span className="swag-card-sold-out" aria-label="Нет в наличии">SOLD OUT</span>
-                      )}
                     </div>
                   </motion.div>
                 );

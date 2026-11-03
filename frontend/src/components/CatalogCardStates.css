@@ -35,35 +35,47 @@ html body .swag-only .store-experience__catalog .card__name {
   flex: 0 0 2.36em;
 }
 
-/* Stock state is applied over the ENTIRE card, not a small text badge.
-   Keep favorite and product actions usable through the visual overlay. */
-.swag-only .store-experience__catalog .swag-card-wrap.is-sold-out::after {
-  content: "";
+/* Strong SOLD OUT treatment is painted OVER the product photo.
+   The underlying clothing is only faintly visible through the gray layer.
+   Keep favorite and cart buttons outside this overlay and fully interactive. */
+.swag-only .store-experience__catalog .swag-card-wrap.is-sold-out .card__media {
+  isolation: isolate;
+}
+
+.swag-only .store-experience__catalog .card__sold-out-mask {
   position: absolute;
   inset: 0;
-  z-index: 12;
-  background: rgba(105, 105, 105, 0.13);
+  z-index: 5;
+  display: block;
+  background: rgba(158, 158, 158, 0.83);
+  -webkit-backdrop-filter: grayscale(1) contrast(.75);
+  backdrop-filter: grayscale(1) contrast(.75);
   pointer-events: none;
 }
 
-.swag-only .store-experience__catalog .swag-card-sold-out {
+.swag-only .store-experience__catalog .card__sold-out-stamp {
   position: absolute;
-  z-index: 13;
-  top: 42%;
+  top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%);
-  color: #151515;
+  z-index: 6;
+  display: block;
+  transform: translate(-50%, -50%) rotate(-5deg);
+  color: #101010;
   font-family: "IBM Plex Mono", monospace !important;
-  font-size: clamp(14px, 1.45vw, 23px);
-  font-weight: 700;
-  letter-spacing: 0.11em;
+  font-size: clamp(26px, 4vw, 58px);
+  font-weight: 900 !important;
+  -webkit-text-stroke: .8px currentColor;
+  letter-spacing: -.06em;
+  line-height: .94;
   white-space: nowrap;
+  text-align: center;
   pointer-events: none;
+  user-select: none;
 }
 
 @media (max-width: 699px) {
-  .swag-only .store-experience__catalog .swag-card-sold-out {
-    font-size: clamp(11px, 3.4vw, 16px);
-    letter-spacing: 0.07em;
+  .swag-only .store-experience__catalog .card__sold-out-stamp {
+    font-size: clamp(21px, 6.1vw, 33px);
+    -webkit-text-stroke: .55px currentColor;
   }
 }

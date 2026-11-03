@@ -130,6 +130,13 @@ export function ProductCard({
           <div className="media-fallback">SWA6Y5TAN</div>
         )}
 
+        {!product.inStock && (
+          <>
+            <span className="card__sold-out-mask" aria-hidden="true" />
+            <span className="card__sold-out-stamp">SOLD OUT</span>
+          </>
+        )}
+
         <span className="card__overlay">
           <span className="card__cta">Открыть</span>
         </span>
