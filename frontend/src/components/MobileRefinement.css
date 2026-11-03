@@ -363,3 +363,47 @@ html body .swag-only .search-strip::after {
     line-height: 25px !important;
   }
 }
+
+
+/* Phone-only refinement: smaller SWAG mark and thinner complete search row. */
+@media (max-width: 520px) {
+  html body .swag-only .store-top .header .brand__logo {
+    min-height: 52px !important;
+  }
+
+  html body .swag-only .store-top .header .brand__logo img {
+    height: 50px !important;
+    max-width: 124px !important;
+  }
+
+  html body .swag-only .store-top .toolbar {
+    padding-bottom: 4px !important;
+  }
+
+  html body .swag-only .store-top .toolbar .toolbar__inner {
+    gap: 3px !important;
+  }
+
+  html body .swag-only .search-strip {
+    height: 24px !important;
+    min-height: 24px !important;
+    max-height: 24px !important;
+    flex: 0 0 24px !important;
+    gap: 2px !important;
+  }
+
+  html body .swag-only .search-strip__input {
+    height: 21px !important;
+    min-height: 21px !important;
+    max-height: 21px !important;
+    padding: 0 2px !important;
+    font-size: 12px !important;
+    line-height: 21px !important;
+  }
+
+  html body .swag-only .search-strip::after {
+    height: 1px !important;
+    min-height: 1px !important;
+    flex-basis: 1px !important;
+  }
+}

@@ -80,27 +80,40 @@
 }
 
 @media (max-width: 520px) {
+  /* Phone: quick cart sits at the lower right of the card, just above
+     the category label, instead of competing with the favorite icon. */
   .swag-card-quickadd {
-    top: 8px;
-    right: 48px;
-    width: 38px;
-    height: 38px;
+    top: auto;
+    right: 2px;
+    bottom: 24px;
+    width: 34px;
+    height: 34px;
   }
 
+  /* Keep a usable hit area, but shrink the actual sketch-cart graphic. */
   .swag-card-quickadd__trigger {
-    width: 38px;
-    height: 38px;
-    padding: 6px;
+    width: 34px;
+    height: 34px;
+    padding: 3px;
   }
 
   .swag-card-quickadd__icon {
-    width: 38px;
-    height: 29px;
+    width: 26px;
+    height: 20px;
   }
 
+  /* Open size options upwards, inside the visible card area. */
   .swag-card-quickadd__sizes {
-    right: -48px;
-    top: 39px;
+    top: auto;
+    right: 0;
+    bottom: 36px;
+    width: min(158px, calc(100vw - 24px));
+  }
+
+  /* Product text must not appear underneath the floating cart control. */
+  .swag-only .store-experience__catalog .card__name,
+  .swag-only .store-experience__catalog .card__brand {
+    padding-right: 35px;
   }
 }
 
