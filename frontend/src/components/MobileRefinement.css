@@ -631,3 +631,131 @@ html body .swag-only .toolbar__chips-row .chip {
     transition: none;
   }
 }
+
+
+/*
+ * Mobile header: logo on the left, 2x2 section links centered at the
+ * same height, original cart on the right. No second navigation row.
+ * Desktop retains its existing horizontal navigation.
+ */
+@media (max-width: 699px) {
+  html body .swag-only .store-top .header {
+    height: 74px !important;
+    min-height: 74px !important;
+  }
+
+  html body .swag-only .store-top .header .header__inner {
+    position: relative;
+    height: 74px !important;
+    min-height: 74px !important;
+    padding: 0 12px !important;
+    display: flex;
+    align-items: center !important;
+    justify-content: flex-start;
+  }
+
+  html body .swag-only .store-top .header .brand__logo {
+    min-height: 0 !important;
+    height: 54px !important;
+    padding: 0 !important;
+    align-self: center;
+    align-items: center;
+    z-index: 1;
+  }
+
+  html body .swag-only .store-top .header .brand__logo img {
+    height: 48px !important;
+    max-width: 104px !important;
+    transform: none !important;
+  }
+
+  html body .swag-only .swag-nav--header {
+    position: absolute !important;
+    top: 50% !important;
+    bottom: auto !important;
+    left: 50% !important;
+    right: auto !important;
+    transform: translate(-50%, -50%) !important;
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: repeat(2, 25px);
+    align-items: center;
+    justify-items: stretch;
+    justify-content: center !important;
+    align-content: center;
+    width: min(42vw, 180px) !important;
+    max-width: none !important;
+    min-height: 0 !important;
+    height: 54px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    gap: 3px 4px !important;
+    z-index: 2;
+  }
+
+  html body .swag-only .swag-nav--header .swag-nav__tab {
+    width: 100%;
+    min-width: 0;
+    height: 25px;
+    min-height: 25px;
+    padding: 5px 0 !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: clamp(9.5px, 1.9vw, 11.5px) !important;
+    line-height: 1.1 !important;
+    font-weight: 650;
+    letter-spacing: -0.025em !important;
+    text-align: center;
+    white-space: nowrap;
+    border: 0 !important;
+    background: transparent !important;
+  }
+
+  html body .swag-only .swag-nav--header .swag-nav__tab.is-active {
+    opacity: 1;
+  }
+
+  html body .swag-only .swag-nav--header .swag-nav__tab.is-active::after {
+    display: none !important;
+    content: none !important;
+  }
+
+  html body .swag-only .store-top .header .header__actions {
+    position: absolute !important;
+    top: 50% !important;
+    right: 9px !important;
+    bottom: auto !important;
+    left: auto !important;
+    transform: translateY(-50%) !important;
+    z-index: 3;
+    min-height: 44px;
+    align-items: center;
+  }
+
+  html body .swag-only .store-top .header .header-cart {
+    height: 44px !important;
+    min-height: 44px !important;
+    padding: 0 !important;
+  }
+}
+
+@media (max-width: 360px) {
+  html body .swag-only .store-top .header .header__inner {
+    padding: 0 8px !important;
+  }
+
+  html body .swag-only .store-top .header .brand__logo img {
+    height: 42px !important;
+    max-width: 88px !important;
+  }
+
+  html body .swag-only .swag-nav--header .swag-nav__tab {
+    font-size: 9.5px !important;
+    letter-spacing: -0.045em !important;
+  }
+
+  html body .swag-only .store-top .header .header__actions {
+    right: 7px !important;
+  }
+}
