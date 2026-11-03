@@ -1,0 +1,69 @@
+/* Stable card geometry across one-line and two-line titles.
+   The grid rows stretch their flow items, wrappers, and product cards alike. */
+.swag-only .store-experience__catalog .product-flow-item {
+  display: flex;
+  min-width: 0;
+  height: 100%;
+}
+
+.swag-only .store-experience__catalog .swag-card-wrap {
+  position: relative;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-width: 0;
+  height: 100%;
+}
+
+.swag-only .store-experience__catalog .swag-card-wrap > .card {
+  flex: 1 1 auto;
+  height: 100%;
+  min-width: 0;
+}
+
+/* Reserve exactly two lines so brand, price and category are aligned
+   even when the name fits on one line. Longer names are clamped. */
+html body .swag-only .store-experience__catalog .card__name {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  line-height: 1.18 !important;
+  height: 2.36em !important;
+  min-height: 2.36em !important;
+  max-height: 2.36em !important;
+  flex: 0 0 2.36em;
+}
+
+/* Stock state is applied over the ENTIRE card, not a small text badge.
+   Keep favorite and product actions usable through the visual overlay. */
+.swag-only .store-experience__catalog .swag-card-wrap.is-sold-out::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 12;
+  background: rgba(105, 105, 105, 0.13);
+  pointer-events: none;
+}
+
+.swag-only .store-experience__catalog .swag-card-sold-out {
+  position: absolute;
+  z-index: 13;
+  top: 42%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #151515;
+  font-family: "IBM Plex Mono", monospace !important;
+  font-size: clamp(14px, 1.45vw, 23px);
+  font-weight: 700;
+  letter-spacing: 0.11em;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+@media (max-width: 699px) {
+  .swag-only .store-experience__catalog .swag-card-sold-out {
+    font-size: clamp(11px, 3.4vw, 16px);
+    letter-spacing: 0.07em;
+  }
+}
