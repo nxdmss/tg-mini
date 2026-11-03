@@ -776,14 +776,15 @@ html body .swag-only .toolbar__chips-row .chip {
   }
 }
 
-/* Search focus line stays put; the centered text is raised above it. */
+/* Keep the input label well clear of the focus underline, including
+   when browser font metrics make the text sit unusually low. */
 html body .swag-only .search-strip__input {
   position: relative;
-  top: -8px;
+  top: -18px;
 }
 html body .swag-only .search-strip::after {
   bottom: 0 !important;
 }
 @media (max-width: 520px) {
-  html body .swag-only .search-strip__input { top: -6px; }
+  html body .swag-only .search-strip__input { top: -15px; }
 }
