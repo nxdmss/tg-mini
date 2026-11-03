@@ -407,3 +407,138 @@ html body .swag-only .search-strip::after {
     flex-basis: 1px !important;
   }
 }
+
+
+/*
+ * Minimal catalog filtering, desktop + phone:
+ * no decorative search rule and no underline/frames on category tabs.
+ * Keep the search input functional and the active filter distinguishable.
+ */
+html body .swag-only .store-top .toolbar {
+  padding-bottom: 6px !important;
+}
+
+html body .swag-only .store-top .toolbar .toolbar__inner {
+  gap: 4px !important;
+}
+
+html body .swag-only .search-strip {
+  display: flex !important;
+  flex-direction: column;
+  flex: 0 0 26px !important;
+  height: 26px !important;
+  min-height: 26px !important;
+  max-height: 26px !important;
+  gap: 0 !important;
+}
+
+html body .swag-only .search-strip::after {
+  display: none !important;
+  content: none !important;
+  height: 0 !important;
+}
+
+html body .swag-only .search-strip__input {
+  height: 26px !important;
+  min-height: 26px !important;
+  max-height: 26px !important;
+  padding: 0 2px !important;
+  font-size: 12px !important;
+  line-height: 26px !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+html body .swag-only .search-strip__input::placeholder {
+  opacity: 0.75;
+}
+
+html body .swag-only .toolbar__chips-row {
+  padding-top: 0 !important;
+  gap: 8px !important;
+}
+
+html body .swag-only .toolbar__chips-row .chips {
+  gap: clamp(6px, 0.75vw, 13px) !important;
+}
+
+html body .swag-only .toolbar__chips-row .chip {
+  min-height: 34px !important;
+  padding: 0 clamp(5px, 0.65vw, 10px) !important;
+  font-size: 15px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0 !important;
+  line-height: 1.15 !important;
+  opacity: 0.52;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  text-decoration: none !important;
+  text-underline-offset: initial !important;
+  transition: opacity 150ms ease;
+}
+
+html body .swag-only .toolbar__chips-row .chip.chip--active {
+  opacity: 1;
+  font-weight: 650 !important;
+  text-decoration: none !important;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  html body .swag-only .toolbar__chips-row .chip:hover {
+    opacity: 0.82;
+  }
+}
+
+@media (max-width: 900px) {
+  html body .swag-only .toolbar__chips-row .chips {
+    gap: 6px !important;
+  }
+
+  html body .swag-only .toolbar__chips-row .chip {
+    font-size: 13px !important;
+    min-height: 32px !important;
+    padding: 0 6px !important;
+  }
+}
+
+@media (max-width: 520px) {
+  html body .swag-only .store-top .toolbar {
+    padding-bottom: 3px !important;
+  }
+
+  html body .swag-only .store-top .toolbar .toolbar__inner {
+    gap: 2px !important;
+  }
+
+  html body .swag-only .search-strip {
+    flex: 0 0 20px !important;
+    height: 20px !important;
+    min-height: 20px !important;
+    max-height: 20px !important;
+  }
+
+  html body .swag-only .search-strip__input {
+    height: 20px !important;
+    min-height: 20px !important;
+    max-height: 20px !important;
+    padding: 0 2px !important;
+    font-size: 11px !important;
+    line-height: 20px !important;
+  }
+
+  html body .swag-only .toolbar__chips-row {
+    gap: 3px !important;
+  }
+
+  html body .swag-only .toolbar__chips-row .chips {
+    gap: 3px !important;
+  }
+
+  html body .swag-only .toolbar__chips-row .chip {
+    font-size: 12px !important;
+    min-height: 30px !important;
+    padding: 0 5px !important;
+  }
+}
