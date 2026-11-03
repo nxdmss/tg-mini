@@ -22,6 +22,20 @@ html, body, #root {
   min-height: 100%; margin: 0; background: #ffffff;
 }
 
+/* Reserve the scrollbar width even when account pages are short or catalog
+   filters return no products. This keeps the centered header, search and grid
+   at the same horizontal position while the route/content height changes. */
+html {
+  scrollbar-gutter: stable;
+}
+
+/* Fallback for browsers without scrollbar-gutter support on desktop. */
+@supports not (scrollbar-gutter: stable) {
+  @media (min-width: 700px) {
+    html { overflow-y: scroll; }
+  }
+}
+
 body {
   position: relative; color: var(--text); font-weight: 400; font-style: normal;
   -webkit-font-smoothing: antialiased;
