@@ -6,36 +6,149 @@
   place-items: center;
   width: 100%;
   height: 100dvh;
+  overflow: hidden;
   background: #fff;
-  opacity: 1;
   pointer-events: auto;
-  transition: opacity 260ms cubic-bezier(.2, .8, .2, 1);
+  isolation: isolate;
+  will-change: opacity;
 }
 
 .swag-intro--leaving {
-  opacity: 0;
   pointer-events: none;
 }
 
-.swag-intro__logo {
+.swag-intro__mark {
+  position: relative;
+  width: min(96vw, 1120px);
+  max-height: 70dvh;
+}
+
+.swag-intro__logo,
+.swag-intro__glitch {
   display: block;
-  width: min(94vw, 1100px);
+  width: 100%;
   height: auto;
-  max-height: 68dvh;
+  max-height: 70dvh;
   object-fit: contain;
   user-select: none;
+  pointer-events: none;
   -webkit-user-drag: none;
 }
 
+.swag-intro__logo {
+  position: relative;
+  z-index: 2;
+  will-change: opacity, transform, filter;
+}
+
+.swag-intro__glitch {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  opacity: 0;
+  filter: contrast(1.3);
+}
+
+.swag-intro__glitch--a {
+  clip-path: polygon(0 30%, 100% 30%, 100% 43%, 0 43%);
+  animation: swag-glitch-a 1050ms steps(2, end) 150ms both;
+}
+
+.swag-intro__glitch--b {
+  clip-path: polygon(0 61%, 100% 61%, 100% 73%, 0 73%);
+  animation: swag-glitch-b 950ms steps(2, end) 240ms both;
+}
+
+.swag-intro__static,
+.swag-intro__scanline {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.swag-intro__static {
+  background:
+    repeating-linear-gradient(0deg, rgba(0,0,0,.045) 0 1px, transparent 1px 5px),
+    repeating-linear-gradient(90deg, rgba(0,0,0,.026) 0 1px, transparent 1px 11px);
+  animation: swag-static 950ms steps(5, end) 80ms both;
+}
+
+.swag-intro__scanline {
+  height: 5px;
+  top: -8px;
+  bottom: auto;
+  background: rgba(0,0,0,.13);
+  box-shadow: 0 3px 0 rgba(255,255,255,.8), 0 -3px 0 rgba(0,0,0,.04);
+  animation: swag-scanline 950ms linear 120ms both;
+}
+
+@keyframes swag-glitch-a {
+  0%, 13%, 33%, 59%, 80%, 100% { opacity: 0; transform: translateX(0); }
+  15%, 28% { opacity: .60; transform: translateX(-14px); }
+  60%, 72% { opacity: .42; transform: translateX(11px); }
+}
+
+@keyframes swag-glitch-b {
+  0%, 21%, 45%, 70%, 100% { opacity: 0; transform: translateX(0); }
+  23%, 36% { opacity: .53; transform: translateX(16px); }
+  73%, 83% { opacity: .28; transform: translateX(-9px); }
+}
+
+@keyframes swag-static {
+  0%, 100% { opacity: 0; }
+  16%, 20%, 42%, 48% { opacity: .34; transform: translateY(3px); }
+  22%, 39%, 52% { opacity: 0; }
+  65%, 75% { opacity: .17; transform: translateY(-2px); }
+}
+
+@keyframes swag-scanline {
+  0% { opacity: 0; transform: translateY(0); }
+  15% { opacity: .5; }
+  82% { opacity: .22; }
+  100% { opacity: 0; transform: translateY(105dvh); }
+}
+
+/* The store rises in as the white intro fades out. */
+.swag-only > .store-top,
+.swag-only > .footer,
+.swag-only > .store-experience__catalog,
+.swag-only > .product-overlay-shell {
+  transition: opacity 650ms cubic-bezier(.16, 1, .3, 1),
+    transform 650ms cubic-bezier(.16, 1, .3, 1);
+}
+
+.swag-only.swag-intro-hidden > .store-top,
+.swag-only.swag-intro-hidden > .footer {
+  opacity: 0;
+  transform: translateY(12px);
+}
+
+.swag-only.swag-intro-hidden > .store-experience__catalog,
+.swag-only.swag-intro-hidden > .product-overlay-shell {
+  opacity: 0;
+}
+
+.swag-only.swag-intro-revealed > .store-top,
+.swag-only.swag-intro-revealed > .footer,
+.swag-only.swag-intro-revealed > .store-experience__catalog,
+.swag-only.swag-intro-revealed > .product-overlay-shell {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 @media (max-width: 520px) {
-  .swag-intro__logo {
-    width: 96vw;
-    max-height: 54dvh;
-  }
+  .swag-intro__mark { width: 98vw; max-height: 56dvh; }
+  .swag-intro__logo, .swag-intro__glitch { max-height: 56dvh; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .swag-intro {
-    transition-duration: 1ms;
-  }
+  .swag-intro__glitch,
+  .swag-intro__static,
+  .swag-intro__scanline { display: none; animation: none; }
+  .swag-only > .store-top,
+  .swag-only > .footer,
+  .swag-only > .store-experience__catalog,
+  .swag-only > .product-overlay-shell { transition-duration: 1ms; }
 }
