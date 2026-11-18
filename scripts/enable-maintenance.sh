@@ -8,29 +8,25 @@ TOKEN_FILE=/root/.swagystan-preview-token
 WEBROOT=/var/www/swagystan-maintenance
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 PAGE="$SCRIPT_DIR/../deploy/maintenance/index.html"
-
 systemctl is-active --quiet caddy || { echo "Caddy is not active; no changes made." >&2; exit 1; }
 [[ -s "$CADDYFILE" && -s /var/www/swagystan/index.html && -s "$PAGE" ]] || { echo "Caddyfile, production frontend, or maintenance page is missing." >&2; exit 1; }
-
 if [[ -f "$BACKUP" && -f "$TOKEN_FILE" && -f "$SNIPPET" ]]; then
   echo "Maintenance mode is already enabled."
   echo "Private preview: https://swagystan.ru/?preview=$(cat "$TOKEN_FILE")"
   exit 0
 fi
 [[ ! -e "$BACKUP" && ! -e "$SNIPPET" && ! -e "$TOKEN_FILE" ]] || { echo "Partial previous setup found; stopping safely." >&2; exit 1; }
-
 TOKEN="$(openssl rand -hex 32)"
 install -d -m 755 "$WEBROOT"
 install -m 644 "$PAGE" "$WEBROOT/index.html"
 umask 077
 printf '%s' "$TOKEN" > "$TOKEN_FILE"
 cp -a "$CADDYFILE" "$BACKUP"
-
 cat > "$SNIPPET" <<EOF
 @swag_preview query preview ${TOKEN}
-route @swag_preview {
+handle @swag_preview {
   header Set-Cookie "swagystan_preview=${TOKEN}; Domain=swagystan.ru; Path=/; Max-Age=604800; HttpOnly; Secure; SameSite=Lax"
-  redir {path} 302
+  redir / 302
 }
 @swag_owner header Cookie *swagystan_preview=${TOKEN}*
 handle @swag_owner {
@@ -46,7 +42,6 @@ handle {
 }
 EOF
 chmod 644 "$SNIPPET"
-
 if ! python3 - "$CADDYFILE" "$SNIPPET" <<'PY'
 import re, sys
 from pathlib import Path
@@ -56,8 +51,7 @@ lines = p.read_text().splitlines(keepends=True)
 pat = re.compile(r"^(?:www\.)?swagystan\.ru(?::\d+)?(?:\s*,\s*(?:www\.)?swagystan\.ru(?::\d+)?)*\s*\{\s*$")
 positions = []
 for i, line in enumerate(lines):
-    s = line.strip()
-    if pat.fullmatch(s):
+    if pat.fullmatch(line.strip()):
         positions.append(i + 1)
 if not positions:
     raise SystemExit("No swagystan.ru Caddy site block found; no changes made.")
@@ -74,7 +68,6 @@ then
   echo "Could not locate site block; original Caddy config restored." >&2
   exit 1
 fi
-
 if ! caddy validate --config "$CADDYFILE" --adapter caddyfile; then
   cp -a "$BACKUP" "$CADDYFILE"
   rm -f "$SNIPPET" "$TOKEN_FILE" "$BACKUP"
@@ -90,7 +83,6 @@ if ! systemctl reload caddy; then
   echo "Caddy reload failed; original config restored." >&2
   exit 1
 fi
-
 echo "SWAGYSTAN: REPAIR MODE ENABLED"
 echo "Public page: https://swagystan.ru"
 echo "Private preview link (do not share):"
