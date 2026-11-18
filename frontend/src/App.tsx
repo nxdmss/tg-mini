@@ -28,6 +28,7 @@ import { ProductCard } from "./components/ProductCard";
 import { StoreIntro, wasIntroSeen } from "./components/StoreIntro";
 import { CatalogQuickAdd } from "./components/CatalogQuickAdd";
 import { Filters } from "./components/Filters";
+import { StoreHeroScreen } from "./components/StoreHeroScreen";
 
 import "./components/ShopCommerceTheme.css";
 import "./components/ProductOverlay.css";
@@ -300,6 +301,8 @@ export default function App() {
           <Filters categories={categories} query={query} onChange={setQuery} />
         )}
       </div>
+
+      {section === "catalog" && !isProductPage && <StoreHeroScreen />}
 
       {section === "account" ? (
         <Account />
