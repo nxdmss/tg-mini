@@ -23,7 +23,7 @@ umask 077
 printf '%s' "$TOKEN" > "$TOKEN_FILE"
 cp -a "$CADDYFILE" "$BACKUP"
 cat > "$SNIPPET" <<EOF
-@swag_preview query preview ${TOKEN}
+@swag_preview query preview=${TOKEN}
 handle @swag_preview {
   header Set-Cookie "swagystan_preview=${TOKEN}; Domain=swagystan.ru; Path=/; Max-Age=604800; HttpOnly; Secure; SameSite=Lax"
   redir / 302
