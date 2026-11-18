@@ -14,6 +14,9 @@ type HeaderProps = {
   homePath?: string;
   logoNegative?: boolean;
   logoPosition?: "left" | "center";
+  landing?: boolean;
+  showCart?: boolean;
+  onLogoClick?: () => void;
   navItems?: Array<{
     id: string;
     title: string;
@@ -27,6 +30,9 @@ export function Header({
   homePath = "/",
   logoNegative = false,
   logoPosition = "left",
+  landing = false,
+  showCart = true,
+  onLogoClick,
   navItems,
 }: HeaderProps) {
   const { count } = useCart();
@@ -37,7 +43,8 @@ export function Header({
 
   function handleLogoClick() {
     if (!telegramMode) {
-      navigate(homePath);
+      if (onLogoClick) onLogoClick();
+      else navigate(homePath);
       return;
     }
 
@@ -54,10 +61,11 @@ export function Header({
     }
 
     lastLogoTap.current = now;
+    onLogoClick?.();
   }
 
   return (
-    <header className="header">
+    <header className={`header${landing ? " header--landing" : ""}`}>
       <motion.div
         layout
         className={`container header__inner header__inner--store header__inner--logo-${logoPosition}`}
@@ -112,7 +120,7 @@ export function Header({
           </nav>
         )}
 
-        <div className="header__actions">
+        {showCart && <div className="header__actions">
           <button
             type="button"
             className="header-action header-cart"
@@ -121,7 +129,7 @@ export function Header({
           >
             <CartIcon count={count} />
           </button>
-        </div>
+        </div>}
       </motion.div>
     </header>
   );

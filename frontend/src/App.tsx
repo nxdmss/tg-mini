@@ -95,6 +95,7 @@ export default function App() {
   const section = readSection(location.pathname);
   const productIdFromUrl = getProductId(location.pathname);
   const isProductPage = Boolean(productIdFromUrl);
+  const isLanding = location.pathname === "/" && !isProductPage;
   const { ids: favoriteIds, isFavorite, toggle } = useFavorites();
 
   const [categories, setCategories] = useState<Category[]>([]);
@@ -243,10 +244,11 @@ export default function App() {
     setFetchedProduct(null);
     setProductLinkError(false);
     const from = sessionStorage.getItem("swagystan:product-from");
-    navigate(from === "favorites" ? "/favorites" : "/");
+    const fromPath = sessionStorage.getItem("swagystan:product-path");
+    navigate(fromPath && fromPath !== "/" ? fromPath : from === "favorites" ? "/favorites" : "/catalog");
   }
   function openSection(next: Section) {
-    navigate(next === "catalog" ? "/" : `/${next}`);
+    navigate(next === "catalog" ? "/catalog" : `/${next}`);
     window.scrollTo({ top: 0, behavior: "auto" });
   }
   const visibleProducts = section === "favorites"
@@ -283,28 +285,41 @@ export default function App() {
   ) : null;
 
   return (
-    <div className={`app store-experience swag-only ${introRevealed ? "swag-intro-revealed" : "swag-intro-hidden"}`}>
-      <StoreIntro catalogLoading={loading} onReveal={revealIntro} />
+    <div className={`app store-experience swag-only ${isLanding ? "swag-landing" : ""} ${introRevealed ? "swag-intro-revealed" : "swag-intro-hidden"}`}>
+      <StoreIntro catalogLoading={isLanding ? false : loading} onReveal={revealIntro} />
       <div className="store-top store-experience__top">
-        <Header
-          onCartClick={openCart}
-          homePath="/"
-          logoPosition="left"
-          navItems={[
-            { id: "catalog", title: "КАТАЛОГ", active: section === "catalog", onSelect: () => openSection("catalog") },
-            { id: "favorites", title: "ИЗБРАННОЕ", active: section === "favorites", onSelect: () => openSection("favorites") },
-            { id: "about", title: "О НАС", active: section === "about", onSelect: () => openSection("about") },
-            { id: "account", title: "КАБИНЕТ", active: section === "account", onSelect: () => openSection("account") },
-          ]}
-        />
-        {section === "catalog" && (
-          <Filters categories={categories} query={query} onChange={setQuery} />
+        {isLanding ? (
+          <Header
+            onCartClick={openCart}
+            homePath="/catalog"
+            logoPosition="center"
+            landing
+            showCart={false}
+            onLogoClick={() => navigate("/catalog")}
+          />
+        ) : (
+          <>
+            <Header
+              onCartClick={openCart}
+              homePath="/"
+              logoPosition="left"
+              navItems={[
+                { id: "catalog", title: "КАТАЛОГ", active: section === "catalog", onSelect: () => openSection("catalog") },
+                { id: "favorites", title: "ИЗБРАННОЕ", active: section === "favorites", onSelect: () => openSection("favorites") },
+                { id: "about", title: "О НАС", active: section === "about", onSelect: () => openSection("about") },
+                { id: "account", title: "КАБИНЕТ", active: section === "account", onSelect: () => openSection("account") },
+              ]}
+            />
+            {section === "catalog" && (
+              <Filters categories={categories} query={query} onChange={setQuery} />
+            )}
+          </>
         )}
       </div>
 
-      {section === "catalog" && !isProductPage && <StoreHeroScreen />}
-
-      {section === "account" ? (
+      {isLanding ? (
+        <StoreHeroScreen />
+      ) : section === "account" ? (
         <Account />
       ) : section === "about" ? (
         <main className="container swag-about swag-about--textonly">
@@ -378,6 +393,7 @@ export default function App() {
                         index={index}
                         onClick={() => {
                           sessionStorage.setItem("swagystan:product-from", section);
+                          sessionStorage.setItem("swagystan:product-path", location.pathname === "/" ? "/catalog" : location.pathname);
                           openProduct(product);
                         }}
                       />
@@ -390,12 +406,14 @@ export default function App() {
         </main>
       )}
 
-      <footer className="footer swag-footer">
-        <div className="container footer__inner">
-          <span className="footer__brand">SWAGYSTAN © <span className="swag-num">{new Date().getFullYear()}</span></span>
-          <button type="button" onClick={() => openSection("about")}>О НАС ↗</button>
-        </div>
-      </footer>
+      {!isLanding && (
+        <footer className="footer swag-footer">
+          <div className="container footer__inner">
+            <span className="footer__brand">SWAGYSTAN © <span className="swag-num">{new Date().getFullYear()}</span></span>
+            <button type="button" onClick={() => openSection("about")}>О НАС ↗</button>
+          </div>
+        </footer>
+      )}
       {productOverlay}
       {cartOpen && (
         <Suspense fallback={null}>

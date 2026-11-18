@@ -1,18 +1,21 @@
 .swag-big-screen {
   position: relative;
   flex: 0 0 auto;
-  width: min(100%, 1920px);
+  width: 100%;
+  max-width: none;
   aspect-ratio: 16 / 9;
-  margin: clamp(16px, 2.2vw, 32px) auto clamp(26px, 3vw, 44px);
+  max-height: calc(100vh - 76px);
+  max-height: calc(100svh - 76px);
+  margin: 0;
   overflow: hidden;
   border: 0;
   border-radius: 0;
-  background: #eeeeee;
+  background: #080808;
   box-shadow: none;
   isolation: isolate;
 }
 
-.swag-big-screen__image {
+.swag-big-screen__media {
   position: absolute;
   inset: 0;
   display: block;
@@ -22,10 +25,10 @@
   object-fit: cover;
   object-position: center;
   opacity: 0;
-  transition: opacity 260ms ease;
+  transition: opacity 280ms ease;
 }
 
-.swag-big-screen--loaded .swag-big-screen__image {
+.swag-big-screen--loaded .swag-big-screen__media {
   opacity: 1;
 }
 
@@ -33,53 +36,67 @@
   position: absolute;
   inset: 0;
   display: grid;
-  place-content: center;
-  justify-items: center;
-  gap: clamp(8px, 1.4vw, 18px);
-  padding: 20px;
-  color: #111111;
-  background: #eeeeee;
-  text-align: center;
+  place-items: center;
+  background: #080808;
+  color: #fff;
 }
 
 .swag-big-screen__wordmark {
   font-family: "IBM Plex Mono", monospace;
-  font-size: clamp(28px, 7vw, 104px);
+  font-size: clamp(30px, 8vw, 112px);
   font-weight: 800;
   line-height: 0.9;
   letter-spacing: -0.085em;
 }
 
-.swag-big-screen__spec {
-  font-family: "IBM Plex Mono", monospace;
-  font-size: clamp(9px, 1vw, 13px);
-  font-weight: 500;
-  letter-spacing: 0.16em;
+html body .swag-only .store-top .header.header--landing {
+  height: 76px;
+  padding-top: 0;
+  background: #fff;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+html body .swag-only .store-top .header.header--landing .header__inner {
+  width: 100%;
+  max-width: none;
+  height: 76px;
+  justify-content: center;
+  padding-left: 20px;
+  padding-right: 20px;
+}
+
+html body .swag-only .store-top .header.header--landing .brand__logo {
+  min-height: 76px;
+  margin: 0 auto;
+  padding: 0;
+  justify-content: center;
+}
+
+html body .swag-only .store-top .header.header--landing .brand__logo-image {
+  height: 54px;
+  max-width: min(70vw, 230px);
+  transform: none;
 }
 
 @media (max-width: 699px) {
-  .swag-big-screen {
-    width: 100%;
-    margin-top: 14px;
-    margin-bottom: 22px;
+  html body .swag-only .store-top .header.header--landing,
+  html body .swag-only .store-top .header.header--landing .header__inner {
+    height: 64px;
   }
 
-  .swag-big-screen__placeholder {
-    gap: 8px;
+  html body .swag-only .store-top .header.header--landing .brand__logo {
+    min-height: 64px;
   }
 
-  .swag-big-screen__wordmark {
-    font-size: clamp(27px, 8vw, 42px);
-  }
-
-  .swag-big-screen__spec {
-    font-size: 8px;
-    letter-spacing: 0.1em;
+  html body .swag-only .store-top .header.header--landing .brand__logo-image {
+    height: 42px;
+    max-width: 72vw;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .swag-big-screen__image {
+  .swag-big-screen__media {
     transition: none;
   }
 }

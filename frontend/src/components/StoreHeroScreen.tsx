@@ -1,31 +1,54 @@
 import { useState } from "react";
 import "./StoreHeroScreen.css";
 
-const HERO_GIF_SRC = "/media/swagystan-hero.gif";
+const HERO_VIDEO_SRC = "/media/swagystan-hero.mp4";
+const HERO_GIF_FALLBACK = "/media/swagystan-hero.gif";
+
+type MediaMode = "video" | "gif" | "placeholder";
 
 export function StoreHeroScreen() {
+  const [mode, setMode] = useState<MediaMode>("video");
   const [mediaLoaded, setMediaLoaded] = useState(false);
 
+  function useGifFallback() {
+    setMediaLoaded(false);
+    setMode("gif");
+  }
+
   return (
-    <section
-      className={`swag-big-screen${mediaLoaded ? " swag-big-screen--loaded" : ""}`}
-      aria-label="SWAGYSTAN media screen"
-    >
-      <img
-        className="swag-big-screen__image"
-        src={HERO_GIF_SRC}
-        alt=""
-        aria-hidden="true"
-        draggable={false}
-        decoding="async"
-        fetchPriority="high"
-        onLoad={() => setMediaLoaded(true)}
-        onError={() => setMediaLoaded(false)}
-      />
-      {!mediaLoaded && (
+    <section className={`swag-big-screen${mediaLoaded ? " swag-big-screen--loaded" : ""}`} aria-label="SWAGYSTAN campaign video">
+      {mode === "video" && (
+        <video
+          className="swag-big-screen__media"
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="auto"
+          aria-hidden="true"
+          onLoadedData={() => setMediaLoaded(true)}
+          onError={useGifFallback}
+        >
+          <source src={HERO_VIDEO_SRC} type="video/mp4" />
+        </video>
+      )}
+
+      {mode === "gif" && (
+        <img
+          className="swag-big-screen__media"
+          src={HERO_GIF_FALLBACK}
+          alt=""
+          aria-hidden="true"
+          draggable={false}
+          fetchPriority="high"
+          onLoad={() => setMediaLoaded(true)}
+          onError={() => setMode("placeholder")}
+        />
+      )}
+
+      {mode === "placeholder" && (
         <div className="swag-big-screen__placeholder" aria-hidden="true">
           <span className="swag-big-screen__wordmark">SWAGYSTAN</span>
-          <span className="swag-big-screen__spec">MEDIA / 16:9 / 1920 × 1080</span>
         </div>
       )}
     </section>
