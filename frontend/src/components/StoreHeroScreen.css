@@ -147,7 +147,7 @@ html body .swag-only.swag-landing .store-top .header.header--landing .brand__log
   height: 72px;
   max-width: min(82vw, 300px);
   transform: none;
-  filter: brightness(0) invert(1) drop-shadow(0 1px 5px rgba(0, 0, 0, 0.35));
+  filter: brightness(0);
 }
 
 html body .swag-only.swag-landing .swag-big-screen {
