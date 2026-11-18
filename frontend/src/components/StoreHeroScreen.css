@@ -109,3 +109,78 @@ html body .swag-only .store-top .header.header--landing .brand__logo-image {
     transition: none;
   }
 }
+
+
+/* Landing page: full-viewport campaign video with the logo floating above it. */
+html body .swag-only.swag-landing {
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+html body .swag-only.swag-landing > .store-top {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: 20;
+  padding-top: env(safe-area-inset-top);
+}
+
+html body .swag-only.swag-landing .store-top .header.header--landing {
+  height: calc(88px + env(safe-area-inset-top));
+  padding-top: 0;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.38) 0%, rgba(0, 0, 0, 0.12) 68%, transparent 100%);
+}
+
+html body .swag-only.swag-landing .store-top .header.header--landing .header__inner {
+  height: 88px;
+  justify-content: center;
+  padding-left: 20px;
+  padding-right: 20px;
+}
+
+html body .swag-only.swag-landing .store-top .header.header--landing .brand__logo {
+  min-height: 88px;
+}
+
+html body .swag-only.swag-landing .store-top .header.header--landing .brand__logo-image {
+  height: 72px;
+  max-width: min(82vw, 300px);
+  transform: none;
+  filter: brightness(0) invert(1) drop-shadow(0 1px 5px rgba(0, 0, 0, 0.35));
+}
+
+html body .swag-only.swag-landing .swag-big-screen {
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  min-height: 100vh;
+  min-height: 100dvh;
+  margin: 0;
+}
+
+@media (max-width: 699px) {
+  html body .swag-only.swag-landing .store-top .header.header--landing {
+    height: calc(76px + env(safe-area-inset-top));
+  }
+
+  html body .swag-only.swag-landing .store-top .header.header--landing .header__inner {
+    height: 76px;
+  }
+
+  html body .swag-only.swag-landing .store-top .header.header--landing .brand__logo {
+    min-height: 76px;
+  }
+
+  html body .swag-only.swag-landing .store-top .header.header--landing .brand__logo-image {
+    height: 56px;
+    max-width: 84vw;
+  }
+
+  html body .swag-only.swag-landing .swag-big-screen {
+    height: 100vh;
+    height: 100dvh;
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+}
