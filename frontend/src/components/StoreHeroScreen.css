@@ -1,12 +1,14 @@
 .swag-big-screen {
   position: relative;
   flex: 0 0 auto;
-  width: 100%;
+  width: 100vw;
+  height: calc(100vh - 76px);
+  height: calc(100svh - 76px);
+  min-height: calc(100svh - 76px);
   max-width: none;
-  aspect-ratio: 16 / 9;
-  max-height: calc(100vh - 76px);
-  max-height: calc(100svh - 76px);
-  margin: 0;
+  max-height: none;
+  aspect-ratio: auto;
+  margin: 0 0 0 calc(50% - 50vw);
   overflow: hidden;
   border: 0;
   border-radius: 0;
@@ -74,12 +76,19 @@ html body .swag-only .store-top .header.header--landing .brand__logo {
 }
 
 html body .swag-only .store-top .header.header--landing .brand__logo-image {
-  height: 54px;
-  max-width: min(70vw, 230px);
+  height: 64px;
+  max-width: min(78vw, 260px);
   transform: none;
 }
 
 @media (max-width: 699px) {
+  .swag-big-screen {
+    width: 100vw;
+    height: calc(100vh - 64px);
+    height: calc(100svh - 64px);
+    min-height: calc(100svh - 64px);
+  }
+
   html body .swag-only .store-top .header.header--landing,
   html body .swag-only .store-top .header.header--landing .header__inner {
     height: 64px;
@@ -90,8 +99,8 @@ html body .swag-only .store-top .header.header--landing .brand__logo-image {
   }
 
   html body .swag-only .store-top .header.header--landing .brand__logo-image {
-    height: 42px;
-    max-width: 72vw;
+    height: 50px;
+    max-width: 80vw;
   }
 }
 
