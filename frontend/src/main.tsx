@@ -16,6 +16,11 @@ import { CartProvider } from "./cart";
 import { initTelegram } from "./telegram";
 
 initTelegram();
+if (import.meta.env.PROD && "serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    void navigator.serviceWorker.register("/sw.js", { scope: "/" }).catch(() => {});
+  }, { once: true });
+}
 
 const rootElement =
   document.getElementById("root");
