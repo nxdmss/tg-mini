@@ -2,7 +2,9 @@ import { useState } from "react";
 import type { Category, ProductsQuery } from "../types";
 import { catalogCategoryLabel } from "../categoryLabels";
 
-// Temporarily hide clothing categories without removing catalog data.
+// Temporary storefront visibility switches. Set to true to restore controls.
+// Categories switch also restores the in-stock filter. No catalog data is removed.
+const SHOW_SEARCH = false;
 const SHOW_CATEGORY_FILTERS = false;
 const SHOW_SORT_FILTER = false;
 
@@ -29,18 +31,22 @@ export function Filters({ categories, query, onChange }: Props) {
     setSortOpen(false);
   }
 
+  if (!SHOW_SEARCH && !SHOW_CATEGORY_FILTERS && !SHOW_SORT_FILTER) return null;
+
   return (
     <div className="toolbar">
       <div className="container toolbar__inner">
-        <div className="search-strip">
-          <input
-            className="search-strip__input"
-            placeholder="ПОИСК"
-            aria-label="Поиск товаров"
-            value={query.search ?? ""}
-            onChange={(e) => onChange({ ...query, search: e.target.value })}
-          />
-        </div>
+        {SHOW_SEARCH && (
+          <div className="search-strip">
+            <input
+              className="search-strip__input"
+              placeholder="ПОИСК"
+              aria-label="Поиск товаров"
+              value={query.search ?? ""}
+              onChange={(e) => onChange({ ...query, search: e.target.value })}
+            />
+          </div>
+        )}
 
         {(SHOW_CATEGORY_FILTERS || SHOW_SORT_FILTER) && (
           <div className="toolbar__chips-row">
