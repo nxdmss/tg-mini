@@ -65,3 +65,14 @@ html body .swag-only .store-experience__catalog .card__name {
     -webkit-text-stroke: 2px #111;
   }
 }
+
+/* Catalog cards: title and price only. Keep all product data. */
+html body .swag-only .store-experience__catalog .card__body { gap:4px !important; }
+html body .swag-only .store-experience__catalog .card__footer { justify-content:flex-start; margin-top:0; }
+html body .swag-only .swag-card-like img { width:25px; height:25px; }
+@media (max-width:699px) {
+  html body .swag-only .swag-card-like img { width:23px; height:23px; }
+}
+@media (max-width:520px) {
+  html body .swag-only .store-experience__catalog .swag-card-quickadd { bottom:5px; }
+}

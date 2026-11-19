@@ -157,6 +157,8 @@ export default function Admin() {
   const [activeTab, setActiveTab] =
     useState<TabKey>("products");
 
+  const [productEditorOpen, setProductEditorOpen] = useState(false);
+
   const [loading, setLoading] =
     useState(true);
 
@@ -510,6 +512,7 @@ export default function Admin() {
   }
 
   function resetForm() {
+    setProductEditorOpen(false);
     clearProductImages();
 
     const fallbackShopId =
@@ -545,6 +548,7 @@ export default function Admin() {
     product: ProductWithShop,
   ) {
     setActiveTab("products");
+    setProductEditorOpen(true);
 
     setForm({
       id: product.id,
@@ -1214,15 +1218,15 @@ export default function Admin() {
             <span aria-hidden="true">
               ‹
             </span>
-            НАЗАД
+            В МАГАЗИН
           </button>
 
           <div className="admin-header__eyebrow">
-            ADMIN
+            SWAGYSTAN / ADMIN
           </div>
 
           <h1 className="admin-header__title">
-            SWA6Y5TAN
+            Управление
           </h1>
         </header>
 
@@ -1275,7 +1279,7 @@ export default function Admin() {
               )
             }
           >
-            Каталог
+            Бренды / категории
           </button>
 
           <button
@@ -1311,7 +1315,16 @@ export default function Admin() {
             {activeTab ===
               "products" && (
               <div className="admin-stack">
-                <section className="admin-box">
+                <div className="admin-product-toolbar">
+                  <span>Управление товарами</span>
+                  <button type="button" className="admin-btn admin-btn--primary"
+                    aria-expanded={productEditorOpen}
+                    onClick={() => setProductEditorOpen((open) => !open)}>
+                    {productEditorOpen ? "Скрыть форму" : form.id ? "Продолжить редактирование" : "+ Добавить товар"}
+                  </button>
+                </div>
+                {productEditorOpen && (
+                <section className="admin-box admin-product-editor">
                   <div className="admin-box__head">
                     <h2>
                       {form.id
@@ -1694,6 +1707,8 @@ export default function Admin() {
                     </div>
                   </form>
                 </section>
+                )}
+
 
                 <section className="admin-box">
                   <div className="admin-box__head">
@@ -1728,7 +1743,7 @@ export default function Admin() {
 
                   <div className="admin-transfer">
                     <div className="admin-transfer__label">
-                      ПЕРЕТАЩИ ТОВАР В МАГАЗИН
+                      Перемещение между магазинами
                     </div>
 
                     <div className="admin-drop-shops">

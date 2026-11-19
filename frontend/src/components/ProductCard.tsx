@@ -143,11 +143,9 @@ export function ProductCard({
 
       <div className="card__body">
         <span className="card__name"><NumericText text={product.name} /></span>
-        <span className="card__brand"><NumericText text={product.brand.name} /></span>
 
         <div className="card__footer">
           <span className="card__price">{formatPrice(product.price).replace("₽", "")}<span className="card__ruble">₽</span></span>
-          <span className="card__category"><NumericText text={product.category.name} /></span>
         </div>
       </div>
     </button>

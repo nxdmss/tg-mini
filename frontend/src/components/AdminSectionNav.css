@@ -1,21 +1,4 @@
-.admin-section-nav {
-  display: flex;
-  margin: 14px auto 0;
-  max-width: 1166px;
-  padding: 0 16px;
-  font: 700 11px "IBM Plex Mono", monospace;
-}
-.admin-section-nav a {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex: 1;
-  min-height: 46px;
-  padding: 9px;
-  border: 2px solid #000;
-  color: #000;
-  text-align: center;
-  text-decoration: none;
-}
-.admin-section-nav a + a { border-left: 0; }
-.admin-section-nav a.active { color: #fff; background: #000; }
+.admin-section-nav { display:flex; gap:24px; align-items:center; margin:0 auto; max-width:1166px; padding:14px 20px 0; font:500 12px "IBM Plex Mono",monospace; }
+.admin-section-nav a { display:inline-flex; align-items:center; min-height:34px; color:#777; text-decoration:none; border-bottom:1px solid transparent; }
+.admin-section-nav a.active { color:#111; border-bottom-color:#111; font-weight:600; }
+@media(max-width:520px){ .admin-section-nav {padding:12px 14px 0;} }
