@@ -64,17 +64,19 @@ export function Filters({ categories, query, onChange }: Props) {
               </>
             )}
 
-            <button
-              className={`chip ${query.inStock ? "chip--active" : ""}`}
-              onClick={() =>
-                onChange({
-                  ...query,
-                  inStock: query.inStock ? undefined : true,
-                })
-              }
-            >
-              В наличии
-            </button>
+            {SHOW_CATEGORY_FILTERS && (
+              <button
+                className={`chip ${query.inStock ? "chip--active" : ""}`}
+                onClick={() =>
+                  onChange({
+                    ...query,
+                    inStock: query.inStock ? undefined : true,
+                  })
+                }
+              >
+                В наличии
+              </button>
+            )}
           </div>
 
           <div className="sort-popover">
