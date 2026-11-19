@@ -788,3 +788,16 @@ html body .swag-only .search-strip::after {
 @media (max-width: 520px) {
   html body .swag-only .search-strip__input { top: -15px; }
 }
+
+/* Optical alignment: lower the shop navigation slightly toward the logo/cart baseline. */
+@media (min-width: 901px) {
+  html body .swag-only:not(.swag-landing) .swag-nav--header {
+    top: calc(50% + 6px) !important;
+  }
+}
+
+@media (max-width: 699px) {
+  html body .swag-only:not(.swag-landing) .swag-nav--header {
+    top: calc(50% + 3px) !important;
+  }
+}
