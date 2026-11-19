@@ -7,7 +7,7 @@ import {
   useState,
 } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { motion, useReducedMotion } from "motion/react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
 import {
   getCategories,
@@ -288,38 +288,41 @@ export default function App() {
     <div className={`app store-experience swag-only ${isLanding ? "swag-landing" : ""} ${introRevealed ? "swag-intro-revealed" : "swag-intro-hidden"}`}>
       <StoreIntro catalogLoading={isLanding ? false : loading} onReveal={revealIntro} />
       <div className="store-top store-experience__top">
-        {isLanding ? (
-          <Header
-            onCartClick={openCart}
-            homePath="/catalog"
-            logoPosition="center"
-            landing
-            showCart={false}
-            onLogoClick={() => navigate("/catalog")}
-          />
-        ) : (
-          <>
-            <Header
-              onCartClick={openCart}
-              homePath="/"
-              logoPosition="left"
-              navItems={[
-                { id: "catalog", title: "КАТАЛОГ", active: section === "catalog", onSelect: () => openSection("catalog") },
-                { id: "favorites", title: "ИЗБРАННОЕ", active: section === "favorites", onSelect: () => openSection("favorites") },
-                { id: "about", title: "О НАС", active: section === "about", onSelect: () => openSection("about") },
-                { id: "account", title: "КАБИНЕТ", active: section === "account", onSelect: () => openSection("account") },
-              ]}
-            />
-            {section === "catalog" && (
-              <Filters categories={categories} query={query} onChange={setQuery} />
-            )}
-          </>
+        <Header
+          onCartClick={openCart}
+          homePath={isLanding ? "/catalog" : "/"}
+          logoPosition={isLanding ? "center" : "left"}
+          landing={isLanding}
+          showCart={!isLanding}
+          onLogoClick={isLanding ? () => navigate("/catalog") : undefined}
+          navItems={isLanding ? undefined : [
+            { id: "catalog", title: "КАТАЛОГ", active: section === "catalog", onSelect: () => openSection("catalog") },
+            { id: "favorites", title: "ИЗБРАННОЕ", active: section === "favorites", onSelect: () => openSection("favorites") },
+            { id: "about", title: "О НАС", active: section === "about", onSelect: () => openSection("about") },
+            { id: "account", title: "КАБИНЕТ", active: section === "account", onSelect: () => openSection("account") },
+          ]}
+        />
+        {!isLanding && section === "catalog" && (
+          <Filters categories={categories} query={query} onChange={setQuery} />
         )}
       </div>
 
-      {isLanding ? (
-        <StoreHeroScreen />
-      ) : section === "account" ? (
+      <AnimatePresence initial={false}>
+        {isLanding && (
+          <motion.div
+            key="landing-video"
+            className="swag-hero-layer"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: reducedMotion ? 0 : 0.8, ease: [0.4, 0, 0.2, 1] }}
+          >
+            <StoreHeroScreen />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {isLanding ? null : section === "account" ? (
         <Account />
       ) : section === "about" ? (
         <main className="container swag-about swag-about--textonly">
@@ -360,12 +363,12 @@ export default function App() {
                   <motion.div
                     key={product.id}
                     className="product-flow-item"
-                    initial={reducedMotion ? false : { opacity: 0, y: 18 }}
-                    animate={introRevealed ? { opacity: 1, y: 0 } : { opacity: 0, y: 18 }}
+                    initial={reducedMotion ? false : { opacity: 0, y: 30 }}
+                    animate={introRevealed ? { opacity: 1, y: 0 } : { opacity: 0, y: reducedMotion ? 0 : 30 }}
                     transition={{
-                      duration: reducedMotion ? 0 : 0.62,
-                      delay: introRevealed && !reducedMotion ? Math.min(index * 0.045, 0.36) : 0,
-                      ease: [0.16, 1, 0.3, 1],
+                      duration: reducedMotion ? 0 : 1.15,
+                      delay: introRevealed && !reducedMotion ? 0.18 + Math.min(index * 0.09, 0.63) : 0,
+                      ease: [0.22, 1, 0.36, 1],
                     }}
                   >
                     <div className={`swag-card-wrap${product.inStock ? "" : " is-sold-out"}`}>

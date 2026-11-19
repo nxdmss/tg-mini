@@ -71,8 +71,8 @@ export function Header({
         className={`container header__inner header__inner--store header__inner--logo-${logoPosition}`}
         transition={{
           layout: {
-            duration: reducedMotion ? 0 : 0.62,
-            ease: [0.16, 1, 0.3, 1],
+            duration: reducedMotion ? 0 : 1.25,
+            ease: [0.22, 1, 0.36, 1],
           },
         }}
       >
@@ -81,8 +81,8 @@ export function Header({
           className={`brand__logo ${logoNegative ? "brand__logo--negative" : ""}`}
           transition={{
             layout: {
-              duration: reducedMotion ? 0 : 0.62,
-              ease: [0.16, 1, 0.3, 1],
+              duration: reducedMotion ? 0 : 1.25,
+              ease: [0.22, 1, 0.36, 1],
             },
           }}
           type="button"
