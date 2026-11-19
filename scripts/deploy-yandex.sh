@@ -46,6 +46,8 @@ if [ "$TRACKED" = 1 ]; then
   printf "INSERT INTO \"_prisma_migrations\" (id, checksum, finished_at, migration_name, applied_steps_count) SELECT '%s','%s',CURRENT_TIMESTAMP,'%s',1 WHERE NOT EXISTS (SELECT 1 FROM \"_prisma_migrations\" WHERE migration_name='%s');\n" "$ID" "$SUM" "$MIG" "$MIG" | docker exec -i "$P" sh -c 'psql -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" "$POSTGRES_DB"'
 fi
 done
+# Both builds and the database backup succeeded. Merge the catalogs transactionally.
+docker exec -i "$P" sh -c 'psql -1 -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" "$POSTGRES_DB"' < "$R/scripts/merge-swagystan-catalog.sql"
 docker compose -f "$D" up -d --no-deps --force-recreate "$S"
 for i in $(seq 1 15); do if curl -fsS --max-time 5 'http://127.0.0.1:3000/products?shop=swagystan' > /dev/null; then sudo cp -a "$R/frontend/dist/." /var/www/swagystan/
   # Keep old hashed bundles for open tabs; remove only explicitly retired files.

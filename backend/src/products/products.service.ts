@@ -38,16 +38,8 @@ export class ProductsService {
       deletedAt: null,
     };
 
-    if (query.shop) {
-      where.shop = {
-        slug: {
-          equals: query.shop,
-          mode: 'insensitive',
-        },
-        isActive: true,
-        deletedAt: null,
-      };
-    }
+    // SWAGYSTAN is the only storefront; legacy shop filters no longer select other stores.
+    where.shop = { slug: DEFAULT_SHOP_SLUG, isActive: true, deletedAt: null };
 
     if (query.category) {
       where.category = {
@@ -151,11 +143,7 @@ export class ProductsService {
       data.categoryId,
     );
 
-    const shopId = data.shopId
-      ? await this.ensureActiveShop(
-          data.shopId,
-        )
-      : await this.getDefaultShopId();
+    const shopId = await this.getDefaultShopId();
 
     const uploadedUrls =
       await this.uploadImages(
@@ -241,11 +229,7 @@ export class ProductsService {
       data.categoryId,
     );
 
-    const shopId = data.shopId
-      ? await this.ensureActiveShop(
-          data.shopId,
-        )
-      : undefined;
+    const shopId = await this.getDefaultShopId();
 
     const uploadedUrls =
       await this.uploadImages(
@@ -406,33 +390,6 @@ export class ProductsService {
     );
   }
 
-  async moveToShop(
-    id: string,
-    shopId: string,
-  ) {
-    await this.ensureProductExists(id);
-
-    const activeShopId =
-      await this.ensureActiveShop(shopId);
-
-    const product =
-      await this.prisma.product.update({
-        where: {
-          id,
-        },
-        data: {
-          shop: {
-            connect: {
-              id: activeShopId,
-            },
-          },
-        },
-        include: productInclude,
-      });
-
-    return this.normalizeProduct(product);
-  }
-
   async updateStock(
     id: string,
     data: UpdateProductStockDto,
@@ -542,30 +499,6 @@ export class ProductsService {
     if (!shop) {
       throw new InternalServerErrorException(
         `Default shop "${DEFAULT_SHOP_SLUG}" not found`,
-      );
-    }
-
-    return shop.id;
-  }
-
-  private async ensureActiveShop(
-    shopId: string,
-  ) {
-    const shop =
-      await this.prisma.shop.findFirst({
-        where: {
-          id: shopId,
-          isActive: true,
-          deletedAt: null,
-        },
-        select: {
-          id: true,
-        },
-      });
-
-    if (!shop) {
-      throw new BadRequestException(
-        'Shop not found or inactive',
       );
     }
 
