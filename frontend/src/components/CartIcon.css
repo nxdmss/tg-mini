@@ -136,3 +136,45 @@
     height: 35px;
   }
 }
+
+/* Angular shopping bag. Legacy cart PNGs and styles are retained for restoration. */
+.sketch-cart.sharp-bag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  color: inherit;
+}
+
+.sketch-cart.sharp-bag .sharp-bag__mark {
+  display: block;
+  width: 68%;
+  height: 68%;
+  flex: 0 0 auto;
+  overflow: visible;
+}
+
+.sharp-bag__count {
+  position: absolute;
+  top: 0;
+  right: 0;
+  font: 600 10px/1 "IBM Plex Mono", monospace;
+  font-variant-numeric: tabular-nums;
+  color: inherit;
+}
+
+html body .swag-only .store-top .header .header-cart .sharp-bag__mark {
+  width: 25px !important;
+  height: 25px !important;
+}
+
+.brand__logo--negative ~ .header__actions .sharp-bag {
+  color: #fff;
+}
+
+@media (max-width: 699px) {
+  html body .swag-only .store-top .header .header-cart .sharp-bag__mark {
+    width: 22px !important;
+    height: 22px !important;
+  }
+}
