@@ -55,6 +55,10 @@ export function isWebLoggedIn() {
   return Boolean(getAccessToken());
 }
 
+export function hasAuthSession() {
+  return Boolean(getTelegramInitData() || getAccessToken());
+}
+
 /* =========================================================
    AXIOS INTERCEPTOR
 ========================================================= */

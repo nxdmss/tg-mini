@@ -1741,54 +1741,56 @@ export default function Admin() {
                     }
                   />
 
-                  <div className="admin-transfer">
-                    <div className="admin-transfer__label">
-                      Перемещение между магазинами
+                  {shops.filter((shop) => shop.isActive).length > 1 && (
+                    <div className="admin-transfer">
+                      <div className="admin-transfer__label">
+                        Перемещение между магазинами
+                      </div>
+  
+                      <div className="admin-drop-shops">
+                        {shops
+                          .filter(
+                            (shop) =>
+                              shop.isActive,
+                          )
+                          .map((shop) => (
+                            <div
+                              className={`admin-drop-shop ${
+                                dragOverShopId ===
+                                shop.id
+                                  ? "is-over"
+                                  : ""
+                              } ${
+                                form.shopId ===
+                                shop.id
+                                  ? "is-current"
+                                  : ""
+                              }`}
+                              key={shop.id}
+                              onDragOver={(event) => {
+                                event.preventDefault();
+                                setDragOverShopId(
+                                  shop.id,
+                                );
+                              }}
+                              onDragLeave={() =>
+                                setDragOverShopId(
+                                  null,
+                                )
+                              }
+                              onDrop={(event) =>
+                                void handleDropProduct(
+                                  shop.id,
+                                  event,
+                                )
+                              }
+                            >
+                              {shop.name}
+                            </div>
+                          ))}
+                      </div>
                     </div>
-
-                    <div className="admin-drop-shops">
-                      {shops
-                        .filter(
-                          (shop) =>
-                            shop.isActive,
-                        )
-                        .map((shop) => (
-                          <div
-                            className={`admin-drop-shop ${
-                              dragOverShopId ===
-                              shop.id
-                                ? "is-over"
-                                : ""
-                            } ${
-                              form.shopId ===
-                              shop.id
-                                ? "is-current"
-                                : ""
-                            }`}
-                            key={shop.id}
-                            onDragOver={(event) => {
-                              event.preventDefault();
-                              setDragOverShopId(
-                                shop.id,
-                              );
-                            }}
-                            onDragLeave={() =>
-                              setDragOverShopId(
-                                null,
-                              )
-                            }
-                            onDrop={(event) =>
-                              void handleDropProduct(
-                                shop.id,
-                                event,
-                              )
-                            }
-                          >
-                            {shop.name}
-                          </div>
-                        ))}
-                    </div>
-                  </div>
+                  )}
 
                   <div className="admin-list">
                     {filteredProducts.map(
@@ -1856,35 +1858,10 @@ export default function Admin() {
                             </h3>
 
                             <div className="admin-item__meta">
-                              <span>
-                                {formatPrice(
-                                  product.price,
-                                )}
-                              </span>
-
-                              <span>
-                                {product
-                                  .brand
-                                  ?.name ||
-                                  "—"}
-                              </span>
-
-                              <span>
-                                {product
-                                  .category
-                                  ?.name ||
-                                  "—"}
-                              </span>
-
-                              <span>
-                                {product
-                                  .shop
-                                  ?.name ||
-                                  "—"}
-                              </span>
+                              <strong>{formatPrice(product.price)}</strong>
                             </div>
 
-                            <label className="admin-move-select">
+                            {shops.filter((shop) => shop.isActive).length > 1 && <label className="admin-move-select">
                               <span>
                                 ПЕРЕНЕСТИ В
                               </span>
@@ -1915,7 +1892,7 @@ export default function Admin() {
                                     </option>
                                   ))}
                               </select>
-                            </label>
+                            </label>}
 
                             <div className="admin-item__buttons">
                               <button

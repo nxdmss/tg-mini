@@ -32,12 +32,20 @@ export class TelegramAdminGuard implements CanActivate {
       }
 
       const user = await this.webAuth.getUserFromToken(token);
+      const allowedEmails = new Set(
+        (process.env.ADMIN_EMAILS ?? '')
+          .split(',')
+          .map((email) => email.trim().toLowerCase())
+          .filter(Boolean),
+      );
+      const email = user.email?.trim().toLowerCase() ?? '';
+      const isAllowlistedEmail = Boolean(email && allowedEmails.has(email));
 
-      if (user.role !== 'ADMIN' && user.role !== 'MANAGER') {
+      if (!isAllowlistedEmail && user.role !== 'ADMIN' && user.role !== 'MANAGER') {
         throw new ForbiddenException('Admin access denied');
       }
 
-      request.user = user;
+      request.user = isAllowlistedEmail ? { ...user, role: 'ADMIN' } : user;
       return true;
     }
 

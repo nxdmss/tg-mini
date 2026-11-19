@@ -202,3 +202,26 @@
   .swag-account__order-details { animation: none; }
   .swag-account__order-chevron { transition: none; }
 }
+
+
+/* Guest checkout is a first-class path; account creation stays optional. */
+.swag-account__guest-note {
+  max-width: 420px;
+  margin: -18px 0 28px;
+  color: #666;
+  font-size: 12px;
+  line-height: 1.65;
+}
+.swag-account__guest-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: #111;
+  font-size: 11px;
+  font-weight: 600;
+  text-decoration: none;
+}
+.swag-account__guest-link:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}

@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
-import { api, getMe, getMyOrders, getApiErrorMessage, isWebLoggedIn, login, logout, register, verifyRegistration } from "../api";
+import { Link } from "react-router-dom";
+import { api, getMe, getMyOrders, getApiErrorMessage, hasAuthSession, isWebLoggedIn, login, logout, register, verifyRegistration } from "../api";
+import { getTelegramInitData } from "../telegram";
 import axios from "axios";
 import type { AuthUser, Order } from "../types";
 import "./Account.css";
@@ -33,18 +35,51 @@ export function Account() {
 
   const displayName = user?.name?.trim() || [user?.firstName, user?.lastName].filter(Boolean).join(" ") || user?.username || "Твой профиль";
   async function refresh() {
-    setBusy(true); setError("");
+    setBusy(true);
+    setError("");
+
+    // Anonymous visitors keep browsing and shopping without an account.
+    if (!hasAuthSession()) {
+      setUser(null);
+      setOrders([]);
+      setBusy(false);
+      return;
+    }
+
     try {
       const me = await getMe();
       setUser(me);
-      try { setOrders(await getMyOrders()); }
-      catch (e) { setError(getApiErrorMessage(e)); }
+      try {
+        setOrders(await getMyOrders());
+      } catch (orderError) {
+        setError(getApiErrorMessage(orderError));
+      }
     } catch (e) {
       if (axios.isAxiosError(e) && e.response?.status === 401) {
-        setUser(null); setOrders([]);
-        if (isWebLoggedIn()) { logout(); setError("Войди снова"); }
-      } else setError(getApiErrorMessage(e));
-    } finally { setBusy(false); }
+        const hadWebSession = isWebLoggedIn();
+        if (hadWebSession) logout();
+        setUser(null);
+        setOrders([]);
+
+        if (hadWebSession && getTelegramInitData()) {
+          try {
+            const me = await getMe();
+            setUser(me);
+            setOrders(await getMyOrders());
+            return;
+          } catch {
+            setUser(null);
+            setOrders([]);
+          }
+        }
+
+        if (hadWebSession) setError("Сессия истекла. Войди снова.");
+      } else {
+        setError(getApiErrorMessage(e));
+      }
+    } finally {
+      setBusy(false);
+    }
   }
   useEffect(() => { void refresh(); }, []);
   async function submit(event: React.FormEvent<HTMLFormElement>) {
@@ -111,11 +146,17 @@ export function Account() {
             </div>
           </details>)}
         </section>
-        <button className="swag-account__exit" type="button" onClick={() => {
-          logout(); setUser(null); setOrders([]); setError(""); setShowPassword(false);
-        }}>ВЫЙТИ ИЗ АККАУНТА</button>
+        {isWebLoggedIn() && <button className="swag-account__exit" type="button" onClick={() => {
+          logout();
+          setUser(null);
+          setOrders([]);
+          setError("");
+          setShowPassword(false);
+          if (getTelegramInitData()) void refresh();
+        }}>ВЫЙТИ ИЗ АККАУНТА</button>}
       </> : <section className="swag-account__auth" aria-labelledby="account-auth-title">
         <h1 id="account-auth-title" className="swag-account__auth-title">{authTitle}</h1>
+        {!confirming && <p className="swag-account__guest-note">Вход не нужен для просмотра каталога и оформления заказа. Аккаунт нужен для профиля и истории заказов.</p>}
         {confirming && <p className="swag-account__destination">{email}</p>}
         <form onSubmit={submit} aria-busy={sending}>
           {mode === "register" && <div className="swag-account__field">
@@ -148,6 +189,7 @@ export function Account() {
         <div className="swag-account__auth-actions">
           {confirming && <button disabled={sending} type="button" className="swag-account__switch" onClick={resend}>ОТПРАВИТЬ ЕЩЁ РАЗ</button>}
           <button disabled={sending} type="button" className="swag-account__switch" onClick={() => switchMode(mode === "login" ? "register" : "login")}>{mode === "login" ? "СОЗДАТЬ АККАУНТ" : "К ВХОДУ"}</button>
+          {(mode === "login" || mode === "register") && <Link className="swag-account__guest-link" to="/catalog">ПРОДОЛЖИТЬ КАК ГОСТЬ ↗</Link>}
         </div>
       </section>}
     </main>
