@@ -19,6 +19,9 @@ fi
 TOKEN="$(openssl rand -hex 32)"
 install -d -m 755 "$WEBROOT"
 install -m 644 "$PAGE" "$WEBROOT/index.html"
+for f in manifest.webmanifest swag-pwa-180.png swag-pwa-192.png swag-pwa-512.png apple-touch-icon.png sw.js; do
+  install -m 644 "/var/www/swagystan/$f" "$WEBROOT/$f"
+done
 umask 077
 printf '%s' "$TOKEN" > "$TOKEN_FILE"
 cp -a "$CADDYFILE" "$BACKUP"
@@ -36,7 +39,8 @@ handle @swag_owner {
 }
 handle {
   root * ${WEBROOT}
-  rewrite * /index.html
+  @maintenance_html not path /manifest.webmanifest /swag-pwa-180.png /swag-pwa-192.png /swag-pwa-512.png /apple-touch-icon.png /sw.js
+  rewrite @maintenance_html /index.html
   header Cache-Control "no-store, max-age=0"
   file_server
 }

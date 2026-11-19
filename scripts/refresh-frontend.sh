@@ -16,6 +16,7 @@ docker run --rm \
 test -s dist/index.html
 echo '==> Publishing to Caddy webroot'
 sudo cp -a dist/. /var/www/swagystan/
+sudo bash "$TMP/repo/scripts/refresh-pwa-maintenance.sh"
 echo '==> Local deployed HTML asset:'
 grep -oE '/assets/index-[^" ]+\.js' /var/www/swagystan/index.html | head -1 || true
 echo '==> Site HTTP status:'

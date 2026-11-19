@@ -50,6 +50,7 @@ done
 docker exec -i "$P" sh -c 'psql -1 -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" "$POSTGRES_DB"' < "$R/scripts/merge-swagystan-catalog.sql"
 docker compose -f "$D" up -d --no-deps --force-recreate "$S"
 for i in $(seq 1 15); do if curl -fsS --max-time 5 'http://127.0.0.1:3000/products?shop=swagystan' > /dev/null; then sudo cp -a "$R/frontend/dist/." /var/www/swagystan/
+  sudo bash "$R/scripts/refresh-pwa-maintenance.sh"
   # Keep old hashed bundles for open tabs; remove only explicitly retired files.
   if [ -f "$R/scripts/retired-frontend-assets.txt" ]; then
     while IFS= read -r asset; do
