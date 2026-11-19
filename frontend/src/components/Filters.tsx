@@ -2,6 +2,9 @@ import { useState } from "react";
 import type { Category, ProductsQuery } from "../types";
 import { catalogCategoryLabel } from "../categoryLabels";
 
+// Temporarily hide clothing categories without removing catalog data.
+const SHOW_CATEGORY_FILTERS = false;
+
 type Props = {
   categories: Category[];
   query: ProductsQuery;
@@ -40,22 +43,26 @@ export function Filters({ categories, query, onChange }: Props) {
 
         <div className="toolbar__chips-row">
           <div className="chips">
-            <button
-              className={`chip ${!query.category ? "chip--active" : ""}`}
-              onClick={() => onChange({ ...query, category: undefined })}
-            >
-              Все
-            </button>
-
-            {categories.map((c) => (
-              <button
-                key={c.id}
-                className={`chip ${query.category === c.name ? "chip--active" : ""}`}
-                onClick={() => onChange({ ...query, category: c.name })}
-              >
-                {catalogCategoryLabel(c.name)}
-              </button>
-            ))}
+            {SHOW_CATEGORY_FILTERS && (
+              <>
+                <button
+                  className={`chip ${!query.category ? "chip--active" : ""}`}
+                  onClick={() => onChange({ ...query, category: undefined })}
+                >
+                  Все
+                </button>
+    
+                {categories.map((c) => (
+                  <button
+                    key={c.id}
+                    className={`chip ${query.category === c.name ? "chip--active" : ""}`}
+                    onClick={() => onChange({ ...query, category: c.name })}
+                  >
+                    {catalogCategoryLabel(c.name)}
+                  </button>
+                ))}
+              </>
+            )}
 
             <button
               className={`chip ${query.inStock ? "chip--active" : ""}`}
