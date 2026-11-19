@@ -21,6 +21,7 @@ import {
  * The chunk is requested only after AdminGate has allowed access.
  */
 const VisitorAnalytics = lazy(async () => ({ default: (await import("./components/VisitorAnalytics")).VisitorAnalytics }));
+const AdminOrders = lazy(() => import("./pages/AdminOrders"));
 const Admin = lazy(
   () =>
     import(
@@ -54,6 +55,7 @@ export default function Router() {
           }
         />
 
+        <Route path="/admin/orders" element={<AdminGate><Suspense fallback={null}><AdminSectionNav /><AdminOrders /></Suspense></AdminGate>} />
         <Route path="/admin/visitors" element={<AdminGate><Suspense fallback={null}><AdminSectionNav /><main className="admin-page"><div className="container admin"><VisitorAnalytics /></div></main></Suspense></AdminGate>} />
         {/* Keep one persistent storefront instance. */}
         <Route

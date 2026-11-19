@@ -1,0 +1,64 @@
+/* Single catalog studio. */
+.swag-admin,.swag-admin__editor{font-family:"IBM Plex Mono",monospace;color:#111;background:#fff;box-sizing:border-box}
+.swag-admin *{box-sizing:border-box}
+.swag-admin button,.swag-admin input,.swag-admin select,.swag-admin textarea{font:inherit;border-radius:0}
+.swag-admin button{cursor:pointer}
+.swag-admin button:disabled{cursor:default;opacity:.45}
+.swag-admin{--editor-width:min(440px,39vw);min-height:calc(100dvh - 82px);padding:12px 32px 80px}
+.swag-admin.is-editing{margin-right:var(--editor-width)}
+.swag-admin__toolbar{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:0 0 30px}
+.swag-admin__search{display:flex;align-items:center;min-width:0;gap:8px}
+.swag-admin__search input{min-width:0;width:clamp(100px,22vw,260px);border:0;outline:0;background:transparent;font-size:13px;color:#111;padding:10px 0}
+.swag-admin__search input:focus{box-shadow:0 1px #111}
+.swag-admin__search button,.swag-admin__new{border:0;background:transparent;color:#111;font-size:13px;padding:10px 0;white-space:nowrap}
+.swag-admin__new{font-weight:600}
+.swag-admin__grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:48px 24px;align-content:start;align-items:start}
+.swag-admin.is-editing .swag-admin__grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:36px 18px}
+.swag-admin__card{display:flex;flex-direction:column;min-width:0;text-align:left;color:#111;padding:0;border:0;background:transparent;gap:4px;outline-offset:5px}
+.swag-admin__media{display:grid;place-items:center;position:relative;width:100%;aspect-ratio:4/5;overflow:hidden}
+.swag-admin__media img{display:block;width:100%;height:100%;object-fit:contain;transition:opacity .25s,transform .35s}
+.swag-admin__card:hover .swag-admin__media img{transform:scale(.97)}
+.swag-admin__card.is-selected .swag-admin__media img{opacity:.62}
+.swag-admin__card.is-selected .swag-admin__name{text-decoration:underline;text-underline-offset:4px}
+.swag-admin__name,.swag-admin__price{display:block;width:100%;font-size:12px;line-height:1.45;overflow-wrap:anywhere}
+.swag-admin__name{font-weight:500}.swag-admin__price{color:#555}
+.swag-admin__sold{position:absolute;inset:0;display:grid;place-items:center;font-weight:700;font-size:clamp(11px,1.3vw,20px);color:#111;text-shadow:0 0 5px #fff,0 0 12px #fff;pointer-events:none}
+.swag-admin__editor{position:fixed;z-index:40;inset:0 0 0 auto;width:var(--editor-width);overflow-y:auto;overscroll-behavior:contain;box-shadow:-16px 0 60px rgba(0,0,0,.045);padding:30px 28px 56px}
+.swag-admin__editor-head{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:25px}
+.swag-admin__editor-head strong{font-size:16px;font-weight:600}
+.swag-admin__editor-head button{font-size:26px;line-height:1;padding:6px;border:0;background:transparent;color:#111}
+.swag-admin__form fieldset{border:0;padding:0;margin:0;min-width:0;display:grid;gap:18px}
+.swag-admin__form label:not(.swag-admin__upload):not(.swag-admin__check){display:flex;flex-direction:column;gap:7px;font-size:11px;color:#666}
+.swag-admin__form input:not([type=checkbox]):not([type=file]),.swag-admin__form textarea,.swag-admin__form select{min-width:0;width:100%;border:0;background:#f6f6f6;padding:12px;color:#111;font-size:14px;outline:0}
+.swag-admin__form input:focus,.swag-admin__form textarea:focus,.swag-admin__form select:focus{outline:1px solid #111}
+.swag-admin__form textarea{resize:vertical;min-height:80px}
+.swag-admin__photos{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+.swag-admin__photo,.swag-admin__upload{position:relative;aspect-ratio:1;background:#f7f7f7;display:grid;place-items:center;min-width:0;overflow:hidden}
+.swag-admin__photo img{width:100%;height:100%;object-fit:contain}
+.swag-admin__photo button{border:0;background:#fff;color:#111;font-size:14px;min-width:25px;min-height:24px}
+.swag-admin__remove-photo{position:absolute;top:3px;right:3px}
+.swag-admin__photo-order{position:absolute;bottom:3px;right:3px;display:flex;gap:2px}
+.swag-admin__upload{font-size:24px;cursor:pointer}
+.swag-admin__upload input{position:absolute;inset:0;opacity:0;width:100%;cursor:pointer}
+.swag-admin__check{display:flex;align-items:center;gap:9px;font-size:12px;cursor:pointer}
+.swag-admin__check input{accent-color:#111;width:16px;height:16px;margin:0}
+.swag-admin__details summary{color:#666;font-size:11px;padding:6px 0;cursor:pointer}
+.swag-admin__details label{margin-top:12px}
+.swag-admin__inline{display:flex;align-items:center;gap:6px;margin-top:6px}
+.swag-admin__inline button{border:0;color:#111;background:#f6f6f6;min-width:42px;min-height:42px;font-size:20px}
+.swag-admin__save-row{display:flex;align-items:center;gap:14px;margin-top:26px}
+.swag-admin__primary{flex:1;background:#111;color:#fff;border:0;min-height:48px;font-size:13px}
+.swag-admin__delete{background:transparent;border:0;color:#777;font-size:11px;padding:10px 0}
+.swag-admin__delete:hover{color:#a11919}
+.swag-admin__view{display:inline-block;margin-top:16px;color:#777;text-decoration:none;font-size:11px}
+.swag-admin__error{color:#a11919;font-size:12px;line-height:1.6;overflow-wrap:anywhere}
+.swag-admin__error button{border:0;background:transparent;text-decoration:underline}
+.swag-admin__muted{color:#777;font-size:12px}
+@media(max-width:1050px){.swag-admin__grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:32px 18px}.swag-admin.is-editing .swag-admin__grid{grid-template-columns:repeat(3,minmax(0,1fr))}.swag-admin{--editor-width:min(410px,46vw);padding:12px 22px 56px}}
+@media(max-width:740px){.swag-admin{--editor-width:100%;padding:6px 15px 45px}.swag-admin.is-editing{margin-right:0}.swag-admin__grid,.swag-admin.is-editing .swag-admin__grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:28px 12px}.swag-admin__toolbar{margin-bottom:20px}.swag-admin__editor{padding:max(22px,env(safe-area-inset-top)) 20px max(32px,env(safe-area-inset-bottom))}}
+@media(max-width:420px){.swag-admin__name,.swag-admin__price{font-size:10px}}
+@media(prefers-reduced-motion:reduce){.swag-admin *{transition:none!important}}
+.swag-admin-orders{max-width:1000px;margin:auto}
+.swag-admin-orders__item{padding:16px 0;border-bottom:1px solid #eee;font-size:12px}
+.swag-admin-orders__item summary{display:flex;align-items:center;gap:18px;justify-content:space-between;flex-wrap:wrap;cursor:pointer}
+.swag-admin-orders__body{padding:12px 0;color:#555}.swag-admin-orders__body select{min-height:38px;border:0;background:#f6f6f6;padding:8px}
