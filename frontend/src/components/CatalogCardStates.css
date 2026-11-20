@@ -76,3 +76,92 @@ html body .swag-only .swag-card-like img { width:25px; height:25px; }
 @media (max-width:520px) {
   html body .swag-only .store-experience__catalog .swag-card-quickadd { bottom:5px; }
 }
+
+/* SWAGYSTAN storefront polish: consistent editorial cards, zero new decoration. */
+html body .swag-only .store-experience__catalog .card {
+  gap: 0 !important;
+  animation: none !important; /* the outer motion item already handles reveal */
+  transition: transform 160ms cubic-bezier(.22, 1, .36, 1), opacity 160ms ease;
+  -webkit-tap-highlight-color: transparent;
+}
+html body .swag-only .store-experience__catalog .card:active {
+  transform: scale(.985);
+  opacity: .9;
+}
+html body .swag-only .store-experience__catalog .card__media {
+  aspect-ratio: 4 / 5 !important;
+  padding: 3px !important;
+}
+html body .swag-only .store-experience__catalog .card__body {
+  padding: 11px 0 0 !important;
+  gap: 4px !important;
+  justify-content: flex-start;
+}
+html body .swag-only .store-experience__catalog .card__footer {
+  padding: 0 !important;
+  margin: 0 !important;
+}
+html body .swag-only .store-experience__catalog .card__price {
+  line-height: 1.15;
+}
+
+/* Keep the fast cart control on the photo, away from product names/prices. */
+.swag-only .store-experience__catalog .swag-card-quickadd {
+  top: 8px;
+  right: 54px;
+  bottom: auto;
+  width: 42px;
+  height: 42px;
+}
+.swag-only .store-experience__catalog .swag-card-quickadd__trigger {
+  width: 42px;
+  height: 42px;
+  padding: 7px;
+}
+.swag-only .store-experience__catalog .card__name {
+  padding-right: 0;
+}
+.swag-only .store-experience__catalog .swag-card-quickadd__sizes {
+  top: 43px;
+  bottom: auto;
+}
+@media (max-width: 699px) {
+  html body .swag-only .store-experience__catalog {
+    padding-left: calc(12px + env(safe-area-inset-left, 0px)) !important;
+    padding-right: calc(12px + env(safe-area-inset-right, 0px)) !important;
+  }
+  html body .swag-only .store-experience__catalog .grid {
+    column-gap: 12px !important;
+    row-gap: 20px !important;
+  }
+  html body .swag-only .store-experience__catalog .card__body {
+    padding-top: 8px !important;
+    gap: 3px !important;
+  }
+  html body .swag-only .store-experience__catalog .card__name {
+    font-size: clamp(13px, 3.6vw, 15px) !important;
+  }
+  html body .swag-only .store-experience__catalog .card__price {
+    font-size: clamp(14px, 3.9vw, 16px) !important;
+  }
+  .swag-only .store-experience__catalog .swag-card-quickadd {
+    top: 8px;
+    right: 49px;
+  }
+}
+@media (max-width: 360px) {
+  html body .swag-only .store-experience__catalog .grid {
+    column-gap: 9px !important;
+  }
+  html body .swag-only .store-experience__catalog .card__media {
+    padding: 1px !important;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  html body .swag-only .store-experience__catalog .card {
+    transition: none;
+  }
+  html body .swag-only .store-experience__catalog .card:active {
+    transform: none;
+  }
+}
