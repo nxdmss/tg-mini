@@ -267,10 +267,10 @@ export default function App() {
   const productOverlay = isProductPage ? (
     <motion.div
       className="product-overlay-shell"
-      initial={reducedMotion ? false : { opacity: 0 }}
+      initial={false}
       animate={{ opacity: 1 }}
-      exit={reducedMotion ? undefined : { opacity: 0 }}
-      transition={{ duration: reducedMotion ? 0 : 0.34, ease: [0.22, 1, 0.36, 1] }}
+      exit={{ opacity: 1 }}
+      transition={{ duration: 0 }}
     >
       <Suspense
         fallback={
