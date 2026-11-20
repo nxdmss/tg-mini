@@ -85,9 +85,6 @@ export function ProductDetail({ product, onBack, onCartClick }: ProductDetailPro
     <main className="product-page">
       <header className="product-page__header">
         <button type="button" className="product-page__back" onClick={onBack} aria-label="Назад">‹</button>
-        <button type="button" className="product-page__cart" onClick={onCartClick} aria-label="Открыть покупки">
-          <CartIcon count={count} />
-        </button>
       </header>
 
       <div className="product-page__content">
@@ -118,6 +115,14 @@ export function ProductDetail({ product, onBack, onCartClick }: ProductDetailPro
                 alt=""
                 aria-hidden="true"
               />
+            </button>
+            <button
+              type="button"
+              className="product-page__cart-floating"
+              onClick={onCartClick}
+              aria-label="Открыть корзину"
+            >
+              <CartIcon count={count} />
             </button>
             {currentImage ? <img className="product-page__image" src={detailImage} alt={product.name} onError={(event) => {
               if (detailImage !== currentImage && event.currentTarget.getAttribute("src") !== currentImage) {
