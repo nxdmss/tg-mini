@@ -340,22 +340,22 @@ export default function App() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: reducedMotion ? 0 : 0.42, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: reducedMotion ? 0 : 0.2, ease: "easeOut" }}
           >
             <StoreHeroScreen />
           </motion.div>
         )}
       </AnimatePresence>
 
-      <AnimatePresence mode="wait" initial={false}>
+      <AnimatePresence initial={false}>
         {!isLanding && (
           <motion.div
             key={section}
             className="swag-page-transition"
-            initial={reducedMotion ? false : { opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={reducedMotion ? undefined : { opacity: 0, y: -6, transition: { duration: 0.14, ease: "easeIn" } }}
-            transition={{ duration: reducedMotion ? 0 : 0.38, ease: [0.22, 1, 0.36, 1] }}
+            initial={reducedMotion ? false : { opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={reducedMotion ? undefined : { opacity: 0 }}
+            transition={{ duration: reducedMotion ? 0 : 0.2, ease: "easeOut" }}
           >
             {section === "account" ? (
         <Account />
