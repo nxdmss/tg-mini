@@ -261,7 +261,7 @@ export default function App() {
       initial={reducedMotion ? false : { opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={reducedMotion ? undefined : { opacity: 0 }}
-      transition={{ duration: reducedMotion ? 0 : 0.72, ease: [0.22, 1, 0.36, 1] }}
+      transition={{ duration: reducedMotion ? 0 : 0.34, ease: [0.22, 1, 0.36, 1] }}
     >
       <Suspense
         fallback={
@@ -321,7 +321,7 @@ export default function App() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: reducedMotion ? 0 : 0.8, ease: [0.4, 0, 0.2, 1] }}
+            transition={{ duration: reducedMotion ? 0 : 0.42, ease: [0.22, 1, 0.36, 1] }}
           >
             <StoreHeroScreen />
           </motion.div>
@@ -333,10 +333,10 @@ export default function App() {
           <motion.div
             key={section}
             className="swag-page-transition"
-            initial={reducedMotion ? false : { opacity: 0, y: 24, filter: "blur(7px)" }}
-            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-            exit={reducedMotion ? undefined : { opacity: 0, y: -14, filter: "blur(5px)" }}
-            transition={{ duration: reducedMotion ? 0 : 0.72, ease: [0.22, 1, 0.36, 1] }}
+            initial={reducedMotion ? false : { opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={reducedMotion ? undefined : { opacity: 0, y: -6, transition: { duration: 0.14, ease: "easeIn" } }}
+            transition={{ duration: reducedMotion ? 0 : 0.38, ease: [0.22, 1, 0.36, 1] }}
           >
             {section === "account" ? (
         <Account />
@@ -382,8 +382,8 @@ export default function App() {
                     initial={reducedMotion ? false : { opacity: 0, y: 30 }}
                     animate={introRevealed ? { opacity: 1, y: 0 } : { opacity: 0, y: reducedMotion ? 0 : 30 }}
                     transition={{
-                      duration: reducedMotion ? 0 : 1.15,
-                      delay: introRevealed && !reducedMotion ? 0.18 + Math.min(index * 0.09, 0.63) : 0,
+                      duration: reducedMotion ? 0 : 0.6,
+                      delay: introRevealed && !reducedMotion ? 0.05 + Math.min(index * 0.025, 0.18) : 0,
                       ease: [0.22, 1, 0.36, 1],
                     }}
                   >
