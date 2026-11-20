@@ -1,10 +1,9 @@
 import { useLayoutEffect, useState } from "react";
 import "./StoreHeroScreen.css";
 
-const HERO_VIDEO_SRC = "/media/swagystan-hero.mp4";
-const HERO_GIF_FALLBACK = "/media/swagystan-hero.gif";
+const HERO_VIDEO_SRC = "/media/swagystan-silver-glow-20261120.mp4";
 
-type MediaMode = "video" | "gif" | "placeholder";
+type MediaMode = "video" | "placeholder";
 
 export function StoreHeroScreen() {
   const [mode, setMode] = useState<MediaMode>("video");
@@ -56,7 +55,7 @@ export function StoreHeroScreen() {
 
   function useGifFallback() {
     setMediaLoaded(false);
-    setMode("gif");
+    setMode("placeholder");
   }
 
   return (
@@ -75,19 +74,6 @@ export function StoreHeroScreen() {
         >
           <source src={HERO_VIDEO_SRC} type="video/mp4" />
         </video>
-      )}
-
-      {mode === "gif" && (
-        <img
-          className="swag-big-screen__media"
-          src={HERO_GIF_FALLBACK}
-          alt=""
-          aria-hidden="true"
-          draggable={false}
-          fetchPriority="high"
-          onLoad={() => setMediaLoaded(true)}
-          onError={() => setMode("placeholder")}
-        />
       )}
 
       {mode === "placeholder" && (
