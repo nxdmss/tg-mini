@@ -85,6 +85,9 @@ export function ProductDetail({ product, onBack, onCartClick }: ProductDetailPro
     <main className="product-page">
       <header className="product-page__header">
         <button type="button" className="product-page__back" onClick={onBack} aria-label="Назад">‹</button>
+        <button type="button" className="product-page__cart" onClick={onCartClick} aria-label="Открыть покупки">
+          <CartIcon count={count} />
+        </button>
       </header>
 
       <div className="product-page__content">
