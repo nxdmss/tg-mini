@@ -648,8 +648,14 @@
 }
 
 
+.product-page__cart-floating { display: none; }
+
 /* Mobile product controls: same-size heart and bag, vertically aligned. */
 @media (max-width: 699px) {
+  .swag-only .product-page__header .product-page__cart {
+    display: none !important;
+  }
+
   .swag-only .product-page__favorite-floating {
     top: 8px !important;
     right: 8px !important;
