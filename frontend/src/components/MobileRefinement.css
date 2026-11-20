@@ -801,3 +801,58 @@ html body .swag-only .search-strip::after {
     top: calc(50% + 3px) !important;
   }
 }
+
+/* iPhone finishing touches: comfortable hit areas without changing the brand layout. */
+@media (max-width: 520px) {
+  html body .swag-only:not(.swag-landing) .store-top .header,
+  html body .swag-only:not(.swag-landing) .store-top .header .header__inner {
+    height: 84px !important;
+    min-height: 84px !important;
+  }
+  html body .swag-only:not(.swag-landing) .store-top .header .header__inner {
+    padding-left: calc(12px + env(safe-area-inset-left, 0px)) !important;
+    padding-right: calc(12px + env(safe-area-inset-right, 0px)) !important;
+  }
+  html body .swag-only:not(.swag-landing) .store-top .header .brand__logo img {
+    max-width: min(27vw, 104px) !important;
+  }
+  html body .swag-only:not(.swag-landing) .swag-nav--header {
+    width: min(40vw, 150px) !important;
+    height: 62px !important;
+    grid-template-rows: repeat(2, 30px) !important;
+    gap: 2px 4px !important;
+  }
+  html body .swag-only:not(.swag-landing) .swag-nav--header .swag-nav__tab {
+    height: 30px !important;
+    min-height: 30px !important;
+    padding: 4px 0 !important;
+  }
+  html body .swag-only:not(.swag-landing) .store-top .header .header__actions {
+    right: calc(8px + env(safe-area-inset-right, 0px)) !important;
+  }
+  /* A 16px input avoids Safari's auto-zoom while keeping the search line minimal. */
+  html body .swag-only .search-strip {
+    margin-top: 0 !important;
+    height: 34px !important;
+    min-height: 34px !important;
+    max-height: 34px !important;
+    flex: 0 0 34px !important;
+  }
+  html body .swag-only .search-strip__input {
+    top: 0 !important;
+    height: 34px !important;
+    min-height: 34px !important;
+    max-height: 34px !important;
+    line-height: 34px !important;
+    font-size: 16px !important;
+  }
+  html body .swag-only .store-top .toolbar .toolbar__inner {
+    padding-left: calc(12px + env(safe-area-inset-left, 0px)) !important;
+    padding-right: calc(12px + env(safe-area-inset-right, 0px)) !important;
+  }
+}
+@media (max-width: 360px) {
+  html body .swag-only:not(.swag-landing) .swag-nav--header {
+    width: min(38vw, 132px) !important;
+  }
+}
