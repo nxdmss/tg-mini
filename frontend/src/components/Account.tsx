@@ -114,17 +114,11 @@ export function Account() {
   return (
     <main className={`container swag-account${user ? "" : " swag-account--auth"}`}>
       {busy ? <p className="swag-account__muted" role="status">ЗАГРУЗКА…</p> : user ? <>
-        <div className="swag-account__heading"><h1>КАБИНЕТ</h1></div>
-        <section className="swag-account__hero">
-          <div className="swag-account__identity">
-            <h2>{displayName}</h2>
-            {user.email && <p>{user.email}</p>}
-            {user.phone && <p>{user.phone}</p>}
-          </div>
-        </section>
+        <header className="swag-account__hero">
+          <h1 className="swag-account__name">{displayName}</h1>
+        </header>
         {error && <p className="swag-account__error" role="alert">{error}</p>}
-        <section className="swag-account__section" aria-labelledby="account-orders">
-          <h2 id="account-orders" className="swag-account__label">МОИ ЗАКАЗЫ</h2>
+        <section className="swag-account__section" aria-label="Заказы">
           {orders.length === 0 ? <div className="swag-account__empty">
             <p>Пока без заказов</p>
           </div> : orders.map(order => <details className="swag-account__order" key={order.id}>
