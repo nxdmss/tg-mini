@@ -111,6 +111,15 @@ html body .swag-only .store-top .header.header--landing .brand__logo-image {
 }
 
 
+/* Match the iPhone status-bar backing to the video instead of adding a dark strip. */
+html:has(.swag-only.swag-landing) {
+  background: #cec4c3;
+}
+
+html body .swag-only.swag-landing {
+  background: #cec4c3;
+}
+
 /* Landing page: full-viewport campaign video with the logo floating above it. */
 html body .swag-only.swag-landing {
   min-height: 100vh;
@@ -129,7 +138,7 @@ html body .swag-only.swag-landing > .store-top {
 html body .swag-only.swag-landing .store-top .header.header--landing {
   height: calc(88px + env(safe-area-inset-top));
   padding-top: 0;
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0.38) 0%, rgba(0, 0, 0, 0.12) 68%, transparent 100%);
+  background: transparent;
 }
 
 html body .swag-only.swag-landing .store-top .header.header--landing .header__inner {
