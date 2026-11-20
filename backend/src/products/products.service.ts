@@ -275,17 +275,6 @@ export class ProductsService {
         ]),
       );
 
-    const legacyBrokenStock =
-      Boolean(
-        currentStockState &&
-          currentStockState.inStock &&
-          currentStockState.sizes.length > 0 &&
-          currentStockState.sizes.every(
-            (item) =>
-              item.stock === 0,
-          ),
-      );
-
     const nextInStock =
       data.inStock ??
       currentStockState?.inStock ??
@@ -368,10 +357,7 @@ export class ProductsService {
                             ? nextInStock
                               ? 1
                               : 0
-                            : legacyBrokenStock &&
-                                nextInStock
-                              ? 1
-                              : previousStock;
+                            : previousStock;
 
                         return {
                           size,
