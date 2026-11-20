@@ -145,26 +145,26 @@ html body .swag-only .store-experience__catalog .card__price {
 
   /* Phone: cart directly under the heart, sharing its right edge. */
   html body .swag-only .store-experience__catalog .swag-card-like {
-    top: 8px !important;
-    right: 8px !important;
-    width: 36px !important;
-    height: 36px !important;
+    top: 0 !important;
+    right: 0 !important;
+    width: 34px !important;
+    height: 34px !important;
   }
   html body .swag-only .store-experience__catalog .swag-card-like img {
     width: 25px !important;
     height: 25px !important;
   }
   html body .swag-only .store-experience__catalog .swag-card-quickadd {
-    top: 41px !important;
-    right: 8px !important;
+    top: 32px !important;
+    right: 0 !important;
     bottom: auto !important;
-    width: 36px !important;
-    height: 36px !important;
+    width: 34px !important;
+    height: 34px !important;
   }
   html body .swag-only .store-experience__catalog .swag-card-quickadd__trigger {
-    width: 36px !important;
-    height: 36px !important;
-    padding: 5px !important;
+    width: 34px !important;
+    height: 34px !important;
+    padding: 4px !important;
   }
   html body .swag-only .store-experience__catalog .swag-card-quickadd__icon,
   html body .swag-only .store-experience__catalog .swag-card-quickadd__icon .sharp-bag__mark {
