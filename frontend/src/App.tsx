@@ -327,6 +327,16 @@ export default function App() {
           <motion.div
             key="landing-video"
             className="swag-hero-layer"
+            onClick={() => navigate("/catalog")}
+            role="button"
+            tabIndex={0}
+            aria-label="Перейти в каталог SWAGYSTAN"
+            onKeyDown={(event) => {
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                navigate("/catalog");
+              }
+            }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
