@@ -7,7 +7,7 @@ import "./CatalogQuickAdd.css";
 export function CatalogQuickAdd({ product }: { product: Product }) {
   const { add, ready } = useCart();
   const [sizesOpen, setSizesOpen] = useState(false);
-  const availableSizes = product.sizes.filter((size) => size.stock > 0);
+  const availableSizes = product.inStock ? product.sizes.filter((size) => size.stock > 0) : [];
   const canAdd = ready && availableSizes.length > 0;
 
   function addSize(size: ProductSize) {
