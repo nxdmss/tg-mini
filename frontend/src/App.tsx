@@ -101,7 +101,7 @@ export default function App() {
   // Keep the landing video warm-toned, but return to white on shopping pages.
   useEffect(() => {
     const theme = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
-    theme?.setAttribute("content", isLanding ? "#cec4c3" : "#ffffff");
+    theme?.setAttribute("content", isLanding ? "#080808" : "#ffffff");
     return () => theme?.setAttribute("content", "#ffffff");
   }, [isLanding]);
 
