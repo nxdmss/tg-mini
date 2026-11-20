@@ -657,11 +657,11 @@
   }
 
   .swag-only .product-page__favorite-floating {
-    top: 8px !important;
-    right: 8px !important;
-    width: 42px !important;
-    height: 42px !important;
-    padding: 8px !important;
+    top: 0 !important;
+    right: 0 !important;
+    width: 34px !important;
+    height: 34px !important;
+    padding: 4px !important;
   }
 
   .swag-only .product-page__favorite-floating img {
@@ -672,13 +672,13 @@
   .swag-only .product-page__cart-floating {
     position: absolute;
     z-index: 8;
-    top: 52px;
-    right: 8px;
+    top: 32px;
+    right: 0;
     display: grid;
     place-items: center;
-    width: 42px;
-    height: 42px;
-    padding: 8px;
+    width: 34px;
+    height: 34px;
+    padding: 4px;
     border: 0;
     background: transparent;
     color: #000;
