@@ -27,7 +27,7 @@
   object-fit: cover;
   object-position: center;
   /* Cold monochrome treatment for the existing opening video and GIF fallback. */
-  filter: grayscale(1) contrast(1.18) brightness(.92);
+  filter: grayscale(1) contrast(1.32) brightness(.79) sepia(.08);
   opacity: 0;
   transition: opacity 280ms ease;
 }
