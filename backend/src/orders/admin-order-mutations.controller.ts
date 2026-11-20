@@ -110,40 +110,7 @@ export class AdminOrderMutationsController {
           );
         }
 
-        const restored =
-          await tx.productSize.updateMany({
-            where: {
-              productId:
-                item.productId,
-
-              size:
-                item.size,
-            },
-
-            data: {
-              stock: {
-                increment:
-                  item.quantity,
-              },
-            },
-          });
-
-        if (
-          restored.count >
-          0
-        ) {
-          await tx.product.updateMany({
-            where: {
-              id:
-                item.productId,
-            },
-
-            data: {
-              inStock:
-                true,
-            },
-          });
-        }
+        // Order history changes never alter manually managed size availability.
 
         await tx.orderItem.delete({
           where: {
@@ -189,46 +156,6 @@ export class AdminOrderMutationsController {
           throw new NotFoundException(
             'Заказ не найден',
           );
-        }
-
-        for (
-          const item of
-          order.items
-        ) {
-          const restored =
-            await tx.productSize.updateMany({
-              where: {
-                productId:
-                  item.productId,
-
-                size:
-                  item.size,
-              },
-
-              data: {
-                stock: {
-                  increment:
-                    item.quantity,
-                },
-              },
-            });
-
-          if (
-            restored.count >
-            0
-          ) {
-            await tx.product.updateMany({
-              where: {
-                id:
-                  item.productId,
-              },
-
-              data: {
-                inStock:
-                  true,
-              },
-            });
-          }
         }
 
         await tx.order.delete({
