@@ -18,23 +18,24 @@ export function ProductDetail({ product, onBack, onCartClick }: ProductDetailPro
   const { isFavorite, toggle } = useFavorites();
   const [imageIndex, setImageIndex] = useState(0);
   const touchStart = useRef<{ x: number; y: number } | null>(null);
-  const firstAvailableSize = useMemo(
-    () => product.sizes.find((size) => size.stock > 0)?.size ?? "",
-    [product.sizes],
+  const availableSizes = useMemo(
+    () => product.inStock ? product.sizes.filter((size) => size.stock > 0) : [],
+    [product.inStock, product.sizes],
   );
+  const firstAvailableSize = availableSizes[0]?.size ?? "";
   const [selectedSize, setSelectedSize] = useState(firstAvailableSize);
   const [added, setAdded] = useState(false);
   const images = product.images ?? [];
   const currentImage = images[imageIndex]?.url ?? images[0]?.url ?? "";
   const detailImage = getProductDetailImage(currentImage);
-  const selectedSizeData = product.sizes.find((size) => size.size === selectedSize);
-  const canAdd = Boolean(ready && selectedSizeData && selectedSizeData.stock > 0);
+  const selectedSizeData = availableSizes.find((size) => size.size === selectedSize);
+  const canAdd = Boolean(ready && product.inStock && selectedSizeData);
 
   useEffect(() => {
     setImageIndex(0);
-    setSelectedSize(product.sizes.find((size) => size.stock > 0)?.size ?? "");
+    setSelectedSize(firstAvailableSize);
     setAdded(false);
-  }, [product.id, product.sizes]);
+  }, [product.id, firstAvailableSize]);
 
   function previousImage() {
     if (images.length > 1) setImageIndex((index) => index === 0 ? images.length - 1 : index - 1);
@@ -65,7 +66,7 @@ export function ProductDetail({ product, onBack, onCartClick }: ProductDetailPro
   });
 
   function addToCart() {
-    if (!selectedSizeData || selectedSizeData.stock <= 0) return;
+    if (!product.inStock || !selectedSizeData) return;
     add({
       productId: product.id,
       name: product.name,
@@ -149,9 +150,9 @@ export function ProductDetail({ product, onBack, onCartClick }: ProductDetailPro
           <div className="product-page__price swag-num">{formatPrice(product.price)}</div>
           {product.description && <p className="product-page__description">{product.description}</p>}
           <div className="product-page__sizes">
-            <div className="product-page__sizes-title" id="product-size-label">ВЫБЕРИТЕ РАЗМЕР</div>
+            <div className="product-page__sizes-title" id="product-size-label">{availableSizes.length ? "ВЫБЕРИТЕ РАЗМЕР" : "РАЗМЕРОВ НЕТ В НАЛИЧИИ"}</div>
             <div className="product-page__sizes-list" role="group" aria-labelledby="product-size-label">
-              {product.sizes.map((item) => (
+              {availableSizes.map((item) => (
                 <button
                   key={item.id}
                   type="button"
