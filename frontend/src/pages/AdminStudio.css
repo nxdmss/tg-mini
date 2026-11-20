@@ -62,3 +62,15 @@
 .swag-admin-orders__item{padding:16px 0;border-bottom:1px solid #eee;font-size:12px}
 .swag-admin-orders__item summary{display:flex;align-items:center;gap:18px;justify-content:space-between;flex-wrap:wrap;cursor:pointer}
 .swag-admin-orders__body{padding:12px 0;color:#555}.swag-admin-orders__body select{min-height:38px;border:0;background:#f6f6f6;padding:8px}
+
+/* Manual size availability: minimalist on/off switches, no stock counters. */
+.swag-admin__size-controls{display:flex;flex-direction:column;gap:9px}
+.swag-admin__size-heading{font-size:11px;font-weight:600;letter-spacing:.025em;color:#666}
+.swag-admin__size-grid{display:flex;flex-wrap:wrap;gap:8px}
+.swag-admin__size-toggle{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-width:66px;min-height:54px;padding:8px 11px;border:1px solid #111!important;border-radius:0;background:#fff;color:#111;transition:background-color .16s,color .16s,transform .16s}
+.swag-admin__size-toggle strong{font-size:13px;line-height:1.2}
+.swag-admin__size-toggle span{font-size:10px;line-height:1.2;letter-spacing:.04em}
+.swag-admin__size-toggle.is-unavailable{background:#111;color:#fff}
+.swag-admin__size-toggle:active{transform:scale(.97)}
+.swag-admin__size-hint{font-size:10px;line-height:1.5;color:#666}
+@media(prefers-reduced-motion:reduce){.swag-admin__size-toggle{transition:none}.swag-admin__size-toggle:active{transform:none}}
