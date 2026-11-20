@@ -239,3 +239,23 @@ html body .swag-only .swag-hero-layer .swag-big-screen {
     object-fit: cover;
   }
 }
+
+/* Mobile browser chrome: match the video edge and avoid toolbar resize jumps. */
+@media (max-width: 699px) {
+  html:has(.swag-landing),
+  html:has(.swag-landing) body,
+  html:has(.swag-landing) #root {
+    background-color: #080808;
+  }
+  html body .swag-only.swag-landing .swag-hero-layer {
+    background: #080808;
+  }
+  html:not(.swag-ios-standalone) body .swag-only.swag-landing .swag-hero-layer {
+    height: 100svh;
+    min-height: 100svh;
+  }
+  html:not(.swag-ios-standalone) body .swag-only.swag-landing .swag-hero-layer .swag-big-screen {
+    height: 100%;
+    min-height: 100%;
+  }
+}
