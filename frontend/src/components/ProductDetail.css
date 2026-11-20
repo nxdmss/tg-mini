@@ -646,3 +646,113 @@
     transform: none;
   }
 }
+
+
+/* Mobile product controls: same-size heart and bag, vertically aligned. */
+@media (max-width: 699px) {
+  .swag-only .product-page__favorite-floating {
+    top: 8px !important;
+    right: 8px !important;
+    width: 42px !important;
+    height: 42px !important;
+    padding: 8px !important;
+  }
+
+  .swag-only .product-page__favorite-floating img {
+    width: 25px !important;
+    height: 25px !important;
+  }
+
+  .swag-only .product-page__cart-floating {
+    position: absolute;
+    z-index: 8;
+    top: 52px;
+    right: 8px;
+    display: grid;
+    place-items: center;
+    width: 42px;
+    height: 42px;
+    padding: 8px;
+    border: 0;
+    background: transparent;
+    color: #000;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .swag-only .product-page__cart-floating .sketch-cart {
+    width: 25px !important;
+    height: 25px !important;
+  }
+
+  .swag-only .product-page__cart-floating .sharp-bag__mark {
+    width: 25px !important;
+    height: 25px !important;
+  }
+
+  .swag-only .product-page__cart-floating:active {
+    transform: scale(.92);
+    opacity: .6;
+  }
+
+  /* Tighter, lower visual block: name, price, description, sizes and CTA. */
+  .swag-only .product-page__info {
+    gap: 0;
+    margin-top: 10px !important;
+    padding-bottom: 8px;
+  }
+
+  .swag-only .product-page__name {
+    font-size: clamp(22px, 5.5vw, 27px) !important;
+    line-height: 1.06 !important;
+    letter-spacing: -.025em;
+  }
+
+  .swag-only .product-page__price {
+    margin-top: 3px !important;
+    font-size: clamp(20px, 5vw, 24px) !important;
+    line-height: 1.05;
+  }
+
+  .swag-only .product-page__description {
+    margin-top: 6px !important;
+    font-size: 12px !important;
+    line-height: 1.35 !important;
+  }
+
+  .swag-only .product-page__sizes {
+    margin-top: 11px !important;
+    gap: 5px !important;
+  }
+
+  .swag-only .product-page__sizes-title {
+    font-size: 10px !important;
+    line-height: 1.2;
+    letter-spacing: .035em;
+  }
+
+  .swag-only .product-page__sizes-list {
+    gap: 5px !important;
+  }
+
+  .swag-only .product-page__size {
+    min-width: 42px !important;
+    min-height: 42px !important;
+    height: 42px !important;
+    padding: 0 8px !important;
+    font-size: 14px !important;
+  }
+
+  .swag-only .product-page__add {
+    min-height: 49px !important;
+    margin-top: 12px !important;
+    font-size: 12px !important;
+    letter-spacing: .025em;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .swag-only .product-page__cart-floating {
+    transition: none;
+  }
+}
