@@ -111,16 +111,6 @@ html body .swag-only .store-top .header.header--landing .brand__logo-image {
 }
 
 
-/* Match both iOS system safe-area gutters to the campaign video.
-   Global html/body/#root backgrounds are white on shopping pages; only the
-   landing view overrides them so uncovered PWA chrome cannot show white. */
-html:has(.swag-only.swag-landing),
-html:has(.swag-only.swag-landing) body,
-html:has(.swag-only.swag-landing) #root,
-html body .swag-only.swag-landing {
-  background: #cec4c3;
-}
-
 /* Landing page: full-viewport campaign video with the logo floating above it. */
 html body .swag-only.swag-landing {
   min-height: 100vh;
@@ -196,20 +186,6 @@ html body .swag-only.swag-landing .swag-big-screen {
 }
 
 
-/* Standalone iOS may report 100dvh without the full bottom home-indicator
-   area. Overscan the fixed landing movie only; keep normal shop pages untouched.
-   If iOS itself reserves an unpaintable strip, root background matches the film. */
-@media (display-mode: standalone) and (max-width: 699px) {
-  html body .swag-only.swag-landing .swag-hero-layer {
-    bottom: calc(-1 * max(64px, env(safe-area-inset-bottom, 0px)));
-  }
-
-  html body .swag-only.swag-landing .swag-hero-layer .swag-big-screen {
-    height: 100%;
-    min-height: 100%;
-  }
-}
-
 /* Keep the campaign video full-size during its exit over the catalogue. */
 .swag-hero-layer {
   position: fixed;
@@ -220,10 +196,37 @@ html body .swag-only.swag-landing .swag-big-screen {
 }
 
 html body .swag-only .swag-hero-layer .swag-big-screen {
+  position: absolute;
+  inset: 0;
   width: 100%;
-  height: 100vh;
-  height: 100dvh;
-  min-height: 100vh;
-  min-height: 100dvh;
+  height: 100%;
+  min-height: 100%;
   margin: 0;
+}
+
+/* The VIDEO itself fills the whole PWA frame. No fake backdrop matching
+   the movie: extend the actual video beyond the iPhone home indicator. */
+@media (display-mode: standalone) and (max-width: 699px) {
+  html body .swag-only.swag-landing .swag-hero-layer {
+    top: 0;
+    bottom: -120px;
+    height: auto;
+  }
+
+  html body .swag-only.swag-landing .swag-hero-layer .swag-big-screen {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    min-height: 100%;
+  }
+
+  html body .swag-only.swag-landing .swag-hero-layer .swag-big-screen__media {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+  }
 }
