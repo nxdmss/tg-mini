@@ -204,16 +204,24 @@ html body .swag-only .swag-hero-layer .swag-big-screen {
   margin: 0;
 }
 
-/* The VIDEO itself fills the whole PWA frame. No fake backdrop matching
-   the movie: extend the actual video beyond the iPhone home indicator. */
-@media (display-mode: standalone) and (max-width: 699px) {
-  html body .swag-only.swag-landing .swag-hero-layer {
-    top: 0;
-    bottom: -120px;
-    height: auto;
+/* iOS PWA cold launch can report a viewport shorter than screen.height.
+   Use the true screen height measured by StoreHeroScreen, and keep the
+   actual moving video in normal document coordinates instead of clipping
+   it in a position:fixed viewport that WebKit initially mismeasures. */
+@media (max-width: 699px) {
+  html.swag-ios-standalone body .swag-only.swag-landing {
+    min-height: max(100dvh, var(--swag-iphone-screen-height, 100dvh));
   }
 
-  html body .swag-only.swag-landing .swag-hero-layer .swag-big-screen {
+  html.swag-ios-standalone body .swag-only.swag-landing .swag-hero-layer {
+    position: absolute;
+    inset: 0 auto auto 0;
+    width: 100%;
+    height: max(100dvh, var(--swag-iphone-screen-height, 100dvh));
+    overflow: hidden;
+  }
+
+  html.swag-ios-standalone body .swag-only.swag-landing .swag-hero-layer .swag-big-screen {
     position: absolute;
     inset: 0;
     width: 100%;
@@ -221,12 +229,11 @@ html body .swag-only .swag-hero-layer .swag-big-screen {
     min-height: 100%;
   }
 
-  html body .swag-only.swag-landing .swag-hero-layer .swag-big-screen__media {
+  html.swag-ios-standalone body .swag-only.swag-landing .swag-hero-layer .swag-big-screen__media {
     position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
     object-fit: cover;
-    object-position: center;
   }
 }
