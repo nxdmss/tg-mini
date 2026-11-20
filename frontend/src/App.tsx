@@ -96,6 +96,15 @@ export default function App() {
   const productIdFromUrl = getProductId(location.pathname);
   const isProductPage = Boolean(productIdFromUrl);
   const isLanding = location.pathname === "/" && !isProductPage;
+
+  // iOS uses the PWA theme as a fallback behind the system status bar.
+  // Keep the landing video warm-toned, but return to white on shopping pages.
+  useEffect(() => {
+    const theme = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
+    theme?.setAttribute("content", isLanding ? "#cec4c3" : "#ffffff");
+    return () => theme?.setAttribute("content", "#ffffff");
+  }, [isLanding]);
+
   const { ids: favoriteIds, isFavorite, toggle } = useFavorites();
 
   const [categories, setCategories] = useState<Category[]>([]);
