@@ -73,9 +73,6 @@ html body .swag-only .swag-card-like img { width:25px; height:25px; }
 @media (max-width:699px) {
   html body .swag-only .swag-card-like img { width:23px; height:23px; }
 }
-@media (max-width:520px) {
-  html body .swag-only .store-experience__catalog .swag-card-quickadd { bottom:5px; }
-}
 
 /* SWAGYSTAN storefront polish: consistent editorial cards, zero new decoration. */
 html body .swag-only .store-experience__catalog .card {
@@ -144,9 +141,34 @@ html body .swag-only .store-experience__catalog .card__price {
   html body .swag-only .store-experience__catalog .card__price {
     font-size: clamp(14px, 3.9vw, 16px) !important;
   }
-  .swag-only .store-experience__catalog .swag-card-quickadd {
-    top: 8px;
-    right: 49px;
+
+  /* Phone: cart directly under the heart, sharing its right edge. */
+  html body .swag-only .store-experience__catalog .swag-card-like {
+    top: 8px !important;
+    right: 8px !important;
+    width: 38px !important;
+    height: 38px !important;
+  }
+  html body .swag-only .store-experience__catalog .swag-card-like img {
+    width: 25px !important;
+    height: 25px !important;
+  }
+  html body .swag-only .store-experience__catalog .swag-card-quickadd {
+    top: 48px !important;
+    right: 8px !important;
+    bottom: auto !important;
+    width: 38px !important;
+    height: 38px !important;
+  }
+  html body .swag-only .store-experience__catalog .swag-card-quickadd__trigger {
+    width: 38px !important;
+    height: 38px !important;
+    padding: 6px !important;
+  }
+  html body .swag-only .store-experience__catalog .swag-card-quickadd__icon,
+  html body .swag-only .store-experience__catalog .swag-card-quickadd__icon .sharp-bag__mark {
+    width: 25px !important;
+    height: 25px !important;
   }
 }
 @media (max-width: 360px) {
