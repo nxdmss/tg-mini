@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { getProducts, getBrands, getCategories, createBrand, createCategory, deleteProduct, getApiErrorMessage, type ProductImageItem } from "../api";
+import { getProducts, getBrands, getCategories, createBrand, createCategory, deleteProduct, getApiErrorMessage, updateProductStock, type ProductImageItem } from "../api";
 import { createAdminProduct, updateAdminProduct } from "../productAdminApi";
 import { getShop, clearShopApiCache } from "../shopApi";
 import { formatPrice, getProductPreviewImage, getProductPreviewSrcSet } from "../utils";
@@ -9,10 +9,13 @@ import type { Brand, Category, Product } from "../types";
 import "./AdminStudio.css";
 
 type DraftImage = ProductImageItem & { preview?: string };
-type Draft = { id?: string; name: string; price: string; description: string; brandId: string; categoryId: string; sizes: string; inStock: boolean; images: DraftImage[] };
+type Draft = { id?: string; name: string; price: string; description: string; brandId: string; categoryId: string; sizes: string; sizeStock: Record<string, number>; inStock: boolean; images: DraftImage[] };
+function parseSizes(value: string): string[] {
+  return Array.from(new Set(value.split(/[\n,;]+/).map(s => s.trim()).filter(Boolean)));
+}
 const fly = { duration: 0.65, ease: [0.22, 1, 0.36, 1] as [number,number,number,number] };
 function fromProduct(p: Product): Draft {
-  return { id:p.id, name:p.name, price:String(p.price), description:p.description ?? "", brandId:p.brand.id, categoryId:p.category.id, sizes:p.sizes.map(s=>s.size).join(", "), inStock:p.inStock, images:p.images.map(i=>({key:i.id,type:"url",url:i.url})) };
+  return { id:p.id, name:p.name, price:String(p.price), description:p.description ?? "", brandId:p.brand.id, categoryId:p.category.id, sizes:p.sizes.map(s=>s.size).join(", "), sizeStock:Object.fromEntries(p.sizes.map(s=>[s.size,s.stock])), inStock:p.inStock, images:p.images.map(i=>({key:i.id,type:"url",url:i.url})) };
 }
 export default function Admin() {
   const reduced = useReducedMotion();
@@ -48,7 +51,7 @@ export default function Admin() {
     if (p && draft?.id===p.id) return;
     if (!canDiscard()) return;
     release();setError("");setNewBrand("");setNewCategory("");
-    setDraft(p?fromProduct(p):{name:"",price:"",description:"",brandId:"",categoryId:"",sizes:"",inStock:true,images:[]});
+    setDraft(p?fromProduct(p):{name:"",price:"",description:"",brandId:"",categoryId:"",sizes:"",sizeStock:{},inStock:true,images:[]});
     setDirty(false);opener.current=button??null;
     if(panel.current)panel.current.scrollTop=0;
   }
@@ -85,8 +88,15 @@ export default function Admin() {
     if(!shopId||!draft.name.trim()||!draft.price.trim()||!Number.isInteger(price)||price<0||price>2147483647||!draft.brandId||!draft.categoryId){setError("Заполни название, цену, бренд и категорию.");return;}
     setSaving(true);setError("");
     try{
-      const data={shopId,name:draft.name.trim(),price,description:draft.description.trim(),brandId:draft.brandId,categoryId:draft.categoryId,inStock:draft.inStock,sizes:Array.from(new Set(draft.sizes.split(/[\n,;]+/).map(s=>s.trim()).filter(Boolean))),imageItems:draft.images};
-      const p=draft.id?await updateAdminProduct(draft.id,data):await createAdminProduct(data);
+      const data={shopId,name:draft.name.trim(),price,description:draft.description.trim(),brandId:draft.brandId,categoryId:draft.categoryId,inStock:draft.inStock,sizes:parseSizes(draft.sizes),imageItems:draft.images};
+      const saved=draft.id?await updateAdminProduct(draft.id,data):await createAdminProduct(data);
+      // Stock is an explicit manual availability flag, never an order counter.
+      const p=data.sizes.length
+        ? await updateProductStock(saved.id,{
+            inStock:draft.inStock,
+            sizes:data.sizes.map(size=>({size,stock:draft.sizeStock[size] ?? (draft.inStock?1:0)})),
+          })
+        : saved;
       setProducts(a=>draft.id?a.map(x=>x.id===p.id?p:x):[p,...a]);clearShopApiCache();release();setDraft(fromProduct(p));setDirty(false);
     }catch(e){setError(getApiErrorMessage(e));}finally{setSaving(false);}
   }
@@ -121,6 +131,28 @@ export default function Admin() {
           <label>Название<input required value={draft.name} onChange={e=>patch({name:e.target.value})}/></label>
           <label>Цена, ₽<input required type="number" min="0" max="2147483647" step="1" inputMode="numeric" value={draft.price} onChange={e=>patch({price:e.target.value})}/></label>
           <label>Размеры<input placeholder="S, M, L, XL" value={draft.sizes} onChange={e=>patch({sizes:e.target.value})}/></label>
+          {parseSizes(draft.sizes).length > 0 && (
+            <div className="swag-admin__size-controls" role="group" aria-label="Наличие размеров">
+              <span className="swag-admin__size-heading">НАЛИЧИЕ РАЗМЕРОВ — НАЖМИ, ЧТОБЫ ИЗМЕНИТЬ</span>
+              <div className="swag-admin__size-grid">
+                {parseSizes(draft.sizes).map(size => {
+                  const available = (draft.sizeStock[size] ?? (draft.inStock ? 1 : 0)) > 0;
+                  return <button
+                    type="button"
+                    key={size}
+                    className={"swag-admin__size-toggle" + (available ? " is-available" : " is-unavailable")}
+                    aria-label={`Размер ${size}: ${available ? "есть в наличии" : "нет в наличии"}`}
+                    aria-pressed={!available}
+                    onClick={() => patch({
+                      sizeStock: { ...draft.sizeStock, [size]: available ? 0 : 1 },
+                      inStock: available ? draft.inStock : true,
+                    })}
+                  ><strong>{size}</strong><span>{available ? "ЕСТЬ" : "НЕТ"}</span></button>;
+                })}
+              </div>
+              <small className="swag-admin__size-hint">Размер останется доступным после заказов, пока ты не нажмёшь «НЕТ» и не сохранишь.</small>
+            </div>
+          )}
           <label className="swag-admin__check"><input type="checkbox" checked={draft.inStock} onChange={e=>patch({inStock:e.target.checked})}/> В наличии</label>
           <label>Описание<textarea rows={4} value={draft.description} onChange={e=>patch({description:e.target.value})}/></label>
           <details key={draft.id??"new"} className="swag-admin__details" open={!draft.id?true:undefined}><summary>Бренд и категория</summary>
