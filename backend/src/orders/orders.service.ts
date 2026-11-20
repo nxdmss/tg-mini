@@ -232,69 +232,8 @@ export class OrdersService {
             }
           }
 
-          for (
-            const [
-              key,
-              quantity,
-            ] of
-            requestedByVariant
-          ) {
-            const separatorIndex =
-              key.lastIndexOf(
-                ':',
-              );
-
-            const productId =
-              key.slice(
-                0,
-                separatorIndex,
-              );
-
-            const sizeName =
-              key.slice(
-                separatorIndex +
-                  1,
-              );
-
-            const updated =
-              await tx.productSize.updateMany({
-                where: {
-                  productId,
-
-                  size:
-                    sizeName,
-
-                  stock: {
-                    gte:
-                      quantity,
-                  },
-                },
-
-                data: {
-                  stock: {
-                    decrement:
-                      quantity,
-                  },
-                },
-              });
-
-            if (
-              updated.count !==
-              1
-            ) {
-              const product =
-                productById.get(
-                  productId,
-                );
-
-              throw new BadRequestException(
-                `Недостаточно товара ${
-                  product?.name ??
-                  productId
-                }, размер ${sizeName}`,
-              );
-            }
-          }
+          // Stock is manually managed by the store. A successful order must not
+          // decrement sizes or switch the product to SOLD OUT.
 
           const createdOrder =
             await tx.order.create({
@@ -347,35 +286,6 @@ export class OrdersService {
               include:
                 orderInclude,
             });
-
-          for (
-            const productId of
-            productIds
-          ) {
-            const remainingSizes =
-              await tx.productSize.count({
-                where: {
-                  productId,
-
-                  stock: {
-                    gt: 0,
-                  },
-                },
-              });
-
-            await tx.product.update({
-              where: {
-                id:
-                  productId,
-              },
-
-              data: {
-                inStock:
-                  remainingSizes >
-                  0,
-              },
-            });
-          }
 
           return createdOrder;
         },
