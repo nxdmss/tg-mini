@@ -488,3 +488,161 @@
   .product-page__size { min-width: 48px; height: 52px; padding: 0 8px; font-size: 19px; }
   .product-page__add { min-height: 66px; margin-top: 30px; padding: 0 16px; font-size: 17px; }
 }
+
+/* SWAGYSTAN PRODUCT REFINEMENT — bold monochrome, large imagery, usable controls. */
+.product-page__size {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 10px;
+  border: 1px solid #d0d0d0;
+  border-radius: 0;
+  transition: background-color 150ms ease, color 150ms ease, border-color 150ms ease, transform 150ms ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.product-page__size--active {
+  background: #111;
+  color: #fff;
+  border-color: #111;
+  text-decoration: none;
+}
+.product-page__size:active:not(:disabled) {
+  transform: scale(.96);
+}
+.product-page__size:disabled {
+  border-color: #e6e6e6;
+}
+.product-page__add {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60px;
+  border: 1px solid #111;
+  border-radius: 0;
+  background: #111;
+  color: #fff;
+  transition: background-color 180ms ease, color 180ms ease, transform 160ms ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.product-page__add:active:not(:disabled) {
+  transform: scale(.985);
+}
+.product-page__add:disabled {
+  background: #eee;
+  border-color: #eee;
+  color: #777;
+  opacity: 1;
+}
+.product-page__favorite-floating {
+  transition: transform 150ms cubic-bezier(.22, 1, .36, 1);
+}
+.product-page__arrow,
+.product-page__back,
+.product-page__cart {
+  transition: opacity 160ms ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.product-page__arrow:active,
+.product-page__back:active,
+.product-page__cart:active {
+  opacity: .55;
+}
+/* Bigger touch targets with tiny, editorial photo indicators. */
+.product-page__dots { gap: 2px; }
+.product-page__dot {
+  position: relative;
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  border-radius: 0;
+}
+.product-page__dot::after {
+  content: "";
+  display: block;
+  width: 6px;
+  height: 6px;
+  margin: auto;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, .24);
+  transition: background-color 140ms ease, transform 140ms ease;
+}
+.product-page__dot--active::after {
+  background: #000;
+  transform: scale(1.3);
+}
+@media (hover: hover) and (pointer: fine) {
+  .product-page__add:hover:not(:disabled) {
+    opacity: 1;
+    background: #fff;
+    color: #111;
+  }
+  .product-page__size:hover:not(:disabled):not(.product-page__size--active) {
+    border-color: #111;
+    opacity: 1;
+  }
+}
+@media (max-width: 900px) {
+  .product-page__header {
+    height: calc(60px + env(safe-area-inset-top, 0px));
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-left: calc(12px + env(safe-area-inset-left, 0px));
+    padding-right: calc(12px + env(safe-area-inset-right, 0px));
+  }
+  .swag-only .product-page__content {
+    padding: 0 calc(12px + env(safe-area-inset-right, 0px)) calc(32px + env(safe-area-inset-bottom, 0px))
+      calc(12px + env(safe-area-inset-left, 0px));
+  }
+  .product-page__gallery {
+    height: clamp(300px, 58svh, 640px);
+  }
+  .swag-only .product-page__info {
+    align-items: flex-start;
+    margin-top: 16px;
+    text-align: left;
+  }
+  .product-page__name { font-size: clamp(24px, 4.4vw, 34px); }
+  .product-page__price { margin-top: 10px; }
+  .product-page__description {
+    margin-top: 16px;
+    font-size: 14px;
+    line-height: 1.55;
+  }
+  .product-page__sizes {
+    align-items: flex-start;
+    margin-top: 22px;
+    gap: 12px;
+  }
+  .product-page__sizes-title { font-size: 12px; }
+  .product-page__sizes-list { justify-content: flex-start; gap: 8px; }
+  .product-page__size { min-width: 48px; min-height: 48px; }
+  .product-page__add {
+    width: 100%;
+    max-width: none;
+    min-height: 58px;
+    margin-top: 24px;
+    font-size: 14px;
+  }
+}
+@media (max-width: 520px) {
+  .product-page__gallery {
+    height: clamp(300px, 57svh, 560px);
+  }
+  .product-page__name { font-size: clamp(23px, 6vw, 30px); }
+  .product-page__size { min-width: 46px; min-height: 46px; padding: 0 10px; }
+  .product-page__add { min-height: 56px; }
+  .product-page__arrow { width: 44px; height: 44px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .product-page__size,
+  .product-page__add,
+  .product-page__favorite-floating,
+  .product-page__dot::after,
+  .product-page__arrow,
+  .product-page__back,
+  .product-page__cart {
+    transition: none;
+  }
+  .product-page__add:active:not(:disabled),
+  .product-page__size:active:not(:disabled) {
+    transform: none;
+  }
+}
