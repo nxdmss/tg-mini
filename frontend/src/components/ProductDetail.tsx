@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { Product } from "../types";
 import { useCart } from "../cart";
 import { useFavorites } from "../favorites";
@@ -17,6 +17,7 @@ export function ProductDetail({ product, onBack, onCartClick }: ProductDetailPro
   const { add, count, ready } = useCart();
   const { isFavorite, toggle } = useFavorites();
   const [imageIndex, setImageIndex] = useState(0);
+  const touchStart = useRef<{ x: number; y: number } | null>(null);
   const firstAvailableSize = useMemo(
     () => product.sizes.find((size) => size.stock > 0)?.size ?? "",
     [product.sizes],
@@ -40,6 +41,18 @@ export function ProductDetail({ product, onBack, onCartClick }: ProductDetailPro
   }
   function nextImage() {
     if (images.length > 1) setImageIndex((index) => index === images.length - 1 ? 0 : index + 1);
+  }
+  function handleGalleryTouchEnd(event: React.TouchEvent<HTMLElement>) {
+    const start = touchStart.current;
+    touchStart.current = null;
+    const touch = event.changedTouches[0];
+    if (!start || !touch || images.length < 2) return;
+    const dx = touch.clientX - start.x;
+    const dy = touch.clientY - start.y;
+    // Ignore taps and vertical scrolling; only a deliberate horizontal swipe changes photos.
+    if (Math.abs(dx) < 45 || Math.abs(dy) > Math.abs(dx) * .6) return;
+    if (dx < 0) nextImage();
+    else previousImage();
   }
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
@@ -77,7 +90,16 @@ export function ProductDetail({ product, onBack, onCartClick }: ProductDetailPro
       </header>
 
       <div className="product-page__content">
-        <section className="product-page__gallery">
+        <section
+          className="product-page__gallery"
+          aria-label="Фотографии товара"
+          onTouchStart={(event) => {
+            const touch = event.touches[0];
+            if (touch) touchStart.current = { x: touch.clientX, y: touch.clientY };
+          }}
+          onTouchEnd={handleGalleryTouchEnd}
+          onTouchCancel={() => { touchStart.current = null; }}
+        >
           {images.length > 1 && (
             <button type="button" className="product-page__arrow product-page__arrow--left" onClick={previousImage} aria-label="Предыдущее изображение">‹</button>
           )}
@@ -115,7 +137,8 @@ export function ProductDetail({ product, onBack, onCartClick }: ProductDetailPro
                   key={image.id ?? index}
                   className={index === imageIndex ? "product-page__dot product-page__dot--active" : "product-page__dot"}
                   onClick={() => setImageIndex(index)}
-                  aria-label={`Фото ${index + 1}`}
+                  aria-label={`Фото ${index + 1} из ${images.length}`}
+                  aria-current={index === imageIndex ? "true" : undefined}
                 />
               ))}
             </div>
@@ -126,20 +149,22 @@ export function ProductDetail({ product, onBack, onCartClick }: ProductDetailPro
           <div className="product-page__price swag-num">{formatPrice(product.price)}</div>
           {product.description && <p className="product-page__description">{product.description}</p>}
           <div className="product-page__sizes">
-            <div className="product-page__sizes-title">ВЫБЕРИТЕ РАЗМЕР</div>
-            <div className="product-page__sizes-list">
+            <div className="product-page__sizes-title" id="product-size-label">ВЫБЕРИТЕ РАЗМЕР</div>
+            <div className="product-page__sizes-list" role="group" aria-labelledby="product-size-label">
               {product.sizes.map((item) => (
                 <button
                   key={item.id}
                   type="button"
                   disabled={item.stock <= 0}
+                  aria-pressed={item.size === selectedSize}
+                  aria-label={`Размер ${item.size}${item.stock <= 0 ? ", нет в наличии" : ""}`}
                   className={item.size === selectedSize ? "product-page__size product-page__size--active swag-num" : "product-page__size swag-num"}
                   onClick={() => setSelectedSize(item.size)}
                 >{item.size}</button>
               ))}
             </div>
           </div>
-          <button type="button" className="product-page__add" disabled={!canAdd} onClick={addToCart}>
+          <button type="button" className="product-page__add" disabled={!canAdd} onClick={addToCart} aria-live="polite">
             {added ? "ДОБАВЛЕНО" : canAdd ? "ДОБАВИТЬ В КОРЗИНУ" : "НЕТ В НАЛИЧИИ"}
           </button>
         </section>
