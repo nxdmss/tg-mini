@@ -322,7 +322,17 @@ export default function App() {
         )}
       </AnimatePresence>
 
-      {isLanding ? null : section === "account" ? (
+      <AnimatePresence mode="wait" initial={false}>
+        {!isLanding && (
+          <motion.div
+            key={section}
+            className="swag-page-transition"
+            initial={reducedMotion ? false : { opacity: 0, y: 24, filter: "blur(7px)" }}
+            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+            exit={reducedMotion ? undefined : { opacity: 0, y: -14, filter: "blur(5px)" }}
+            transition={{ duration: reducedMotion ? 0 : 0.72, ease: [0.22, 1, 0.36, 1] }}
+          >
+            {section === "account" ? (
         <Account />
       ) : section === "about" ? (
         <main className="container swag-about swag-about--textonly">
@@ -407,7 +417,10 @@ export default function App() {
             </div>
           )}
         </main>
-      )}
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {!isLanding && (
         <footer className="footer swag-footer">
@@ -417,7 +430,20 @@ export default function App() {
           </div>
         </footer>
       )}
-      {productOverlay}
+      <AnimatePresence initial={false}>
+        {productOverlay && (
+          <motion.div
+            key={productIdFromUrl}
+            className="swag-product-transition"
+            initial={reducedMotion ? false : { opacity: 0, y: 28, scale: 0.985 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={reducedMotion ? undefined : { opacity: 0, y: 16, scale: 0.99 }}
+            transition={{ duration: reducedMotion ? 0 : 0.72, ease: [0.22, 1, 0.36, 1] }}
+          >
+            {productOverlay}
+          </motion.div>
+        )}
+      </AnimatePresence>
       {cartOpen && (
         <Suspense fallback={null}>
           <CartDrawer reopenToken={cartReopenToken} onClose={() => setCartOpen(false)} />
