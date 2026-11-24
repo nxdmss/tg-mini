@@ -7,6 +7,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { createPortal } from "react-dom";
 import { useLocation, useNavigate } from "react-router-dom";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
@@ -323,7 +324,7 @@ export default function App() {
 
   return (
     <div className={`app store-experience swag-only ${landingLayout && isLanding ? "swag-landing" : ""} ${introRevealed ? "swag-intro-revealed" : "swag-intro-hidden"}`}>
-      <style>{`.swag-only .swag-header-over-video, .swag-only .swag-header-over-video .header, .swag-only .swag-header-over-video .header__inner { background: transparent !important; background-image: none !important; box-shadow: none !important; border-color: transparent !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; } .swag-only .swag-header-over-video::before, .swag-only .swag-header-over-video::after, .swag-only .swag-header-over-video .header::before, .swag-only .swag-header-over-video .header::after { background: transparent !important; box-shadow: none !important; }`}</style>
+      <style>{`html body > .swag-viewport-portal .swag-big-screen { position: absolute !important; inset: 0 !important; width: 100% !important; height: 100% !important; min-height: 100% !important; max-height: none !important; margin: 0 !important; } html body > .swag-viewport-portal .swag-big-screen__media { height: 100% !important; width: 100% !important; object-fit: cover !important; } html:has(.swag-landing), html:has(.swag-landing) body { background: #dededb !important; } .swag-only .swag-header-over-video, .swag-only .swag-header-over-video .header, .swag-only .swag-header-over-video .header__inner { background: transparent !important; background-image: none !important; box-shadow: none !important; border-color: transparent !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; } .swag-only .swag-header-over-video::before, .swag-only .swag-header-over-video::after, .swag-only .swag-header-over-video .header::before, .swag-only .swag-header-over-video .header::after { background: transparent !important; box-shadow: none !important; }`}</style>
       <StoreIntro catalogLoading={isLanding ? false : loading} onReveal={revealIntro} />
       <motion.div className={`store-top store-experience__top ${isLanding ? "swag-header-over-video" : ""}`}
         initial={false}
@@ -351,9 +352,9 @@ export default function App() {
       </motion.div>
 
       {/* Keep the video decoded between visits so returning never starts on a black loading frame. */}
-          <motion.div
+          {createPortal(<motion.div
             key="landing-video"
-            className="swag-hero-layer"
+            className="swag-hero-layer swag-viewport-portal"
             onClick={() => navigate("/catalog")}
             role="button"
             tabIndex={isLanding ? 0 : -1}
@@ -365,7 +366,7 @@ export default function App() {
                 navigate("/catalog");
               }
             }}
-            style={{ pointerEvents: isLanding ? "auto" : "none", zIndex: 30 }}
+            style={{ pointerEvents: isLanding ? "auto" : "none", zIndex: 30, position: "fixed", top: 0, left: 0, width: "100%", height: "max(100lvh, 100dvh, var(--swag-iphone-screen-height, 0px))", overflow: "hidden", background: "#dededb" }}
             initial={false}
             animate={isLanding
               ? { opacity: 1, visibility: "visible" }
@@ -373,7 +374,7 @@ export default function App() {
             transition={{ duration: isLanding ? landingDuration : reducedMotion ? 0 : 0.6, ease: "easeInOut" }}
           >
             <StoreHeroScreen />
-          </motion.div>
+          </motion.div>, document.body)}
 
       <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr)", overflow: "clip" }}>
       <AnimatePresence initial={false} custom={{ toLanding: isLanding, direction: swipeDirection }}>
