@@ -4,6 +4,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -97,6 +98,10 @@ export default function App() {
   const section = readSection(isProductPage ? sessionStorage.getItem("swagystan:product-path") || "/catalog" : location.pathname);
   const swipeTransition = { duration: reducedMotion ? 0 : 0.52, ease: [0.25, 0.8, 0.25, 1] as const };
   const isLanding = location.pathname === "/" && !isProductPage;
+  const previousLanding = useRef(isLanding);
+  const fromLanding = previousLanding.current;
+  useEffect(() => { previousLanding.current = isLanding; }, [isLanding]);
+  const fadeTransition = { duration: reducedMotion ? 0 : 0.42, ease: "easeInOut" as const };
 
   // iOS uses the PWA theme as a fallback behind the system status bar.
   // Keep the landing video warm-toned, but return to white on shopping pages.
@@ -269,10 +274,10 @@ export default function App() {
     <motion.div
       key="product-overlay"
       className="product-overlay-shell"
-      initial={reducedMotion ? false : { x: "100%" }}
-      animate={{ x: 0 }}
-      exit={{ x: reducedMotion ? 0 : "100%", pointerEvents: "none" }}
-      transition={swipeTransition}
+      initial={reducedMotion ? false : { opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0, pointerEvents: "none" }}
+      transition={fadeTransition}
     >
       <Suspense
         fallback={
@@ -343,7 +348,7 @@ export default function App() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0, zIndex: 30, pointerEvents: "none" }}
-            transition={{ duration: reducedMotion ? 0 : 0.72, ease: "easeInOut" }}
+            transition={{ duration: reducedMotion ? 0 : 0.6, ease: "easeInOut" }}
           >
             <StoreHeroScreen />
           </motion.div>
@@ -351,16 +356,22 @@ export default function App() {
       </AnimatePresence>
 
       <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr)", overflow: "clip" }}>
-      <AnimatePresence initial={false}>
+      <AnimatePresence initial={false} custom={isLanding}>
         {!isLanding && (
           <motion.div
             key={section}
             className="swag-page-transition"
             style={{ gridArea: "1 / 1", minWidth: 0, background: "var(--bg)" }}
-            initial={reducedMotion ? false : { x: "100%" }}
-            animate={{ x: 0 }}
-            exit={{ x: reducedMotion ? 0 : "-100%", pointerEvents: "none" }}
-            transition={swipeTransition}
+            initial={reducedMotion ? false : fromLanding ? { x: 0, opacity: 0 } : { x: "100%", opacity: 1 }}
+            animate={{ x: 0, opacity: 1 }}
+            variants={{ leaving: (toLanding: boolean) => ({
+              x: toLanding || reducedMotion ? 0 : "-100%",
+              opacity: toLanding ? 0 : 1,
+              pointerEvents: "none",
+              transition: toLanding ? { ...fadeTransition, duration: reducedMotion ? 0 : 0.6 } : swipeTransition,
+            }) }}
+            exit="leaving"
+            transition={fromLanding ? { ...fadeTransition, duration: reducedMotion ? 0 : 0.6 } : swipeTransition}
           >
             {section === "account" ? (
         <Account />
