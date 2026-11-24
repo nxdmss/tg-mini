@@ -92,9 +92,10 @@ export default function App() {
     };
   }, []);
 
-  const section = readSection(location.pathname);
   const productIdFromUrl = getProductId(location.pathname);
   const isProductPage = Boolean(productIdFromUrl);
+  const section = readSection(isProductPage ? sessionStorage.getItem("swagystan:product-path") || "/catalog" : location.pathname);
+  const swipeTransition = { duration: reducedMotion ? 0 : 0.52, ease: [0.25, 0.8, 0.25, 1] as const };
   const isLanding = location.pathname === "/" && !isProductPage;
 
   // iOS uses the PWA theme as a fallback behind the system status bar.
@@ -266,11 +267,12 @@ export default function App() {
 
   const productOverlay = isProductPage ? (
     <motion.div
+      key="product-overlay"
       className="product-overlay-shell"
-      initial={false}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 1 }}
-      transition={{ duration: 0 }}
+      initial={reducedMotion ? false : { x: "100%" }}
+      animate={{ x: 0 }}
+      exit={{ x: reducedMotion ? 0 : "100%", pointerEvents: "none" }}
+      transition={swipeTransition}
     >
       <Suspense
         fallback={
@@ -337,25 +339,28 @@ export default function App() {
                 navigate("/catalog");
               }
             }}
+            style={{ pointerEvents: "auto" }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: reducedMotion ? 0 : 0.2, ease: "easeOut" }}
+            exit={{ opacity: 0, zIndex: 30, pointerEvents: "none" }}
+            transition={{ duration: reducedMotion ? 0 : 0.72, ease: "easeInOut" }}
           >
             <StoreHeroScreen />
           </motion.div>
         )}
       </AnimatePresence>
 
+      <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr)", overflow: "clip" }}>
       <AnimatePresence initial={false}>
         {!isLanding && (
           <motion.div
             key={section}
             className="swag-page-transition"
-            initial={reducedMotion ? false : { opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={reducedMotion ? undefined : { opacity: 0 }}
-            transition={{ duration: reducedMotion ? 0 : 0.2, ease: "easeOut" }}
+            style={{ gridArea: "1 / 1", minWidth: 0, background: "var(--bg)" }}
+            initial={reducedMotion ? false : { x: "100%" }}
+            animate={{ x: 0 }}
+            exit={{ x: reducedMotion ? 0 : "-100%", pointerEvents: "none" }}
+            transition={swipeTransition}
           >
             {section === "account" ? (
         <Account />
@@ -398,13 +403,9 @@ export default function App() {
                   <motion.div
                     key={product.id}
                     className="product-flow-item"
-                    initial={reducedMotion ? false : { opacity: 0, y: 30 }}
-                    animate={introRevealed ? { opacity: 1, y: 0 } : { opacity: 0, y: reducedMotion ? 0 : 30 }}
-                    transition={{
-                      duration: reducedMotion ? 0 : 0.6,
-                      delay: introRevealed && !reducedMotion ? 0.05 + Math.min(index * 0.025, 0.18) : 0,
-                      ease: [0.22, 1, 0.36, 1],
-                    }}
+                    initial={reducedMotion ? false : { opacity: 0 }}
+                    animate={{ opacity: introRevealed ? 1 : 0 }}
+                    transition={{ duration: reducedMotion ? 0 : 0.28, ease: "easeOut" }}
                   >
                     <div className={`swag-card-wrap${product.inStock ? "" : " is-sold-out"}`}>
                       <button
@@ -446,6 +447,7 @@ export default function App() {
           </motion.div>
         )}
       </AnimatePresence>
+      </div>
 
       {!isLanding && (
         <footer className="footer swag-footer">
@@ -456,11 +458,13 @@ export default function App() {
         </footer>
       )}
       <AnimatePresence initial={false}>{productOverlay}</AnimatePresence>
-      {cartOpen && (
-        <Suspense fallback={null}>
-          <CartDrawer reopenToken={cartReopenToken} onClose={() => setCartOpen(false)} />
-        </Suspense>
-      )}
+      <AnimatePresence initial={false}>
+        {cartOpen && (
+          <Suspense key="cart-window" fallback={null}>
+            <CartDrawer reopenToken={cartReopenToken} onClose={() => setCartOpen(false)} />
+          </Suspense>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
