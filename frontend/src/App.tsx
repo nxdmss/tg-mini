@@ -323,10 +323,11 @@ export default function App() {
 
   return (
     <div className={`app store-experience swag-only ${landingLayout && isLanding ? "swag-landing" : ""} ${introRevealed ? "swag-intro-revealed" : "swag-intro-hidden"}`}>
+      <style>{`.swag-only .swag-header-over-video, .swag-only .swag-header-over-video .header, .swag-only .swag-header-over-video .header__inner { background: transparent !important; background-image: none !important; box-shadow: none !important; border-color: transparent !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; } .swag-only .swag-header-over-video::before, .swag-only .swag-header-over-video::after, .swag-only .swag-header-over-video .header::before, .swag-only .swag-header-over-video .header::after { background: transparent !important; box-shadow: none !important; }`}</style>
       <StoreIntro catalogLoading={isLanding ? false : loading} onReveal={revealIntro} />
-      <motion.div className="store-top store-experience__top"
+      <motion.div className={`store-top store-experience__top ${isLanding ? "swag-header-over-video" : ""}`}
         initial={false}
-        style={{ zIndex: 31, background: isLanding ? "transparent" : undefined }}
+        style={{ zIndex: isLanding ? 31 : 29, background: isLanding ? "transparent" : undefined }}
         animate={{ opacity: 1 }}>
         <Header
           onCartClick={openCart}
@@ -364,7 +365,7 @@ export default function App() {
                 navigate("/catalog");
               }
             }}
-            style={{ pointerEvents: isLanding ? "auto" : "none", zIndex: 30, position: "fixed" }}
+            style={{ pointerEvents: isLanding ? "auto" : "none", zIndex: 30, position: "fixed", inset: 0, width: "100%", height: "100dvh" }}
             initial={false}
             animate={isLanding
               ? { opacity: 1, visibility: "visible" }
@@ -385,7 +386,7 @@ export default function App() {
             animate={{ x: 0, opacity: 1 }}
             variants={{ leaving: ({ toLanding, direction }: { toLanding: boolean; direction: number }) => ({
               x: toLanding || reducedMotion ? 0 : direction === 1 ? "-100%" : "100%",
-              opacity: toLanding ? 0 : 1,
+              opacity: 1,
               pointerEvents: "none",
               transition: toLanding ? { ...fadeTransition, duration: landingDuration } : swipeTransition,
             }) }}
