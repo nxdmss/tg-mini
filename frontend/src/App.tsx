@@ -7,7 +7,6 @@ import {
   useRef,
   useState,
 } from "react";
-import { createPortal } from "react-dom";
 import { useLocation, useNavigate } from "react-router-dom";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
@@ -100,13 +99,7 @@ export default function App() {
   const section = readSection(isProductPage ? sessionStorage.getItem("swagystan:product-path") || "/catalog" : location.pathname);
   const swipeTransition = { duration: reducedMotion ? 0 : 0.58, ease: [0.4, 0, 0.2, 1] as const };
   const isLanding = location.pathname === "/" && !isProductPage;
-  const [landingLayout, setLandingLayout] = useState(isLanding);
-  const landingDuration = reducedMotion ? 0 : 0.85;
-  useEffect(() => {
-    if (!isLanding || reducedMotion) { setLandingLayout(isLanding); return; }
-    const timer = window.setTimeout(() => setLandingLayout(true), 850);
-    return () => window.clearTimeout(timer);
-  }, [isLanding, reducedMotion]);
+  const landingDuration = reducedMotion ? 0 : 0.55;
   const previousLanding = useRef(isLanding);
   const previousSection = useRef(section);
   const fromLanding = previousLanding.current;
@@ -323,13 +316,9 @@ export default function App() {
   ) : null;
 
   return (
-    <div className={`app store-experience swag-only ${landingLayout && isLanding ? "swag-landing" : ""} ${introRevealed ? "swag-intro-revealed" : "swag-intro-hidden"}`}>
-      <style>{`html body > .swag-viewport-portal .swag-big-screen { position: absolute !important; inset: 0 !important; width: 100% !important; height: 100% !important; min-height: 100% !important; max-height: none !important; margin: 0 !important; } html body > .swag-viewport-portal .swag-big-screen__media { height: 100% !important; width: 100% !important; object-fit: cover !important; } html:has(.swag-landing), html:has(.swag-landing) body { background: #dededb !important; } .swag-only .swag-header-over-video, .swag-only .swag-header-over-video .header, .swag-only .swag-header-over-video .header__inner { background: transparent !important; background-image: none !important; box-shadow: none !important; border-color: transparent !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; } .swag-only .swag-header-over-video::before, .swag-only .swag-header-over-video::after, .swag-only .swag-header-over-video .header::before, .swag-only .swag-header-over-video .header::after { background: transparent !important; box-shadow: none !important; }`}</style>
+    <div className={`app store-experience swag-only ${isLanding ? "swag-landing" : ""} ${introRevealed ? "swag-intro-revealed" : "swag-intro-hidden"}`}>
       <StoreIntro catalogLoading={isLanding ? false : loading} onReveal={revealIntro} />
-      <motion.div className={`store-top store-experience__top ${isLanding ? "swag-header-over-video" : ""}`}
-        initial={false}
-        style={{ zIndex: isLanding ? 31 : 29, background: isLanding ? "transparent" : undefined }}
-        animate={{ opacity: 1 }}>
+      <div className="store-top store-experience__top">
         <Header
           onCartClick={openCart}
           homePath={isLanding ? "/catalog" : "/"}
@@ -344,21 +333,19 @@ export default function App() {
             { id: "account", title: "КАБИНЕТ", active: section === "account", onSelect: () => openSection("account") },
           ]}
         />
-        {(!isLanding || !landingLayout) && section === "catalog" && (
-          <motion.div initial={false} animate={{ opacity: isLanding ? 0 : 1 }} transition={{ duration: landingDuration, ease: "easeInOut" }} style={{ pointerEvents: isLanding ? "none" : "auto" }}>
-            <Filters categories={categories} query={query} onChange={setQuery} />
-          </motion.div>
+        {!isLanding && section === "catalog" && (
+          <Filters categories={categories} query={query} onChange={setQuery} />
         )}
-      </motion.div>
+      </div>
 
-      {/* Keep the video decoded between visits so returning never starts on a black loading frame. */}
-          {createPortal(<motion.div
+      <AnimatePresence initial={false}>
+        {isLanding && (
+          <motion.div
             key="landing-video"
-            className="swag-hero-layer swag-viewport-portal"
+            className="swag-hero-layer"
             onClick={() => navigate("/catalog")}
             role="button"
-            tabIndex={isLanding ? 0 : -1}
-            aria-hidden={!isLanding}
+            tabIndex={0}
             aria-label="Перейти в каталог SWAGYSTAN"
             onKeyDown={(event) => {
               if (event.key === "Enter" || event.key === " ") {
@@ -366,15 +353,15 @@ export default function App() {
                 navigate("/catalog");
               }
             }}
-            style={{ pointerEvents: isLanding ? "auto" : "none", zIndex: 30, position: "fixed", top: 0, left: 0, width: "100%", height: "max(100lvh, 100dvh, var(--swag-iphone-screen-height, 0px))", overflow: "hidden", background: "#dededb" }}
-            initial={false}
-            animate={isLanding
-              ? { opacity: 1, visibility: "visible" }
-              : { opacity: 0, transitionEnd: { visibility: "hidden" } }}
-            transition={{ duration: isLanding ? landingDuration : reducedMotion ? 0 : 0.6, ease: "easeInOut" }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: landingDuration, ease: "easeInOut" }}
           >
             <StoreHeroScreen />
-          </motion.div>, document.body)}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr)", overflow: "clip" }}>
       <AnimatePresence initial={false} custom={{ toLanding: isLanding, direction: swipeDirection }}>
@@ -481,7 +468,7 @@ export default function App() {
       </AnimatePresence>
       </div>
 
-      {(!isLanding || !landingLayout) && (
+      {!isLanding && (
         <motion.footer className="footer swag-footer" initial={false} animate={{ opacity: isLanding ? 0 : 1 }} transition={{ duration: landingDuration, ease: "easeInOut" }} style={{ pointerEvents: isLanding ? "none" : "auto" }}>
           <div className="container footer__inner">
             <span className="footer__brand">SWAGYSTAN © <span className="swag-num">{new Date().getFullYear()}</span></span>
