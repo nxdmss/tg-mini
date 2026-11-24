@@ -365,7 +365,7 @@ export default function App() {
                 navigate("/catalog");
               }
             }}
-            style={{ pointerEvents: isLanding ? "auto" : "none", zIndex: 30, position: "fixed", inset: 0, width: "100%", height: "100dvh" }}
+            style={{ pointerEvents: isLanding ? "auto" : "none", zIndex: 30 }}
             initial={false}
             animate={isLanding
               ? { opacity: 1, visibility: "visible" }
@@ -481,12 +481,12 @@ export default function App() {
       </div>
 
       {(!isLanding || !landingLayout) && (
-        <footer className="footer swag-footer">
+        <motion.footer className="footer swag-footer" initial={false} animate={{ opacity: isLanding ? 0 : 1 }} transition={{ duration: landingDuration, ease: "easeInOut" }} style={{ pointerEvents: isLanding ? "none" : "auto" }}>
           <div className="container footer__inner">
             <span className="footer__brand">SWAGYSTAN © <span className="swag-num">{new Date().getFullYear()}</span></span>
             <button type="button" onClick={() => openSection("about")}>О НАС ↗</button>
           </div>
-        </footer>
+        </motion.footer>
       )}
       <AnimatePresence initial={false} onExitComplete={() => setProductExiting(false)}>{productOverlay}</AnimatePresence>
       <Suspense fallback={null}>
