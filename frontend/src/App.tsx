@@ -97,7 +97,7 @@ export default function App() {
   const productIdFromUrl = getProductId(location.pathname);
   const isProductPage = Boolean(productIdFromUrl);
   const section = readSection(isProductPage ? sessionStorage.getItem("swagystan:product-path") || "/catalog" : location.pathname);
-  const swipeTransition = { duration: reducedMotion ? 0 : 0.52, ease: [0.25, 0.8, 0.25, 1] as const };
+  const swipeTransition = { duration: reducedMotion ? 0 : 0.58, ease: [0.4, 0, 0.2, 1] as const };
   const isLanding = location.pathname === "/" && !isProductPage;
   const [landingLayout, setLandingLayout] = useState(isLanding);
   const landingDuration = reducedMotion ? 0 : 0.85;
@@ -114,7 +114,7 @@ export default function App() {
     previousLanding.current = isLanding;
     previousSection.current = section;
   }, [isLanding, section]);
-  const fadeTransition = { duration: reducedMotion ? 0 : 0.42, ease: "easeInOut" as const };
+  const fadeTransition = { duration: reducedMotion ? 0 : 0.48, ease: [0.4, 0, 0.2, 1] as const };
 
   // iOS uses the PWA theme as a fallback behind the system status bar.
   // Keep the landing video warm-toned, but return to white on shopping pages.
@@ -161,7 +161,7 @@ export default function App() {
 
   useEffect(() => {
     let active = true;
-    setLoading(true);
+    setLoading(products.length === 0);
     setError(false);
     const effectiveQuery = section === "favorites"
       ? { sort: "newest" as const }
@@ -253,14 +253,16 @@ export default function App() {
     }
   }, [location.pathname]);
 
+  const [productExiting, setProductExiting] = useState(false);
+  const productScrollLocked = isProductPage || productExiting;
   useEffect(() => {
-    if (!isProductPage) return;
+    if (!productScrollLocked) return;
     const previous = document.body.style.overflow;
     document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = previous;
-    };
-  }, [isProductPage]);
+    return () => { document.body.style.overflow = previous; };
+  }, [productScrollLocked]);
+  useEffect(() => { if (isProductPage) setProductExiting(true); }, [isProductPage]);
+  useEffect(() => { void loadProductDetail(); void loadCartDrawer(); }, []);
 
   function openProduct(product: Product) {
     setProductLinkError(false);
@@ -269,7 +271,6 @@ export default function App() {
   }
 
   function closeProduct() {
-    setFetchedProduct(null);
     setProductLinkError(false);
     const from = sessionStorage.getItem("swagystan:product-from");
     const fromPath = sessionStorage.getItem("swagystan:product-path");
@@ -287,6 +288,7 @@ export default function App() {
     <motion.div
       key="product-overlay"
       className="product-overlay-shell"
+      style={{ willChange: "opacity" }}
       initial={reducedMotion ? false : { opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0, pointerEvents: "none" }}
@@ -330,7 +332,7 @@ export default function App() {
           onCartClick={openCart}
           homePath={isLanding ? "/catalog" : "/"}
           logoPosition={isLanding ? "center" : "left"}
-          landing={isLanding && landingLayout}
+          landing={isLanding}
           showCart={!isLanding}
           onLogoClick={isLanding ? () => navigate("/catalog") : undefined}
           navItems={isLanding ? undefined : [
@@ -378,7 +380,7 @@ export default function App() {
           <motion.div
             key={section}
             className="swag-page-transition"
-            style={{ gridArea: "1 / 1", minWidth: 0, background: "var(--bg)" }}
+            style={{ gridArea: "1 / 1", minWidth: 0, background: "var(--bg)", willChange: "transform, opacity" }}
             initial={reducedMotion ? false : fromLanding ? { x: 0, opacity: 0 } : { x: swipeDirection === 1 ? "100%" : "-100%", opacity: 1 }}
             animate={{ x: 0, opacity: 1 }}
             variants={{ leaving: ({ toLanding, direction }: { toLanding: boolean; direction: number }) => ({
@@ -431,7 +433,7 @@ export default function App() {
                   <motion.div
                     key={product.id}
                     className="product-flow-item"
-                    initial={reducedMotion ? false : { opacity: 0 }}
+                    initial={false}
                     animate={{ opacity: introRevealed ? 1 : 0 }}
                     transition={{ duration: reducedMotion ? 0 : 0.28, ease: "easeOut" }}
                   >
@@ -485,14 +487,12 @@ export default function App() {
           </div>
         </footer>
       )}
-      <AnimatePresence initial={false}>{productOverlay}</AnimatePresence>
-      <AnimatePresence initial={false}>
-        {cartOpen && (
-          <Suspense key="cart-window" fallback={null}>
-            <CartDrawer reopenToken={cartReopenToken} onClose={() => setCartOpen(false)} />
-          </Suspense>
-        )}
-      </AnimatePresence>
+      <AnimatePresence initial={false} onExitComplete={() => setProductExiting(false)}>{productOverlay}</AnimatePresence>
+      <Suspense fallback={null}>
+        <AnimatePresence initial={false}>
+          {cartOpen && <CartDrawer key="cart-window" reopenToken={cartReopenToken} onClose={() => setCartOpen(false)} />}
+        </AnimatePresence>
+      </Suspense>
     </div>
   );
 }
