@@ -315,7 +315,10 @@ export default function App() {
   return (
     <div className={`app store-experience swag-only ${isLanding ? "swag-landing" : ""} ${introRevealed ? "swag-intro-revealed" : "swag-intro-hidden"}`}>
       <StoreIntro catalogLoading={isLanding ? false : loading} onReveal={revealIntro} />
-      <div className="store-top store-experience__top">
+      <motion.div className="store-top store-experience__top"
+        initial={false}
+        animate={{ opacity: isLanding && !reducedMotion ? [0, 0.35, 1] : 1 }}
+        transition={{ duration: isLanding && !reducedMotion ? 0.95 : 0, ease: "easeInOut" }}>
         <Header
           onCartClick={openCart}
           homePath={isLanding ? "/catalog" : "/"}
@@ -333,16 +336,16 @@ export default function App() {
         {!isLanding && section === "catalog" && (
           <Filters categories={categories} query={query} onChange={setQuery} />
         )}
-      </div>
+      </motion.div>
 
-      <AnimatePresence initial={false}>
-        {isLanding && (
+      {/* Keep the video decoded between visits so returning never starts on a black loading frame. */}
           <motion.div
             key="landing-video"
             className="swag-hero-layer"
             onClick={() => navigate("/catalog")}
             role="button"
-            tabIndex={0}
+            tabIndex={isLanding ? 0 : -1}
+            aria-hidden={!isLanding}
             aria-label="Перейти в каталог SWAGYSTAN"
             onKeyDown={(event) => {
               if (event.key === "Enter" || event.key === " ") {
@@ -350,16 +353,15 @@ export default function App() {
                 navigate("/catalog");
               }
             }}
-            style={{ pointerEvents: "auto" }}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0, zIndex: 30, pointerEvents: "none" }}
-            transition={{ duration: reducedMotion ? 0 : 0.6, ease: "easeInOut" }}
+            style={{ pointerEvents: isLanding ? "auto" : "none", zIndex: isLanding ? 19 : 30 }}
+            initial={false}
+            animate={isLanding
+              ? { opacity: 1, visibility: "visible" }
+              : { opacity: 0, transitionEnd: { visibility: "hidden" } }}
+            transition={{ duration: reducedMotion ? 0 : isLanding ? 0.95 : 0.6, ease: "easeInOut" }}
           >
             <StoreHeroScreen />
           </motion.div>
-        )}
-      </AnimatePresence>
 
       <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr)", overflow: "clip" }}>
       <AnimatePresence initial={false} custom={{ toLanding: isLanding, direction: swipeDirection }}>
@@ -374,7 +376,7 @@ export default function App() {
               x: toLanding || reducedMotion ? 0 : direction === 1 ? "-100%" : "100%",
               opacity: toLanding ? 0 : 1,
               pointerEvents: "none",
-              transition: toLanding ? { ...fadeTransition, duration: reducedMotion ? 0 : 0.6 } : swipeTransition,
+              transition: toLanding ? { ...fadeTransition, delay: reducedMotion ? 0 : 0.65, duration: reducedMotion ? 0 : 0.3 } : swipeTransition,
             }) }}
             exit="leaving"
             transition={fromLanding ? { ...fadeTransition, duration: reducedMotion ? 0 : 0.6 } : swipeTransition}
