@@ -53,6 +53,7 @@ const CartDrawer = lazy(async () => ({
 }));
 
 type Section = "catalog" | "favorites" | "about" | "account";
+const SECTION_ORDER: readonly Section[] = ["catalog", "favorites", "about", "account"];
 const SWAG_SHOP_SLUG = "swagystan";
 
 function readSection(path: string): Section {
@@ -99,8 +100,13 @@ export default function App() {
   const swipeTransition = { duration: reducedMotion ? 0 : 0.52, ease: [0.25, 0.8, 0.25, 1] as const };
   const isLanding = location.pathname === "/" && !isProductPage;
   const previousLanding = useRef(isLanding);
+  const previousSection = useRef(section);
   const fromLanding = previousLanding.current;
-  useEffect(() => { previousLanding.current = isLanding; }, [isLanding]);
+  const swipeDirection = SECTION_ORDER.indexOf(section) < SECTION_ORDER.indexOf(previousSection.current) ? -1 : 1;
+  useEffect(() => {
+    previousLanding.current = isLanding;
+    previousSection.current = section;
+  }, [isLanding, section]);
   const fadeTransition = { duration: reducedMotion ? 0 : 0.42, ease: "easeInOut" as const };
 
   // iOS uses the PWA theme as a fallback behind the system status bar.
@@ -356,16 +362,16 @@ export default function App() {
       </AnimatePresence>
 
       <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr)", overflow: "clip" }}>
-      <AnimatePresence initial={false} custom={isLanding}>
+      <AnimatePresence initial={false} custom={{ toLanding: isLanding, direction: swipeDirection }}>
         {!isLanding && (
           <motion.div
             key={section}
             className="swag-page-transition"
             style={{ gridArea: "1 / 1", minWidth: 0, background: "var(--bg)" }}
-            initial={reducedMotion ? false : fromLanding ? { x: 0, opacity: 0 } : { x: "100%", opacity: 1 }}
+            initial={reducedMotion ? false : fromLanding ? { x: 0, opacity: 0 } : { x: swipeDirection === 1 ? "100%" : "-100%", opacity: 1 }}
             animate={{ x: 0, opacity: 1 }}
-            variants={{ leaving: (toLanding: boolean) => ({
-              x: toLanding || reducedMotion ? 0 : "-100%",
+            variants={{ leaving: ({ toLanding, direction }: { toLanding: boolean; direction: number }) => ({
+              x: toLanding || reducedMotion ? 0 : direction === 1 ? "-100%" : "100%",
               opacity: toLanding ? 0 : 1,
               pointerEvents: "none",
               transition: toLanding ? { ...fadeTransition, duration: reducedMotion ? 0 : 0.6 } : swipeTransition,
