@@ -3,6 +3,7 @@ import type { CSSProperties, KeyboardEvent, PointerEvent, ReactNode } from 'reac
 import { fitWindow, initialWindow, resizeWindow } from './windowGeometry';
 import type { Edge, Rect } from './windowGeometry';
 import './CartWindow.css';
+import { motion, useReducedMotion } from 'motion/react';
 
 const edges: Edge[] = ['n', 's', 'e', 'w', 'ne', 'nw', 'se', 'sw'];
 const viewportSize = () => ({ width: window.innerWidth, height: window.innerHeight });
@@ -30,6 +31,8 @@ export function CartWindow({ title, count, reopenToken, onClose, onBack, locked,
   const interaction = useRef<{ id: number; x: number; y: number; rect: Rect; edge?: Edge } | null>(null);
   const titleId = useId();
   const mobile = viewport.width < 760;
+  const reducedMotion = useReducedMotion();
+  const transition = { duration: reducedMotion ? 0 : 0.52, ease: [0.25, 0.8, 0.25, 1] as [number, number, number, number] };
   const modal = !minimized && (mobile || maximized);
 
   useEffect(() => {
@@ -101,10 +104,14 @@ export function CartWindow({ title, count, reopenToken, onClose, onBack, locked,
     : { left: rect.x, top: rect.y, width: rect.width, height: rect.height };
 
   return <>
-    {modal && <div className="cart-window-backdrop" aria-hidden="true" />}
-    <section ref={panel} role="dialog" aria-modal={modal || undefined} aria-labelledby={titleId}
+    {modal && <motion.div className="cart-window-backdrop" aria-hidden="true" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={transition} />}
+    <motion.section ref={panel} role="dialog" aria-modal={modal || undefined} aria-labelledby={titleId}
       className={`cart-window${maximized ? ' cart-window--maximized' : ''}${mobile ? ' cart-window--mobile' : ''}`}
-      style={style} hidden={minimized} onKeyDown={keys}>
+      style={style} hidden={minimized} onKeyDown={keys}
+      initial={reducedMotion ? false : { x: mobile ? "100%" : 24, opacity: mobile ? 1 : 0 }}
+      animate={{ x: 0, opacity: 1 }}
+      exit={{ x: reducedMotion ? 0 : mobile ? "100%" : 24, opacity: mobile ? 1 : 0 }}
+      transition={transition}>
       <div ref={titlebar} className="cart-window__titlebar" tabIndex={0}
         title={mobile ? undefined : 'Перетащи окно. Двойной щелчок — развернуть. Стрелки — переместить.'}
         onPointerDown={event => start(event)} onPointerMove={move} onPointerUp={stop} onPointerCancel={stop} onLostPointerCapture={stop}
@@ -121,12 +128,15 @@ export function CartWindow({ title, count, reopenToken, onClose, onBack, locked,
           <button type="button" className="cart-window__control" disabled={locked} onClick={onClose} aria-label="Закрыть корзину" title="Закрыть"><WindowIcon kind="close" /></button>
         </div>
       </div>
-      <div className="cart-window__content">{children}</div>
+      <div className="cart-window__content"><motion.div key={title}
+        initial={reducedMotion ? false : { x: 32, opacity: 0 }}
+        animate={{ x: 0, opacity: 1 }} transition={transition}
+        style={{ minHeight: "100%" }}>{children}</motion.div></div>
       {!mobile && !maximized && edges.map(edge => <div key={edge} role="button" tabIndex={edge === 'se' ? 0 : -1}
         aria-label="Изменить размер окна стрелками" className={`cart-window__resize cart-window__resize--${edge}`}
         onPointerDown={event => start(event, edge)} onPointerMove={move} onPointerUp={stop} onPointerCancel={stop} onLostPointerCapture={stop}
         onKeyDown={event => keyboardMove(event, edge)} />)}
-    </section>
+    </motion.section>
     {minimized && <div className="cart-window-dock">
       <button ref={dock} type="button" className="cart-window-dock__open" onClick={() => setMinimized(false)} aria-label="Раскрыть корзину">КОРЗИНА{count > 0 && <span>{count}</span>}<WindowIcon kind="restore" /></button>
       <button type="button" className="cart-window__control" disabled={locked} onClick={onClose} aria-label="Закрыть корзину"><WindowIcon kind="close" /></button>
