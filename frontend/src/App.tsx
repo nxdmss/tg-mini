@@ -99,6 +99,13 @@ export default function App() {
   const section = readSection(isProductPage ? sessionStorage.getItem("swagystan:product-path") || "/catalog" : location.pathname);
   const swipeTransition = { duration: reducedMotion ? 0 : 0.52, ease: [0.25, 0.8, 0.25, 1] as const };
   const isLanding = location.pathname === "/" && !isProductPage;
+  const [landingLayout, setLandingLayout] = useState(isLanding);
+  const landingDuration = reducedMotion ? 0 : 0.85;
+  useEffect(() => {
+    if (!isLanding || reducedMotion) { setLandingLayout(isLanding); return; }
+    const timer = window.setTimeout(() => setLandingLayout(true), 850);
+    return () => window.clearTimeout(timer);
+  }, [isLanding, reducedMotion]);
   const previousLanding = useRef(isLanding);
   const previousSection = useRef(section);
   const fromLanding = previousLanding.current;
@@ -313,17 +320,17 @@ export default function App() {
   ) : null;
 
   return (
-    <div className={`app store-experience swag-only ${isLanding ? "swag-landing" : ""} ${introRevealed ? "swag-intro-revealed" : "swag-intro-hidden"}`}>
+    <div className={`app store-experience swag-only ${landingLayout && isLanding ? "swag-landing" : ""} ${introRevealed ? "swag-intro-revealed" : "swag-intro-hidden"}`}>
       <StoreIntro catalogLoading={isLanding ? false : loading} onReveal={revealIntro} />
       <motion.div className="store-top store-experience__top"
         initial={false}
-        animate={{ opacity: isLanding && !reducedMotion ? [0, 0.35, 1] : 1 }}
-        transition={{ duration: isLanding && !reducedMotion ? 0.95 : 0, ease: "easeInOut" }}>
+        style={{ zIndex: 31, background: isLanding ? "transparent" : undefined }}
+        animate={{ opacity: 1 }}>
         <Header
           onCartClick={openCart}
           homePath={isLanding ? "/catalog" : "/"}
           logoPosition={isLanding ? "center" : "left"}
-          landing={isLanding}
+          landing={isLanding && landingLayout}
           showCart={!isLanding}
           onLogoClick={isLanding ? () => navigate("/catalog") : undefined}
           navItems={isLanding ? undefined : [
@@ -333,8 +340,10 @@ export default function App() {
             { id: "account", title: "КАБИНЕТ", active: section === "account", onSelect: () => openSection("account") },
           ]}
         />
-        {!isLanding && section === "catalog" && (
-          <Filters categories={categories} query={query} onChange={setQuery} />
+        {(!isLanding || !landingLayout) && section === "catalog" && (
+          <motion.div initial={false} animate={{ opacity: isLanding ? 0 : 1 }} transition={{ duration: landingDuration, ease: "easeInOut" }} style={{ pointerEvents: isLanding ? "none" : "auto" }}>
+            <Filters categories={categories} query={query} onChange={setQuery} />
+          </motion.div>
         )}
       </motion.div>
 
@@ -353,12 +362,12 @@ export default function App() {
                 navigate("/catalog");
               }
             }}
-            style={{ pointerEvents: isLanding ? "auto" : "none", zIndex: isLanding ? 19 : 30 }}
+            style={{ pointerEvents: isLanding ? "auto" : "none", zIndex: 30, position: "fixed" }}
             initial={false}
             animate={isLanding
               ? { opacity: 1, visibility: "visible" }
               : { opacity: 0, transitionEnd: { visibility: "hidden" } }}
-            transition={{ duration: reducedMotion ? 0 : isLanding ? 0.95 : 0.6, ease: "easeInOut" }}
+            transition={{ duration: isLanding ? landingDuration : reducedMotion ? 0 : 0.6, ease: "easeInOut" }}
           >
             <StoreHeroScreen />
           </motion.div>
@@ -376,7 +385,7 @@ export default function App() {
               x: toLanding || reducedMotion ? 0 : direction === 1 ? "-100%" : "100%",
               opacity: toLanding ? 0 : 1,
               pointerEvents: "none",
-              transition: toLanding ? { ...fadeTransition, delay: reducedMotion ? 0 : 0.65, duration: reducedMotion ? 0 : 0.3 } : swipeTransition,
+              transition: toLanding ? { ...fadeTransition, duration: landingDuration } : swipeTransition,
             }) }}
             exit="leaving"
             transition={fromLanding ? { ...fadeTransition, duration: reducedMotion ? 0 : 0.6 } : swipeTransition}
@@ -468,7 +477,7 @@ export default function App() {
       </AnimatePresence>
       </div>
 
-      {!isLanding && (
+      {(!isLanding || !landingLayout) && (
         <footer className="footer swag-footer">
           <div className="container footer__inner">
             <span className="footer__brand">SWAGYSTAN © <span className="swag-num">{new Date().getFullYear()}</span></span>
