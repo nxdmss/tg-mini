@@ -206,56 +206,31 @@ html body .swag-only .swag-hero-layer .swag-big-screen {
   margin: 0;
 }
 
-/* iOS PWA cold launch can report a viewport shorter than screen.height.
-   Use the true screen height measured by StoreHeroScreen, and keep the
-   actual moving video in normal document coordinates instead of clipping
-   it in a position:fixed viewport that WebKit initially mismeasures. */
-@media (max-width: 699px) {
-  html.swag-ios-standalone body .swag-only.swag-landing {
-    min-height: max(100dvh, var(--swag-iphone-screen-height, 100dvh));
-  }
-
-  html.swag-ios-standalone body .swag-only.swag-landing .swag-hero-layer {
-    position: absolute;
-    inset: 0 auto auto 0;
-    width: 100%;
-    height: max(100dvh, var(--swag-iphone-screen-height, 100dvh));
-    overflow: hidden;
-  }
-
-  html.swag-ios-standalone body .swag-only.swag-landing .swag-hero-layer .swag-big-screen {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    min-height: 100%;
-  }
-
-  html.swag-ios-standalone body .swag-only.swag-landing .swag-hero-layer .swag-big-screen__media {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
+/* One stable full-screen layer for both directions of the transition. */
+html body .swag-only .swag-hero-layer {
+  position: fixed;
+  inset: 0 auto auto 0;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+  background: #080808;
 }
-
-/* Mobile browser chrome: match the video edge and avoid toolbar resize jumps. */
-@media (max-width: 699px) {
-  html:has(.swag-landing),
-  html:has(.swag-landing) body,
-  html:has(.swag-landing) #root {
-    background-color: #080808;
-  }
-  html body .swag-only.swag-landing .swag-hero-layer {
-    background: #080808;
-  }
-  html:not(.swag-ios-standalone) body .swag-only.swag-landing .swag-hero-layer {
-    height: 100svh;
-    min-height: 100svh;
-  }
-  html:not(.swag-ios-standalone) body .swag-only.swag-landing .swag-hero-layer .swag-big-screen {
-    height: 100%;
-    min-height: 100%;
-  }
+html.swag-ios-standalone body .swag-only .swag-hero-layer {
+  height: max(100dvh, var(--swag-iphone-screen-height, 100dvh));
+  min-height: max(100dvh, var(--swag-iphone-screen-height, 100dvh));
+}
+html.swag-ios-standalone body .swag-only.swag-landing {
+  min-height: max(100dvh, var(--swag-iphone-screen-height, 100dvh));
+}
+html:has(.swag-landing), html:has(.swag-landing) body, html:has(.swag-landing) #root {
+  background: #080808 !important;
+}
+html body .swag-only .swag-hero-layer .swag-big-screen {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  min-height: 100%;
+  margin: 0;
 }
