@@ -32,7 +32,7 @@ export function CartWindow({ title, count, reopenToken, onClose, onBack, locked,
   const titleId = useId();
   const mobile = viewport.width < 760;
   const reducedMotion = useReducedMotion();
-  const transition = { duration: reducedMotion ? 0 : 0.52, ease: [0.25, 0.8, 0.25, 1] as [number, number, number, number] };
+  const transition = { duration: reducedMotion ? 0 : 0.42, ease: "easeInOut" as const };
   const modal = !minimized && (mobile || maximized);
 
   useEffect(() => {
@@ -108,9 +108,9 @@ export function CartWindow({ title, count, reopenToken, onClose, onBack, locked,
     <motion.section ref={panel} role="dialog" aria-modal={modal || undefined} aria-labelledby={titleId}
       className={`cart-window${maximized ? ' cart-window--maximized' : ''}${mobile ? ' cart-window--mobile' : ''}`}
       style={style} hidden={minimized} onKeyDown={keys}
-      initial={reducedMotion ? false : { x: mobile ? "100%" : 24, opacity: mobile ? 1 : 0 }}
-      animate={{ x: 0, opacity: 1 }}
-      exit={{ x: reducedMotion ? 0 : mobile ? "100%" : 24, opacity: mobile ? 1 : 0 }}
+      initial={reducedMotion ? false : { opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0, pointerEvents: "none" }}
       transition={transition}>
       <div ref={titlebar} className="cart-window__titlebar" tabIndex={0}
         title={mobile ? undefined : 'Перетащи окно. Двойной щелчок — развернуть. Стрелки — переместить.'}
@@ -129,8 +129,8 @@ export function CartWindow({ title, count, reopenToken, onClose, onBack, locked,
         </div>
       </div>
       <div className="cart-window__content"><motion.div key={title}
-        initial={reducedMotion ? false : { x: 32, opacity: 0 }}
-        animate={{ x: 0, opacity: 1 }} transition={transition}
+        initial={reducedMotion ? false : { opacity: 0 }}
+        animate={{ opacity: 1 }} transition={transition}
         style={{ minHeight: "100%" }}>{children}</motion.div></div>
       {!mobile && !maximized && edges.map(edge => <div key={edge} role="button" tabIndex={edge === 'se' ? 0 : -1}
         aria-label="Изменить размер окна стрелками" className={`cart-window__resize cart-window__resize--${edge}`}
