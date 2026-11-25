@@ -1,6 +1,7 @@
 import { lazy, Suspense } from "react";
 import { setAccessToken as setStudioToken, clearAccessToken as clearStudioToken } from "../../frontend/src/api";
 const Products = lazy(() => import("../../frontend/src/pages/AdminStandalone"));
+const SystemPanel = lazy(() => import("./SystemPanel").then((module) => ({ default: module.SystemPanel })));
 const Visitors = lazy(async () => ({default: (await import("../../frontend/src/components/VisitorAnalytics")).VisitorAnalytics}));
 import {
   useCallback,
@@ -463,7 +464,7 @@ function Lab() {
 }
 
 export default function App() {
-  const [section, setSection] = useState<"orders" | "products" | "visitors" | "lab">("orders");
+  const [section, setSection] = useState<"orders" | "products" | "visitors" | "lab" | "system">("orders");
   const [
     token,
     setToken,
@@ -1289,7 +1290,7 @@ export default function App() {
     <div className="app unified-admin">
       <header className="top">
         <img className="studio-logo" src="https://swagystan.ru/logo.png" alt="SWAG" />
-        <nav className="studio-links" aria-label="Разделы управления">{(["products","orders","visitors","lab"] as const).map(key => <button key={key} type="button" aria-pressed={section === key} className={section === key ? "mini-button mini-button--active" : "mini-button"} onClick={() => setSection(key)}>{{products:"Товары",orders:"Заказы",visitors:"Посетители",lab:"LAB"}[key]}</button>)}</nav>
+        <nav className="studio-links" aria-label="Разделы управления">{(["products","orders","visitors","lab","system"] as const).map(key => <button key={key} type="button" aria-pressed={section === key} className={section === key ? "mini-button mini-button--active" : "mini-button"} onClick={() => setSection(key)}>{{products:"Товары",orders:"Заказы",visitors:"Посетители",lab:"LAB",system:"SYSTEM"}[key]}</button>)}</nav>
         <div className="top__actions">
           <button
             className={
@@ -1332,6 +1333,7 @@ export default function App() {
         {section === "products" && <Products />}
         {section === "visitors" && <Visitors />}
         {section === "lab" && <Lab />}
+        {section === "system" && <SystemPanel token={token} />}
       </Suspense>
       {section === "orders" && <>
       <nav className="tabs">
