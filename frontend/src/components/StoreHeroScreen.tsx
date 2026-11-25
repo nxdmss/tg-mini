@@ -38,6 +38,7 @@ export function StoreHeroScreen() {
       {mode === "video" && (
         <video
           className="swag-big-screen__media"
+          style={{ pointerEvents: "none" }}
           ref={videoRef}
           controls={false}
           disablePictureInPicture
@@ -48,6 +49,7 @@ export function StoreHeroScreen() {
           playsInline
           preload="auto"
           aria-hidden="true"
+          onLoadedData={() => setMediaLoaded(true)}
           onPlaying={() => setMediaLoaded(true)}
           onError={useGifFallback}
         >
@@ -55,7 +57,7 @@ export function StoreHeroScreen() {
         </video>
       )}
 
-      {!mediaLoaded && (
+      {mode === "placeholder" && (
         <div className="swag-big-screen__placeholder" aria-hidden="true">
           <span className="swag-big-screen__wordmark">SWAGYSTAN</span>
         </div>
