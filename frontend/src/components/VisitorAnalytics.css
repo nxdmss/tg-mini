@@ -24,3 +24,24 @@
 .swag-admin-stats .visitor-row__button{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px 12px;padding:14px 0}
 .swag-admin-stats .visitor-row__button>span:last-child{grid-column:1/-1}
 }
+
+.swag-admin-stats .visitor-filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.swag-admin-stats .visitor-filters button{font:inherit;font-size:11px;padding:7px 12px;border:1px solid #e5e5e5;background:white;color:#555;cursor:pointer}
+.swag-admin-stats .visitor-filters button[aria-pressed=true]{background:#111;color:white;border-color:#111}
+.swag-admin-stats .visitor-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,245px),1fr));gap:8px;align-items:start}
+.swag-admin-stats .visitor-card{background:#f6f6f6;min-width:0}
+.swag-admin-stats .visitor-card__button{display:grid;grid-template-columns:42px minmax(0,1fr) auto;gap:6px 10px;align-items:center;text-align:left;width:100%;border:0;background:none;color:#111;font:inherit;padding:12px;cursor:pointer}
+.swag-admin-stats .visitor-avatar{width:42px;height:42px;background:#e5e5e5;fill:#222;shape-rendering:crispEdges;grid-row:1/3}
+.swag-admin-stats .visitor-card__identity{display:grid;gap:3px;font-size:11px;min-width:0}
+.swag-admin-stats .visitor-card__identity>span{display:flex;align-items:center;gap:5px;color:#666;font-size:10px}
+.swag-admin-stats .visitor-dot{width:6px;height:6px;border-radius:50%;background:#aaa;display:inline-block}
+.swag-admin-stats .visitor-dot.active{background:#249b55}
+.swag-admin-stats .visitor-level{align-self:start;font-size:10px;background:#111;color:white;padding:4px 6px;white-space:nowrap}
+.swag-admin-stats .visitor-card__page{font-size:11px;overflow-wrap:anywhere}
+.swag-admin-stats .visitor-card__time{grid-column:1/3;font-size:10px;color:#777}
+.swag-admin-stats .visitor-card__expand{grid-column:3;grid-row:3;text-align:right;font-size:16px}
+.swag-admin-stats .visitor-timeline{padding:0 12px 12px;font-size:10px;overflow-wrap:anywhere}
+.swag-admin-stats .visitor-timeline>p{color:#777;margin:0 0 10px}
+.swag-admin-stats .visitor-timeline>div{border-left:1px solid #bbb;margin-left:4px;padding:8px 0 8px 12px;position:relative;display:grid;gap:4px}
+.swag-admin-stats .visitor-timeline>div:before{content:"";position:absolute;left:-3px;top:12px;width:5px;height:5px;background:#111}
+.swag-admin-stats .visitor-timeline small{font-size:10px;color:#777}
