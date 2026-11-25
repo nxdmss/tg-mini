@@ -79,3 +79,5 @@ a:hover{text-decoration:underline}
 @media(max-width:740px){:root{--gutter:15px}.top,.lab__header{min-height:70px;gap:10px;flex-wrap:wrap;margin-bottom:12px}.top__actions,.studio-links{gap:10px}.mini-button,.studio-links a{font-size:11px;min-height:44px}.tab{font-size:10px;gap:4px}.tab b{font-size:10px}.order-card__head{grid-template-columns:minmax(72px,.65fr) minmax(0,1fr) 20px;gap:10px}.order-card__number{font-size:12px}.order-detail{padding:12px;gap:18px}.stage{font-size:10px}.lab__workspace{grid-template-columns:1fr;gap:18px}.lab__editor,.lab__preview{height:clamp(230px,36svh,480px)}}
 @media(max-width:360px){.tabs{gap:4px}.tab{font-size:9px}.detail-grid{grid-template-columns:1fr}}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
+
+.unified-admin .swag-admin{padding-inline:0;min-height:0}.unified-admin .lab{padding:0;min-height:0}.unified-admin .lab__header{min-height:44px}.unified-admin .top{border-bottom:1px solid var(--line)}
