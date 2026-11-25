@@ -15,6 +15,22 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, viewport-fit=cover"
     />
+    <script>
+      (() => {
+        const root = document.documentElement;
+        const ios = /iPhone|iPad|iPod/.test(navigator.userAgent);
+        const standalone = matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+        if (!ios || !standalone) return;
+        root.classList.add("swag-ios-standalone");
+        const sync = () => {
+          const height = Math.max(screen.height, innerHeight, root.clientHeight);
+          root.style.setProperty("--swag-iphone-screen-height", Math.ceil(height) + "px");
+        };
+        sync();
+        addEventListener("orientationchange", () => { sync(); requestAnimationFrame(sync); });
+        addEventListener("pageshow", sync);
+      })();
+    </script>
     <link rel="canonical" href="https://swagystan.ru/" />
     <meta name="robots" content="index, follow" />
     <meta name="google-site-verification" content="Hkkjpd_CMAd6AM1gS1s9ycZtvNJ22SM1jOkdWKQLM8s" />
