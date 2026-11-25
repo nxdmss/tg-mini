@@ -1,4 +1,4 @@
-const CACHE = "swa6-admin-v6";
+const CACHE = "swa6-admin-v7";
 const CORE = [
   "/",
   "/manifest.webmanifest",
