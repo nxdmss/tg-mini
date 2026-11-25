@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { Link } from "react-router-dom";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { getProducts, getBrands, getCategories, createBrand, createCategory, deleteProduct, getApiErrorMessage, updateProductStock, type ProductImageItem } from "../api";
 import { createAdminProduct, updateAdminProduct } from "../productAdminApi";
@@ -164,7 +163,7 @@ export default function Admin() {
         </fieldset>
         {error&&<p className="swag-admin__error" role="alert">{error}</p>}
         <div className="swag-admin__save-row"><button type="submit" className="swag-admin__primary" disabled={saving||!shopId||Boolean(draft.id&&!dirty)}>{saving?"Сохраняю…":dirty||!draft.id?"Сохранить":"Сохранено"}</button>{draft.id&&<button type="button" className="swag-admin__delete" disabled={saving} onClick={()=>void remove()}>Удалить</button>}</div>
-        {draft.id&&<Link to={"/product/"+encodeURIComponent(draft.id)} target="_blank" rel="noopener noreferrer" className="swag-admin__view">Открыть на сайте ↗</Link>}
+        {draft.id&&<a href={"https://swagystan.ru/product/"+encodeURIComponent(draft.id)} target="_blank" rel="noopener noreferrer" className="swag-admin__view">Открыть на сайте ↗</a>}
       </form>
     </motion.aside>}</AnimatePresence>
   </main>;
