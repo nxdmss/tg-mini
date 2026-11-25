@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { api } from "../api";
 import { getAdminAccessHeaders } from "../adminAccessApi";
 import "./VisitorAnalytics.css";
-import "../pages/Admin.css";
+import "../pages/AdminStudio.css";
 
 type Visit = { id: string; startedAt: string; lastSeen: string; path: string };
 type Visitor = {
@@ -42,10 +42,10 @@ export function VisitorAnalytics() {
   }, []);
 
   return (
-    <div className="admin-stack">
-      <section className="admin-box">
-        <div className="admin-box__head"><h2>Посетители SWAGYSTAN</h2><span className="admin-pill">ОБНОВЛЕНИЕ 30 С</span></div>
-        {error && <p role="alert">{error}</p>}
+    <div className="swag-admin-stats">
+      <section className="swag-admin-stats__section">
+        <div className="swag-admin-stats__head"><h2>Посетители SWAGYSTAN</h2><span className="swag-admin-stats__meta">ОБНОВЛЕНИЕ 30 С</span></div>
+        {error && <p className="swag-admin__error" role="alert">{error}</p>}
         <div className="visitor-stats">
           {([
             ["ОНЛАЙН · 5 МИН", data?.online],
@@ -60,10 +60,10 @@ export function VisitorAnalytics() {
         </div>
         <p className="visitor-note">Уникальный посетитель = один браузер. Повторный визит = возвращение через 30 минут или позже. Онлайн = активность за последние 5 минут. Без IP и отпечатков устройств.</p>
       </section>
-      <section className="admin-box">
-        <div className="admin-box__head"><h2>Последние посетители</h2><span className="admin-pill">ДО 100</span></div>
-        {!data && !error && <p>ЗАГРУЗКА...</p>}
-        {data?.visitors.length === 0 && <p>ПОКА НЕТ ПОСЕЩЕНИЙ</p>}
+      <section className="swag-admin-stats__section">
+        <div className="swag-admin-stats__head"><h2>Последние посетители</h2><span className="swag-admin-stats__meta">ДО 100</span></div>
+        {!data && !error && <p className="swag-admin__muted">Загрузка…</p>}
+        {data?.visitors.length === 0 && <p className="swag-admin__muted">Пока нет посещений</p>}
         {data?.visitors.map((visitor) => {
           const isOnline = Date.now() - new Date(visitor.lastSeen).getTime() < 5 * 60_000;
           return (
