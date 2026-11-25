@@ -259,3 +259,17 @@ html body .swag-only .swag-hero-layer .swag-big-screen {
     min-height: 100%;
   }
 }
+
+/* Keep identical geometry while the campaign enters and exits. */
+@media (max-width: 699px) {
+ html.swag-ios-standalone body .swag-only .swag-hero-layer {
+   position: absolute;
+   inset: 0 auto auto 0;
+   width: 100%;
+   height: var(--swag-iphone-screen-height, 100vh);
+   min-height: var(--swag-iphone-screen-height, 100vh);
+ }
+ html.swag-ios-standalone body .swag-only.swag-landing { min-height: var(--swag-iphone-screen-height, 100vh); }
+ html.swag-ios-standalone body .swag-only .swag-hero-layer .swag-big-screen { height: 100%; min-height: 100%; }
+ html:not(.swag-ios-standalone) body .swag-only .swag-hero-layer { height: 100lvh; min-height: 100lvh; }
+}
