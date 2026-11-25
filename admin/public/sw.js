@@ -1,4 +1,4 @@
-const CACHE = "swa6-admin-v8";
+const CACHE = "swa6-admin-v9";
 const CORE = [
   "/",
   "/manifest.webmanifest",
@@ -40,7 +40,7 @@ self.addEventListener("fetch", (event) => {
 
   if (event.request.mode === "navigate") {
     event.respondWith(
-      fetch(event.request)
+      fetch(event.request, { cache: "no-store" })
         .then((response) => {
           const copy = response.clone();
 
