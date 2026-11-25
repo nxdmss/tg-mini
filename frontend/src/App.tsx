@@ -362,7 +362,7 @@ export default function App() {
           </motion.div>
 
 
-      <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr)", overflow: "clip" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr)", overflow: "clip", flex: "1 0 auto" }}>
       <AnimatePresence initial={false} custom={{ toLanding: isLanding, direction: swipeDirection }}>
           <motion.div
             key={section}
