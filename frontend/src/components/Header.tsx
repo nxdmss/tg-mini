@@ -17,6 +17,8 @@ type HeaderProps = {
   landing?: boolean;
   showCart?: boolean;
   onLogoClick?: () => void;
+  gridColumns?: 3 | 6;
+  onGridColumnsChange?: (columns: 3 | 6) => void;
   navItems?: Array<{
     id: string;
     title: string;
@@ -34,6 +36,8 @@ export function Header({
   showCart = true,
   onLogoClick,
   navItems,
+  gridColumns,
+  onGridColumnsChange,
 }: HeaderProps) {
   const { count } = useCart();
   const navigate = useNavigate();
@@ -104,6 +108,12 @@ export function Header({
           </span>
         </motion.button>
 
+        {gridColumns && onGridColumnsChange && (
+          <div className="swag-grid-switch" role="group" aria-label="Размер товаров">
+            <button type="button" aria-label="Уменьшить товары" aria-pressed={gridColumns === 6} onClick={() => onGridColumnsChange(6)}>−</button>
+            <button type="button" aria-label="Увеличить товары" aria-pressed={gridColumns === 3} onClick={() => onGridColumnsChange(3)}>+</button>
+          </div>
+        )}
         {navItems && navItems.length > 0 && (
           <nav className="swag-nav swag-nav--header" aria-label="Навигация магазина">
             {navItems.map((item) => (
