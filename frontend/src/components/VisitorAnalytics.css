@@ -1,30 +1,26 @@
-.visitor-stats {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
-}
-.visitor-stat {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  gap: 9px;
-  min-height: 100px;
-  padding: 11px;
-  border: 2px solid #000;
-}
-.visitor-stat span { font-size: 10px; font-weight: 700; }
-.visitor-stat strong { font-size: 32px; font-weight: 800; line-height: 1; }
-.visitor-note { margin: 12px 0 0; font-size: 10px; line-height: 1.5; }
-.visitor-row { border-bottom: 2px solid #000; }
-.visitor-row__button {
-  width: 100%; display: flex; flex-wrap: wrap; align-items: baseline;
-  gap: 7px 18px; padding: 12px 0; text-align: left;
-  font-size: 11px; font-weight: 600;
-}
-.visitor-row__id { font-weight: 800; }
-.visitor-row__button > span { overflow-wrap: anywhere; }
-.visitor-history { padding: 10px 12px 14px; border-top: 1px solid #000; font-size: 11px; line-height: 1.9; }
-.visitor-history strong { display: block; }
-@media (min-width: 720px) {
-  .visitor-stats { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+/* Analytics follows the catalog studio, not the legacy boxed admin. */
+.swag-admin-stats{display:grid;gap:42px;min-width:0}
+.swag-admin-stats__head{display:flex;justify-content:space-between;align-items:baseline;gap:14px;margin-bottom:22px}
+.swag-admin-stats__head h2{font-size:16px;font-weight:600;line-height:1.4;margin:0;color:#111}
+.swag-admin-stats__meta{font-size:10px;color:#777;text-align:right}
+.swag-admin-stats .visitor-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.swag-admin-stats .visitor-stat{display:flex;flex-direction:column;justify-content:space-between;gap:20px;min-height:120px;padding:16px;background:#f6f6f6;border:0}
+.swag-admin-stats .visitor-stat span{font-size:11px;color:#666;line-height:1.4;overflow-wrap:anywhere}
+.swag-admin-stats .visitor-stat strong{font-size:clamp(27px,3vw,40px);font-weight:500;line-height:1;letter-spacing:-.055em;font-variant-numeric:tabular-nums}
+.swag-admin-stats .visitor-note{margin:14px 0 0;font-size:11px;line-height:1.65;color:#777;max-width:80ch}
+.swag-admin-stats .visitor-row{border-bottom:1px solid #e9e9e9}
+.swag-admin-stats .visitor-row__button{appearance:none;border:0;background:transparent;color:#111;width:100%;display:grid;grid-template-columns:1.2fr 1.15fr 1.5fr 1.5fr 1fr;align-items:center;gap:12px;padding:16px 0;text-align:left;font:inherit;font-size:11px;line-height:1.5;cursor:pointer}
+.swag-admin-stats .visitor-row__button>span{min-width:0;overflow-wrap:anywhere}
+.swag-admin-stats .visitor-row__button>span:not(:first-child){color:#666}
+.swag-admin-stats .visitor-row__id{font-weight:600}
+.swag-admin-stats .visitor-history{background:#f6f6f6;padding:14px;margin:0 0 12px;font-size:11px;line-height:1.8;overflow-wrap:anywhere}
+.swag-admin-stats .visitor-history strong{display:block;margin-bottom:9px;font-weight:600}
+@media(max-width:740px){
+.swag-admin-stats{gap:30px}
+.swag-admin-stats__head{margin-bottom:16px}
+.swag-admin-stats__head h2{font-size:14px}
+.swag-admin-stats .visitor-stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.swag-admin-stats .visitor-stat{min-height:104px;padding:12px}
+.swag-admin-stats .visitor-row__button{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px 12px;padding:14px 0}
+.swag-admin-stats .visitor-row__button>span:last-child{grid-column:1/-1}
 }
