@@ -56,7 +56,7 @@ export default function Router() {
         />
 
         <Route path="/admin/orders" element={<AdminGate><Suspense fallback={null}><AdminSectionNav /><AdminOrders /></Suspense></AdminGate>} />
-        <Route path="/admin/visitors" element={<AdminGate><Suspense fallback={null}><AdminSectionNav /><main className="admin-page"><div className="container admin"><VisitorAnalytics /></div></main></Suspense></AdminGate>} />
+        <Route path="/admin/visitors" element={<AdminGate><Suspense fallback={null}><AdminSectionNav /><main className="swag-admin swag-admin-analytics"><VisitorAnalytics /></main></Suspense></AdminGate>} />
         {/* Keep one persistent storefront instance. */}
         <Route
           path="/*"
