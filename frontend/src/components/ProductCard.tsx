@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { AnimatePresence, motion } from "motion/react";
+
 import type { Product } from "../types";
 import {
   formatPrice,
@@ -98,15 +98,12 @@ export function ProductCard({
         }
       }}
       onBlur={() => setHovering(false)}
-      style={{
-        animationDelay: `${Math.min(index * 60, 480)}ms`,
-      }}
+
     >
       <div className="card__media">
         {image && displayedImage ? (
           <span className="card__image-stack">
-            <AnimatePresence mode="wait" initial={false}>
-              <motion.img
+              <img
                 key={`${product.id}:${displayedImage}`}
                 className={showAlternate ? "card__image--alternate" : "card__image--primary"}
                 src={displayedImage}
@@ -116,15 +113,10 @@ export function ProductCard({
                 loading={showAlternate || index < eagerCount ? "eager" : "lazy"}
                 fetchPriority={showAlternate || index < highPriorityCount ? "high" : "auto"}
                 decoding="async"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.20, ease: [0.25, 0.1, 0.25, 1] }}
                 onError={() => {
                   if (showAlternate && alternateImage) setFailedImage(alternateImage);
                 }}
               />
-            </AnimatePresence>
           </span>
         ) : (
           <div className="media-fallback">SWA6Y5TAN</div>
