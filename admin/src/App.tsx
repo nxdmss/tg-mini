@@ -434,7 +434,7 @@ function Lab() {
   const [preview, setPreview] = useState("");
   useEffect(() => { try { localStorage.setItem("swa_lab_v1", JSON.stringify(code)); } catch { /* storage unavailable */ } }, [code]);
   const documentSource = useMemo(() => ('<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src \'none\'; style-src \'unsafe-inline\'; img-src data:; form-action \'none\'; base-uri \'none\'"><style>' + code.css.replace(/<\/style/gi, "<\\/style") + "</style>" + code.html), [code]);
-  useEffect(() => { const timer = window.setTimeout(() => setPreview(documentSource), 120); return () => window.clearTimeout(timer); }, [documentSource]);
+  const run = () => setPreview(documentSource);
   const editor = useRef<HTMLTextAreaElement>(null);
   const snippets = tab === "html" ? ["div","span","h1","p","a","button","img","nav"] : ["display","flex","grid","margin","padding","color","width","height"];
   const insert = (name: string) => {
@@ -451,7 +451,7 @@ function Lab() {
     
     <div className="lab__workspace">
       <section className="lab__panel">
-        <div className="lab__panel-heading"><nav className="lab__tabs" aria-label="Язык кода">{(["html", "css"] as const).map(t => <button key={t} className={tab === t ? "mini-button mini-button--active" : "mini-button"} aria-pressed={tab === t} onClick={() => setTab(t)}>{t.toUpperCase()}</button>)}</nav></div>
+        <div className="lab__panel-heading"><nav className="lab__tabs" aria-label="Язык кода">{(["html", "css"] as const).map(t => <button key={t} className={tab === t ? "mini-button mini-button--active" : "mini-button"} aria-pressed={tab === t} onClick={() => setTab(t)}>{t.toUpperCase()}</button>)}</nav><button className="lab__run" onClick={run}>RUN</button></div>
         <div className="lab__snippets" style={{display:"flex",gap:10,overflowX:"auto",whiteSpace:"nowrap"}}>{["TAB", ...snippets].map(name => <button key={name} className="mini-button" onPointerDown={e => e.preventDefault()} onClick={() => insert(name)}>{name}</button>)}</div><textarea ref={editor} onKeyDown={e => { if (e.key === "Tab") { e.preventDefault(); insert("TAB"); } }} className="lab__editor" aria-label="Code" spellCheck={false} autoCapitalize="off" autoCorrect="off" value={code[tab]} onChange={e => setCode(old => ({ ...old, [tab]: e.target.value }))} />
       </section>
       <section className="lab__panel">
