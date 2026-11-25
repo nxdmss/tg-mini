@@ -4,6 +4,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useLayoutEffect,
   useRef,
   useState,
 } from "react";
@@ -42,10 +43,7 @@ import { sendVisitorPing } from "./visitorTracking";
 
 import { consumeStartParam } from "./telegram";
 
-const loadProductDetail = () => import("./components/ProductDetail");
-const ProductDetail = lazy(async () => ({
-  default: (await loadProductDetail()).ProductDetail,
-}));
+import { ProductDetail } from "./components/ProductDetail";
 
 const loadCartDrawer = () => import("./components/CartDrawer");
 const CartDrawer = lazy(async () => ({
@@ -249,14 +247,14 @@ export default function App() {
 
   const [productExiting, setProductExiting] = useState(false);
   const productScrollLocked = isProductPage || productExiting;
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!productScrollLocked) return;
     const previous = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => { document.body.style.overflow = previous; };
   }, [productScrollLocked]);
   useEffect(() => { if (isProductPage) setProductExiting(true); }, [isProductPage]);
-  useEffect(() => { void loadProductDetail(); void loadCartDrawer(); }, []);
+  useEffect(() => { void loadCartDrawer(); }, []);
 
   function openProduct(product: Product) {
     setProductLinkError(false);
@@ -282,7 +280,7 @@ export default function App() {
     <motion.div
       key="product-overlay"
       className="product-overlay-shell"
-      style={{ willChange: "opacity" }}
+      style={{ willChange: "opacity", isolation: "isolate", background: "#fff" }}
       initial={reducedMotion ? false : { opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0, pointerEvents: "none" }}
@@ -353,7 +351,7 @@ export default function App() {
             }}
             initial={false}
             animate={{ opacity: isLanding ? 1 : 0 }}
-            style={{ pointerEvents: isLanding ? "auto" : "none" }}
+            style={{ pointerEvents: isLanding ? "auto" : "none", zIndex: 19 }}
             aria-hidden={!isLanding}
             transition={{ duration: landingDuration, ease: "easeInOut" }}
           >
@@ -363,12 +361,11 @@ export default function App() {
 
       <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr)", overflow: "clip" }}>
       <AnimatePresence initial={false} custom={{ toLanding: isLanding, direction: swipeDirection }}>
-        {!isLanding && (
           <motion.div
             key={section}
             className="swag-page-transition"
-            style={{ gridArea: "1 / 1", minWidth: 0, background: "var(--bg)", willChange: "transform, opacity" }}
-            initial={reducedMotion ? false : fromLanding ? { x: 0, opacity: 0 } : { x: swipeDirection === 1 ? "100%" : "-100%", opacity: 1 }}
+            style={{ gridArea: "1 / 1", minWidth: 0, background: "var(--bg)", pointerEvents: isLanding ? "none" : "auto" }}
+            initial={reducedMotion ? false : fromLanding ? { x: 0, opacity: 1 } : { x: swipeDirection === 1 ? "100%" : "-100%", opacity: 1 }}
             animate={{ x: 0, opacity: 1 }}
             variants={{ leaving: ({ toLanding, direction }: { toLanding: boolean; direction: number }) => ({
               x: toLanding || reducedMotion ? 0 : direction === 1 ? "-100%" : "100%",
@@ -462,7 +459,6 @@ export default function App() {
         </main>
             )}
           </motion.div>
-        )}
       </AnimatePresence>
       </div>
 
