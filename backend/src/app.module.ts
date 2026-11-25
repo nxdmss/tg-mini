@@ -22,7 +22,6 @@ import { AppController } from './app.controller';
 
 import { AppService } from './app.service';
 import { VisitorsModule } from './visitors/visitors.module';
-import { AuthModule } from './auth/auth.module';
 import { SystemController } from './system/system.controller';
 
 @Module({
