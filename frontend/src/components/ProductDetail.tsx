@@ -33,6 +33,25 @@ export function ProductDetail({ product, onBack, onCartClick }: ProductDetailPro
 
 
 
+  // Warm only the adjacent gallery photos after the current image loads.
+  useEffect(() => {
+    if (images.length < 2) return;
+    const connection = (navigator as Navigator & { connection?: { saveData?: boolean; effectiveType?: string } }).connection;
+    if (connection?.saveData || /(^|-)2g$/.test(connection?.effectiveType ?? "")) return;
+    const timer = window.setTimeout(() => {
+      const indices = new Set([(imageIndex + 1) % images.length, (imageIndex + images.length - 1) % images.length]);
+      for (const index of indices) {
+        const url = images[index]?.url;
+        if (!url) continue;
+        const image = new Image();
+        image.fetchPriority = "low";
+        image.decoding = "async";
+        image.src = getProductDetailImage(url);
+      }
+    }, 450);
+    return () => window.clearTimeout(timer);
+  }, [images, imageIndex]);
+
   function previousImage() {
     if (images.length > 1) setImageIndex((index) => index === 0 ? images.length - 1 : index - 1);
   }
