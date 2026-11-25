@@ -425,7 +425,24 @@ function Login({
   );
 }
 
+function Lab({ onBack }: { onBack: () => void }) {
+  const [code, setCode] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("swa_lab_v1") || "null") as { html: string; css: string } || { html: "<h1>SWAGYSTAN</h1>", css: "body { font-family: monospace; }" }; } catch { return { html: "<h1>SWAGYSTAN</h1>", css: "" }; }
+  });
+  const [tab, setTab] = useState<"html" | "css">("html");
+  const [preview, setPreview] = useState("");
+  useEffect(() => { try { localStorage.setItem("swa_lab_v1", JSON.stringify(code)); } catch { /* storage unavailable */ } }, [code]);
+  const run = () => setPreview('<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src \'none\'; style-src \'unsafe-inline\'; img-src data:; form-action \'none\'; base-uri \'none\'"><style>' + code.css.replace(/<\/style/gi, "<\\/style") + "</style>" + code.html);
+  return <main style={{ padding: 16, display: "grid", gap: 12 }}>
+    <header style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}><button className="mini-button" onClick={onBack}>ЗАКАЗЫ</button><strong>SWAGYSTAN LAB</strong><button className="mini-button" onClick={run}>RUN</button></header>
+    <nav style={{ display: "flex", gap: 8 }}>{(["html", "css"] as const).map(t => <button key={t} className={tab === t ? "mini-button mini-button--active" : "mini-button"} onClick={() => setTab(t)}>{t.toUpperCase()}</button>)}</nav>
+    <textarea aria-label="Code" spellCheck={false} autoCapitalize="off" autoCorrect="off" value={code[tab]} onChange={e => setCode(old => ({ ...old, [tab]: e.target.value }))} style={{ width: "100%", minHeight: "35dvh", background: "#171717", color: "#fff", font: "16px/1.5 monospace", padding: 12, boxSizing: "border-box" }} />
+    <iframe title="Preview" sandbox="" referrerPolicy="no-referrer" srcDoc={preview} style={{ width: "100%", height: "35dvh", background: "#fff", border: 0 }} />
+  </main>;
+}
+
 export default function App() {
+  const [labOpen, setLabOpen] = useState(false);
   const [
     token,
     setToken,
@@ -1244,6 +1261,8 @@ export default function App() {
     );
   }
 
+  if (labOpen) return <Lab onBack={() => setLabOpen(false)} />;
+
   return (
     <div className="app">
       <header className="top">
@@ -1258,6 +1277,7 @@ export default function App() {
         </div>
 
         <div className="top__actions">
+          <button className="mini-button" type="button" onClick={() => setLabOpen(true)}>LAB</button>
           <button
             className={
               notificationState ===
