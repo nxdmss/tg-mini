@@ -362,11 +362,7 @@ function Login({
         className="login__card"
         onSubmit={submit}
       >
-        <div className="brand">
-          SWAGYSTAN
-        </div>
-
-        <h1>Управление</h1>
+        <img className="studio-logo login-logo" src="https://swagystan.ru/logo.png" alt="SWAG" />
 
         <label className="field">
           <span>ПОЧТА</span>
@@ -430,7 +426,7 @@ function Login({
   );
 }
 
-function Lab({ onBack }: { onBack: () => void }) {
+function Lab() {
   const [code, setCode] = useState(() => {
     try { return JSON.parse(localStorage.getItem("swa_lab_v1") || "null") as { html: string; css: string } || { html: "<h1>SWAGYSTAN</h1>", css: "body { font-family: monospace; }" }; } catch { return { html: "<h1>SWAGYSTAN</h1>", css: "" }; }
   });
@@ -439,10 +435,10 @@ function Lab({ onBack }: { onBack: () => void }) {
   useEffect(() => { try { localStorage.setItem("swa_lab_v1", JSON.stringify(code)); } catch { /* storage unavailable */ } }, [code]);
   const run = () => setPreview('<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src \'none\'; style-src \'unsafe-inline\'; img-src data:; form-action \'none\'; base-uri \'none\'"><style>' + code.css.replace(/<\/style/gi, "<\\/style") + "</style>" + code.html);
   return <main className="lab">
-    <header className="lab__header"><button className="mini-button" onClick={onBack}>‹ Заказы</button><strong>SWAGYSTAN LAB</strong><button className="lab__run" onClick={run}>RUN</button></header>
+    
     <div className="lab__workspace">
       <section className="lab__panel">
-        <div className="lab__panel-heading"><nav className="lab__tabs" aria-label="Язык кода">{(["html", "css"] as const).map(t => <button key={t} className={tab === t ? "mini-button mini-button--active" : "mini-button"} aria-pressed={tab === t} onClick={() => setTab(t)}>{t.toUpperCase()}</button>)}</nav></div>
+        <div className="lab__panel-heading"><nav className="lab__tabs" aria-label="Язык кода">{(["html", "css"] as const).map(t => <button key={t} className={tab === t ? "mini-button mini-button--active" : "mini-button"} aria-pressed={tab === t} onClick={() => setTab(t)}>{t.toUpperCase()}</button>)}</nav><button className="lab__run" onClick={run}>RUN</button></div>
         <textarea className="lab__editor" aria-label="Code" spellCheck={false} autoCapitalize="off" autoCorrect="off" value={code[tab]} onChange={e => setCode(old => ({ ...old, [tab]: e.target.value }))} />
       </section>
       <section className="lab__panel">
@@ -1279,18 +1275,9 @@ export default function App() {
   return (
     <div className="app unified-admin">
       <header className="top">
-        <div>
-          <div className="brand">
-            SWAGYSTAN
-          </div>
-
-          <div className="title">
-            Управление
-          </div>
-        </div>
-
+        <img className="studio-logo" src="https://swagystan.ru/logo.png" alt="SWAG" />
+        <nav className="studio-links" aria-label="Разделы управления">{(["products","orders","visitors","lab"] as const).map(key => <button key={key} type="button" aria-pressed={section === key} className={section === key ? "mini-button mini-button--active" : "mini-button"} onClick={() => setSection(key)}>{{products:"Товары",orders:"Заказы",visitors:"Посетители",lab:"LAB"}[key]}</button>)}</nav>
         <div className="top__actions">
-          <nav className="studio-links" aria-label="Разделы управления">{(["products","orders","visitors","lab"] as const).map(key => <button key={key} type="button" aria-pressed={section === key} className={section === key ? "mini-button mini-button--active" : "mini-button"} onClick={() => setSection(key)}>{{products:"Товары",orders:"Заказы",visitors:"Посетители",lab:"LAB"}[key]}</button>)}</nav>
           <button
             className={
               notificationState ===
@@ -1331,7 +1318,7 @@ export default function App() {
       <Suspense fallback={<p className="empty">Загрузка…</p>}>
         {section === "products" && <Products />}
         {section === "visitors" && <Visitors />}
-        {section === "lab" && <Lab onBack={() => setSection("orders")} />}
+        {section === "lab" && <Lab />}
       </Suspense>
       {section === "orders" && <>
       <nav className="tabs">
