@@ -118,6 +118,13 @@ export default function App() {
 
   const { ids: favoriteIds, isFavorite, toggle } = useFavorites();
 
+  const [gridColumns, setGridColumns] = useState<3 | 6>(() => {
+    try { return localStorage.getItem("swagystan:grid-columns") === "6" ? 6 : 3; } catch { return 3; }
+  });
+  useEffect(() => {
+    try { localStorage.setItem("swagystan:grid-columns", String(gridColumns)); } catch { /* storage unavailable */ }
+  }, [gridColumns]);
+
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [query, setQuery] = useState<ProductsQuery>({ sort: "newest" });
@@ -317,7 +324,7 @@ export default function App() {
   ) : null;
 
   return (
-    <div className={`app store-experience swag-only ${isLanding ? "swag-landing" : ""} ${introRevealed ? "swag-intro-revealed" : "swag-intro-hidden"}`}>
+    <div className={`app store-experience swag-only swag-grid-${gridColumns} ${isLanding ? "swag-landing" : ""} ${introRevealed ? "swag-intro-revealed" : "swag-intro-hidden"}`}>
       <StoreIntro catalogLoading={isLanding ? false : loading} onReveal={revealIntro} />
       <div className="store-top store-experience__top">
         <Header
@@ -326,6 +333,8 @@ export default function App() {
           logoPosition={isLanding ? "center" : "left"}
           landing={isLanding}
           showCart={!isLanding}
+          gridColumns={!isLanding && (section === "catalog" || section === "favorites") ? gridColumns : undefined}
+          onGridColumnsChange={setGridColumns}
           onLogoClick={isLanding ? () => navigate("/catalog") : undefined}
           navItems={isLanding ? undefined : [
             { id: "catalog", title: "КАТАЛОГ", active: section === "catalog", onSelect: () => openSection("catalog") },
