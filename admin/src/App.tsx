@@ -1,3 +1,8 @@
+import { lazy, Suspense } from "react";
+import { MemoryRouter } from "react-router-dom";
+import { setAccessToken as setStudioToken, clearAccessToken as clearStudioToken } from "../../frontend/src/api";
+const Products = lazy(() => import("../../frontend/src/pages/Admin"));
+const Visitors = lazy(async () => ({default: (await import("../../frontend/src/components/VisitorAnalytics")).VisitorAnalytics}));
 import {
   useCallback,
   useEffect,
@@ -340,6 +345,7 @@ function Login({
       );
     } catch (submitError) {
       clearAccessToken();
+      clearStudioToken();
 
       setError(
         getApiErrorMessage(
@@ -449,7 +455,7 @@ function Lab({ onBack }: { onBack: () => void }) {
 }
 
 export default function App() {
-  const [labOpen, setLabOpen] = useState(false);
+  const [section, setSection] = useState<"orders" | "products" | "visitors" | "lab">("orders");
   const [
     token,
     setToken,
@@ -548,6 +554,7 @@ export default function App() {
   const logout =
     useCallback(() => {
       clearAccessToken();
+      clearStudioToken();
       setToken(null);
       setAuthorized(false);
       setOrders([]);
@@ -623,9 +630,8 @@ export default function App() {
           return;
         }
 
-        setAuthorized(
-          true,
-        );
+        setStudioToken(token);
+        setAuthorized(true);
       } catch (
         verifyError
       ) {
@@ -634,6 +640,7 @@ export default function App() {
         }
 
         clearAccessToken();
+      clearStudioToken();
         setToken(null);
         setAuthorized(
           false,
@@ -1268,10 +1275,10 @@ export default function App() {
     );
   }
 
-  if (labOpen) return <Lab onBack={() => setLabOpen(false)} />;
+
 
   return (
-    <div className="app">
+    <div className="app unified-admin">
       <header className="top">
         <div>
           <div className="brand">
@@ -1279,12 +1286,12 @@ export default function App() {
           </div>
 
           <div className="title">
-            Заказы
+            Управление
           </div>
         </div>
 
         <div className="top__actions">
-          <nav className="studio-links" aria-label="Разделы управления"><a href="https://swagystan.ru/admin">Товары</a><a href="https://swagystan.ru/admin/visitors">Посетители</a><button className="mini-button" type="button" onClick={() => setLabOpen(true)}>LAB</button></nav>
+          <nav className="studio-links" aria-label="Разделы управления">{(["products","orders","visitors","lab"] as const).map(key => <button key={key} type="button" aria-pressed={section === key} className={section === key ? "mini-button mini-button--active" : "mini-button"} onClick={() => setSection(key)}>{{products:"Товары",orders:"Заказы",visitors:"Посетители",lab:"LAB"}[key]}</button>)}</nav>
           <button
             className={
               notificationState ===
@@ -1322,6 +1329,12 @@ export default function App() {
         </div>
       </header>
 
+      <Suspense fallback={<p className="empty">Загрузка…</p>}>
+        {section === "products" && <MemoryRouter><Products /></MemoryRouter>}
+        {section === "visitors" && <Visitors />}
+        {section === "lab" && <Lab onBack={() => setSection("orders")} />}
+      </Suspense>
+      {section === "orders" && <>
       <nav className="tabs">
         {FILTERS.map(
           (current) => (
@@ -1437,6 +1450,7 @@ export default function App() {
           )
         )}
       </main>
+      </>}
     </div>
   );
 }
