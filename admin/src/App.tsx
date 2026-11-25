@@ -442,8 +442,8 @@ function Lab() {
     if (!el) return;
     const start = el.selectionStart, end = el.selectionEnd;
     const selected = code[tab].slice(start,end);
-    const snippet = tab === "html" ? name === "img" ? '<img src="" alt="">' : name === "a" ? '<a href="">'+selected+'</a>' : '<'+name+'>'+selected+'</'+name+'>' : name === "flex" || name === "grid" ? "display: "+name+";" : name+": ;";
-    const cursor = start + (tab === "html" ? (name === "img" || name === "a" ? snippet.indexOf('"')+1 : snippet.indexOf(">")+1+selected.length) : snippet.indexOf(";"));
+    const snippet = name === "TAB" ? "  " : tab === "html" ? name === "img" ? '<img src="" alt="">' : name === "a" ? '<a href="">'+selected+'</a>' : '<'+name+'>'+selected+'</'+name+'>' : name === "flex" || name === "grid" ? "display: "+name+";" : name+": ;";
+    const cursor = start + (name === "TAB" ? 2 : tab === "html" ? (name === "img" || name === "a" ? snippet.indexOf('"')+1 : snippet.indexOf(">")+1+selected.length) : snippet.indexOf(";"));
     setCode(old => ({...old,[tab]:old[tab].slice(0,start)+snippet+old[tab].slice(end)}));
     requestAnimationFrame(() => {el.focus();el.setSelectionRange(cursor,cursor);});
   };
@@ -452,7 +452,7 @@ function Lab() {
     <div className="lab__workspace">
       <section className="lab__panel">
         <div className="lab__panel-heading"><nav className="lab__tabs" aria-label="Язык кода">{(["html", "css"] as const).map(t => <button key={t} className={tab === t ? "mini-button mini-button--active" : "mini-button"} aria-pressed={tab === t} onClick={() => setTab(t)}>{t.toUpperCase()}</button>)}</nav></div>
-        <div className="lab__snippets" style={{display:"flex",gap:10,overflowX:"auto",whiteSpace:"nowrap"}}>{snippets.map(name => <button key={name} className="mini-button" onPointerDown={e => e.preventDefault()} onClick={() => insert(name)}>{name}</button>)}</div><textarea ref={editor} className="lab__editor" aria-label="Code" spellCheck={false} autoCapitalize="off" autoCorrect="off" value={code[tab]} onChange={e => setCode(old => ({ ...old, [tab]: e.target.value }))} />
+        <div className="lab__snippets" style={{display:"flex",gap:10,overflowX:"auto",whiteSpace:"nowrap"}}>{["TAB", ...snippets].map(name => <button key={name} className="mini-button" onPointerDown={e => e.preventDefault()} onClick={() => insert(name)}>{name}</button>)}</div><textarea ref={editor} onKeyDown={e => { if (e.key === "Tab") { e.preventDefault(); insert("TAB"); } }} className="lab__editor" aria-label="Code" spellCheck={false} autoCapitalize="off" autoCorrect="off" value={code[tab]} onChange={e => setCode(old => ({ ...old, [tab]: e.target.value }))} />
       </section>
       <section className="lab__panel">
         <div className="lab__panel-heading">Предпросмотр</div>
