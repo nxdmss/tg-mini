@@ -30,8 +30,10 @@ function cloudinaryPreview(url: string, width: number) {
 
 /** For transparent Cloudinary cutouts, strip empty edges at delivery (no browser CORS needed). */
 export function getProductDetailImage(url: string): string {
-  if (!isCloudinaryImage(url) || !/\.(?:png|webp)(?:[?#]|$)/i.test(url)) return url;
-  return url.replace(CLOUDINARY_UPLOAD_MARKER, `${CLOUDINARY_UPLOAD_MARKER}e_trim/`);
+  if (!isCloudinaryImage(url)) return url;
+  const trim = /\.(?:png|webp)(?:[?#]|$)/i.test(url) ? "e_trim/" : "";
+  const width = typeof window !== "undefined" && window.innerWidth < 768 ? 1200 : 1800;
+  return url.replace(CLOUDINARY_UPLOAD_MARKER, `${CLOUDINARY_UPLOAD_MARKER}${trim}f_auto,q_auto:good,c_limit,w_${width}/`);
 }
 
 export function getProductPreviewImage(product: {
