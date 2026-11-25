@@ -856,3 +856,18 @@ html body .swag-only .search-strip::after {
     width: min(38vw, 132px) !important;
   }
 }
+
+
+/* Sticky footer in normal document flow, never covering catalog content. */
+html body .app.store-experience.swag-only:not(.swag-landing) {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+html body .swag-only:not(.swag-landing) > .swag-footer {
+  flex: 0 0 auto;
+  margin-top: auto;
+  padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+}
