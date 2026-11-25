@@ -433,13 +433,49 @@ function Lab() {
   const [tab, setTab] = useState<"html" | "css">("html");
   const [preview, setPreview] = useState("");
   useEffect(() => { try { localStorage.setItem("swa_lab_v1", JSON.stringify(code)); } catch { /* storage unavailable */ } }, [code]);
-  const run = () => setPreview('<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src \'none\'; style-src \'unsafe-inline\'; img-src data:; form-action \'none\'; base-uri \'none\'"><style>' + code.css.replace(/<\/style/gi, "<\\/style") + "</style>" + code.html);
+  const documentSource = useMemo(() => ('<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src \'none\'; style-src \'unsafe-inline\'; img-src data:; form-action \'none\'; base-uri \'none\'"><style>' + code.css.replace(/<\/style/gi, "<\\/style") + "</style>" + code.html), [code]);
+  const [live, setLive] = useState(true);
+  const run = () => setPreview(documentSource);
+  useEffect(() => { if (!live) return; const timer = window.setTimeout(() => setPreview(documentSource), 180); return () => window.clearTimeout(timer); }, [documentSource, live]);
+  const editor = useRef<HTMLTextAreaElement>(null);
+  const expand = () => {
+    const el = editor.current;
+    if (!el) return false;
+    const end = el.selectionStart;
+    const before = code[tab].slice(0, end);
+    const match = before.match(/[^\s<>]+$/);
+    if (!match) return false;
+    const abbr = match[0];
+    let result = "";
+    if (tab === "html") {
+      const m = abbr.match(/^([a-z][\w-]*)?((?:[.#][\w-]+)*)(?:\*(\d+))?$/i);
+      if (!m || !abbr || (!m[1] && !m[2])) return false;
+      const tag = m[1] || "div";
+      const id = m[2].match(/#([\w-]+)/)?.[1];
+      const classes = [...m[2].matchAll(/\.([\w-]+)/g)].map(x => x[1]).join(" ");
+      const attrs = (id ? ' id="' + id + '"' : "") + (classes ? ' class="' + classes + '"' : "");
+      const single = /^(img|input|br|hr|meta|link)$/i.test(tag);
+      result = Array.from({length: Math.min(50, Number(m[3] || 1))}, () => "<" + tag + attrs + ">" + (single ? "" : "</" + tag + ">")).join("\n");
+    } else {
+      const shortcuts: Record<string,string> = {df:"display: flex;",dg:"display: grid;",db:"display: block;",dn:"display: none;",jcc:"justify-content: center;",aic:"align-items: center;",posr:"position: relative;",posa:"position: absolute;",w100p:"width: 100%;",h100p:"height: 100%;"};
+      result = shortcuts[abbr] || "";
+      const m = abbr.match(/^(m|p|mt|mb|ml|mr|pt|pb|pl|pr|w|h|gap|fz)(\d+)(p)?$/);
+      const props: Record<string,string> = {m:"margin",p:"padding",mt:"margin-top",mb:"margin-bottom",ml:"margin-left",mr:"margin-right",pt:"padding-top",pb:"padding-bottom",pl:"padding-left",pr:"padding-right",w:"width",h:"height",gap:"gap",fz:"font-size"};
+      if (!result && m) result = props[m[1]] + ": " + m[2] + (m[3] ? "%" : "px") + ";";
+      if (!result) return false;
+    }
+    const start = end - abbr.length;
+    setCode(old => ({...old,[tab]:old[tab].slice(0,start)+result+old[tab].slice(el.selectionEnd)}));
+    const cursor = start + (tab === "html" ? result.indexOf(">")+1 : result.length);
+    requestAnimationFrame(() => {el.focus();el.setSelectionRange(cursor,cursor);});
+    return true;
+  };
   return <main className="lab">
     
     <div className="lab__workspace">
       <section className="lab__panel">
-        <div className="lab__panel-heading"><nav className="lab__tabs" aria-label="Язык кода">{(["html", "css"] as const).map(t => <button key={t} className={tab === t ? "mini-button mini-button--active" : "mini-button"} aria-pressed={tab === t} onClick={() => setTab(t)}>{t.toUpperCase()}</button>)}</nav><button className="lab__run" onClick={run}>RUN</button></div>
-        <textarea className="lab__editor" aria-label="Code" spellCheck={false} autoCapitalize="off" autoCorrect="off" value={code[tab]} onChange={e => setCode(old => ({ ...old, [tab]: e.target.value }))} />
+        <div className="lab__panel-heading"><nav className="lab__tabs" aria-label="Язык кода">{(["html", "css"] as const).map(t => <button key={t} className={tab === t ? "mini-button mini-button--active" : "mini-button"} aria-pressed={tab === t} onClick={() => setTab(t)}>{t.toUpperCase()}</button>)}</nav><div className="lab__tools"><button className="mini-button" onClick={expand}>EMMET</button><button className={live ? "mini-button mini-button--active" : "mini-button"} aria-pressed={live} onClick={() => setLive(v => !v)}>LIVE</button><button className="lab__run" onClick={run}>RUN</button></div></div>
+        <textarea ref={editor} onKeyDown={e => { if(e.key === "Tab" && expand()) e.preventDefault(); }} className="lab__editor" aria-label="Code" spellCheck={false} autoCapitalize="off" autoCorrect="off" value={code[tab]} onChange={e => setCode(old => ({ ...old, [tab]: e.target.value }))} />
       </section>
       <section className="lab__panel">
         <div className="lab__panel-heading">Предпросмотр</div>
