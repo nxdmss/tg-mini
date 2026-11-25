@@ -1,7 +1,6 @@
 import { lazy, Suspense } from "react";
-import { MemoryRouter } from "react-router-dom";
 import { setAccessToken as setStudioToken, clearAccessToken as clearStudioToken } from "../../frontend/src/api";
-const Products = lazy(() => import("../../frontend/src/pages/Admin"));
+const Products = lazy(() => import("../../frontend/src/pages/AdminStandalone"));
 const Visitors = lazy(async () => ({default: (await import("../../frontend/src/components/VisitorAnalytics")).VisitorAnalytics}));
 import {
   useCallback,
@@ -1330,7 +1329,7 @@ export default function App() {
       </header>
 
       <Suspense fallback={<p className="empty">Загрузка…</p>}>
-        {section === "products" && <MemoryRouter><Products /></MemoryRouter>}
+        {section === "products" && <Products />}
         {section === "visitors" && <Visitors />}
         {section === "lab" && <Lab onBack={() => setSection("orders")} />}
       </Suspense>
