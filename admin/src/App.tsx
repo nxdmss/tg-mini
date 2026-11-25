@@ -361,7 +361,7 @@ function Login({
           SWAGYSTAN
         </div>
 
-        <h1>ЗАКАЗЫ</h1>
+        <h1>Управление</h1>
 
         <label className="field">
           <span>ПОЧТА</span>
@@ -433,11 +433,18 @@ function Lab({ onBack }: { onBack: () => void }) {
   const [preview, setPreview] = useState("");
   useEffect(() => { try { localStorage.setItem("swa_lab_v1", JSON.stringify(code)); } catch { /* storage unavailable */ } }, [code]);
   const run = () => setPreview('<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src \'none\'; style-src \'unsafe-inline\'; img-src data:; form-action \'none\'; base-uri \'none\'"><style>' + code.css.replace(/<\/style/gi, "<\\/style") + "</style>" + code.html);
-  return <main style={{ padding: 16, display: "grid", gap: 12 }}>
-    <header style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}><button className="mini-button" onClick={onBack}>ЗАКАЗЫ</button><strong>SWAGYSTAN LAB</strong><button className="mini-button" onClick={run}>RUN</button></header>
-    <nav style={{ display: "flex", gap: 8 }}>{(["html", "css"] as const).map(t => <button key={t} className={tab === t ? "mini-button mini-button--active" : "mini-button"} onClick={() => setTab(t)}>{t.toUpperCase()}</button>)}</nav>
-    <textarea aria-label="Code" spellCheck={false} autoCapitalize="off" autoCorrect="off" value={code[tab]} onChange={e => setCode(old => ({ ...old, [tab]: e.target.value }))} style={{ width: "100%", minHeight: "35dvh", background: "#171717", color: "#fff", font: "16px/1.5 monospace", padding: 12, boxSizing: "border-box" }} />
-    <iframe title="Preview" sandbox="" referrerPolicy="no-referrer" srcDoc={preview} style={{ width: "100%", height: "35dvh", background: "#fff", border: 0 }} />
+  return <main className="lab">
+    <header className="lab__header"><button className="mini-button" onClick={onBack}>‹ Заказы</button><strong>SWAGYSTAN LAB</strong><button className="lab__run" onClick={run}>RUN</button></header>
+    <div className="lab__workspace">
+      <section className="lab__panel">
+        <div className="lab__panel-heading"><nav className="lab__tabs" aria-label="Язык кода">{(["html", "css"] as const).map(t => <button key={t} className={tab === t ? "mini-button mini-button--active" : "mini-button"} aria-pressed={tab === t} onClick={() => setTab(t)}>{t.toUpperCase()}</button>)}</nav></div>
+        <textarea className="lab__editor" aria-label="Code" spellCheck={false} autoCapitalize="off" autoCorrect="off" value={code[tab]} onChange={e => setCode(old => ({ ...old, [tab]: e.target.value }))} />
+      </section>
+      <section className="lab__panel">
+        <div className="lab__panel-heading">Предпросмотр</div>
+        <iframe className="lab__preview" title="Preview" sandbox="" referrerPolicy="no-referrer" srcDoc={preview} />
+      </section>
+    </div>
   </main>;
 }
 
@@ -1272,12 +1279,12 @@ export default function App() {
           </div>
 
           <div className="title">
-            ЗАКАЗЫ
+            Заказы
           </div>
         </div>
 
         <div className="top__actions">
-          <button className="mini-button" type="button" onClick={() => setLabOpen(true)}>LAB</button>
+          <nav className="studio-links" aria-label="Разделы управления"><a href="https://swagystan.ru/admin">Товары</a><a href="https://swagystan.ru/admin/visitors">Посетители</a><button className="mini-button" type="button" onClick={() => setLabOpen(true)}>LAB</button></nav>
           <button
             className={
               notificationState ===
