@@ -1,6 +1,12 @@
 name: Deploy admin
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'admin/**'
+      - 'frontend/**'
+      - '.github/workflows/deploy-admin.yml'
 permissions:
   contents: read
 concurrency:
