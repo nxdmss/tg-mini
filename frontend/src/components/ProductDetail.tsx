@@ -31,11 +31,7 @@ export function ProductDetail({ product, onBack, onCartClick }: ProductDetailPro
   const selectedSizeData = availableSizes.find((size) => size.size === selectedSize);
   const canAdd = Boolean(ready && product.inStock && selectedSizeData);
 
-  useEffect(() => {
-    setImageIndex(0);
-    setSelectedSize(firstAvailableSize);
-    setAdded(false);
-  }, [product.id, firstAvailableSize]);
+
 
   function previousImage() {
     if (images.length > 1) setImageIndex((index) => index === 0 ? images.length - 1 : index - 1);
@@ -127,7 +123,7 @@ export function ProductDetail({ product, onBack, onCartClick }: ProductDetailPro
             >
               <CartIcon count={count} />
             </button>
-            {currentImage ? <img className="product-page__image" src={detailImage} alt={product.name} onError={(event) => {
+            {currentImage ? <img className="product-page__image" src={detailImage} decoding="async" fetchPriority="high" alt={product.name} onError={(event) => {
               if (detailImage !== currentImage && event.currentTarget.getAttribute("src") !== currentImage) {
                 event.currentTarget.src = currentImage;
               }
