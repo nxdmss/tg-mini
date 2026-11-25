@@ -281,11 +281,12 @@ export default function App() {
       key="product-overlay"
       className="product-overlay-shell"
       style={{ isolation: "isolate", background: "#fff" }}
-      initial={reducedMotion ? false : { opacity: 0 }}
+      initial={false}
       animate={{ opacity: 1 }}
-      exit={{ opacity: 0, pointerEvents: "none" }}
+      exit={{ opacity: 1, pointerEvents: "none", transition: { duration: reducedMotion ? 0 : 0.18 } }}
       transition={fadeTransition}
     >
+      <motion.div initial={reducedMotion ? false : { opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: reducedMotion ? 0 : 0.18 }}>
       <Suspense
         fallback={
           <main className="product-route-state">
@@ -311,6 +312,7 @@ export default function App() {
           </main>
         )}
       </Suspense>
+      </motion.div>
     </motion.div>
   ) : null;
 
