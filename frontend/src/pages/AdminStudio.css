@@ -74,3 +74,24 @@
 .swag-admin__size-toggle:active{transform:scale(.97)}
 .swag-admin__size-hint{font-size:10px;line-height:1.5;color:#666}
 @media(prefers-reduced-motion:reduce){.swag-admin__size-toggle{transition:none}.swag-admin__size-toggle:active{transform:none}}
+
+/* Shared studio typography and secondary screens. */
+.swag-admin__section-head{display:flex;align-items:baseline;justify-content:space-between;gap:14px;margin:0 0 30px;padding:10px 0;color:#111}
+.swag-admin__section-head h1{font:600 16px/1.4 "IBM Plex Mono",monospace;margin:0}
+.swag-admin__section-head>span{font-size:12px;color:#777;font-variant-numeric:tabular-nums}
+.swag-admin-orders,.swag-admin-analytics{max-width:1120px;margin-inline:auto}
+.swag-admin-orders__item{padding:0;border-bottom:1px solid #e9e9e9}
+.swag-admin-orders__item summary{display:grid;grid-template-columns:minmax(100px,1fr) minmax(0,1.3fr) minmax(0,1fr) auto;align-items:center;gap:14px;padding:18px 0;list-style:none;position:relative;line-height:1.5}
+.swag-admin-orders__item summary::-webkit-details-marker{display:none}
+.swag-admin-orders__item summary::after{content:"+";font-size:16px;position:absolute;right:0;top:50%;transform:translateY(-50%);color:#777}
+.swag-admin-orders__item[open] summary::after{content:"−"}
+.swag-admin-orders__item summary{padding-right:26px}
+.swag-admin-orders__item summary>span{min-width:0;overflow-wrap:anywhere}
+.swag-admin-orders__status{color:#777}
+.swag-admin-orders__total{font-weight:500;white-space:nowrap}
+.swag-admin-orders__body{background:#f6f6f6;padding:16px;margin:0 0 14px;font-size:12px;line-height:1.7;overflow-wrap:anywhere}
+.swag-admin-orders__body p{margin:0 0 10px}
+.swag-admin-orders__field{display:grid;gap:7px;max-width:280px;font-size:11px;color:#666}
+.swag-admin-orders__field select{background:#fff;color:#111;min-height:44px;padding:12px}
+.swag-admin-orders__field select:focus-visible{outline:1px solid #111}
+@media(max-width:740px){.swag-admin__section-head{margin-bottom:20px}.swag-admin-orders__item summary{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 14px;padding:15px 26px 15px 0}.swag-admin-orders__body{padding:12px}}
