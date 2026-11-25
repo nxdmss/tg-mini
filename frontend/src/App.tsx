@@ -106,7 +106,7 @@ export default function App() {
     previousLanding.current = isLanding;
     previousSection.current = section;
   }, [isLanding, section]);
-  const fadeTransition = { duration: reducedMotion ? 0 : 0.48, ease: [0.4, 0, 0.2, 1] as const };
+  const fadeTransition = { duration: reducedMotion ? 0 : 0.32, ease: [0.4, 0, 0.2, 1] as const };
 
   // iOS uses the PWA theme as a fallback behind the system status bar.
   // Keep the landing video warm-toned, but return to white on shopping pages.
@@ -253,7 +253,7 @@ export default function App() {
     document.body.style.overflow = "hidden";
     return () => { document.body.style.overflow = previous; };
   }, [productScrollLocked]);
-  useEffect(() => { if (isProductPage) setProductExiting(true); }, [isProductPage]);
+  useLayoutEffect(() => { if (isProductPage) setProductExiting(true); }, [isProductPage]);
   useEffect(() => { void loadCartDrawer(); }, []);
 
   function openProduct(product: Product) {
@@ -280,7 +280,7 @@ export default function App() {
     <motion.div
       key="product-overlay"
       className="product-overlay-shell"
-      style={{ willChange: "opacity", isolation: "isolate", background: "#fff" }}
+      style={{ isolation: "isolate", background: "#fff" }}
       initial={reducedMotion ? false : { opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0, pointerEvents: "none" }}
@@ -295,6 +295,7 @@ export default function App() {
       >
         {selectedProduct ? (
           <ProductDetail
+            key={selectedProduct.id}
             product={selectedProduct}
             onBack={closeProduct}
             onCartClick={openCart}
@@ -355,7 +356,7 @@ export default function App() {
             aria-hidden={!isLanding}
             transition={{ duration: landingDuration, ease: "easeInOut" }}
           >
-            <StoreHeroScreen />
+            <StoreHeroScreen active={isLanding} />
           </motion.div>
 
 
@@ -414,13 +415,7 @@ export default function App() {
               {visibleProducts.map((product, index) => {
                 const favorite = isFavorite(product.id);
                 return (
-                  <motion.div
-                    key={product.id}
-                    className="product-flow-item"
-                    initial={false}
-                    animate={{ opacity: introRevealed ? 1 : 0 }}
-                    transition={{ duration: reducedMotion ? 0 : 0.28, ease: "easeOut" }}
-                  >
+                  <div key={product.id} className="product-flow-item">
                     <div className={`swag-card-wrap${product.inStock ? "" : " is-sold-out"}`}>
                       <button
                         type="button"
@@ -451,7 +446,7 @@ export default function App() {
                         }}
                       />
                     </div>
-                  </motion.div>
+                  </div>
                 );
               })}
             </div>
