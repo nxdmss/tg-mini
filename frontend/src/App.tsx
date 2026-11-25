@@ -338,14 +338,12 @@ export default function App() {
         )}
       </div>
 
-      <AnimatePresence initial={false}>
-        {isLanding && (
           <motion.div
             key="landing-video"
             className="swag-hero-layer"
             onClick={() => navigate("/catalog")}
             role="button"
-            tabIndex={0}
+            tabIndex={isLanding ? 0 : -1}
             aria-label="Перейти в каталог SWAGYSTAN"
             onKeyDown={(event) => {
               if (event.key === "Enter" || event.key === " ") {
@@ -353,15 +351,15 @@ export default function App() {
                 navigate("/catalog");
               }
             }}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            initial={false}
+            animate={{ opacity: isLanding ? 1 : 0 }}
+            style={{ pointerEvents: isLanding ? "auto" : "none" }}
+            aria-hidden={!isLanding}
             transition={{ duration: landingDuration, ease: "easeInOut" }}
           >
             <StoreHeroScreen />
           </motion.div>
-        )}
-      </AnimatePresence>
+
 
       <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr)", overflow: "clip" }}>
       <AnimatePresence initial={false} custom={{ toLanding: isLanding, direction: swipeDirection }}>
