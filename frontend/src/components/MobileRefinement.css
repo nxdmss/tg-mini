@@ -873,33 +873,59 @@ html body .swag-only:not(.swag-landing) > .swag-footer {
 }
 
 
+/* Desktop-only catalog density switch. Mobile retains the original catalog. */
 html body .swag-only .header__actions .swag-grid-switch {
   position: static !important;
   transform: none !important;
   display: inline-flex !important;
   align-items: center;
   justify-content: center;
-  flex: 0 0 32px;
-  width: 32px !important;
-  min-width: 32px !important;
-  height: 44px !important;
+  flex: 0 0 36px;
+  width: 36px !important;
+  min-width: 36px !important;
+  height: 46px !important;
   padding: 0 !important;
   border: 0;
   background: transparent;
   color: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
-.swag-grid-switch svg { width: 28px; height: 28px; display: block; }
+.swag-grid-switch svg {
+  width: 28px;
+  height: 28px;
+  display: block;
+  transform-origin: center;
+  transition: transform 440ms cubic-bezier(.22,1,.36,1);
+}
+.swag-grid-switch__vertical {
+  transform-box: view-box;
+  transform-origin: center;
+  transition: transform 360ms cubic-bezier(.22,1,.36,1), opacity 240ms ease;
+}
+.swag-grid-switch.is-plus svg { transform: rotate(0deg); }
+.swag-grid-switch.is-minus svg { transform: rotate(180deg); }
+.swag-grid-switch.is-minus .swag-grid-switch__vertical { transform: scaleY(0); opacity: 0; }
+.swag-grid-switch:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+@media (min-width: 700px) {
+  html body .swag-only.swag-grid-3 .store-experience__catalog .grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+  html body .swag-only.swag-grid-6 .store-experience__catalog .grid {
+    grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+    gap: 8px 4px !important;
+  }
+  html body .swag-grid-6 .product-flow-item { min-width: 0; }
+  html body .swag-grid-6 .card__name,
+  html body .swag-grid-6 .card__price { font-size: clamp(8px, 1.6vw, 13px) !important; overflow-wrap: anywhere; }
+  html body .swag-grid-6 .card__body { padding: 3px 0 !important; }
+}
 @media (max-width: 699px) {
-  .swag-grid-switch svg { width: 25px; height: 25px; }
+  html body .swag-only .header__actions .swag-grid-switch { display: none !important; }
+  html body .swag-only .store-experience__catalog .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
 }
-html body .swag-only.swag-grid-3 .store-experience__catalog .grid {
-  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+@media (prefers-reduced-motion: reduce) {
+  .swag-grid-switch svg, .swag-grid-switch__vertical { transition: none; }
 }
-html body .swag-only.swag-grid-6 .store-experience__catalog .grid {
-  grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
-  gap: 8px 4px !important;
-}
-html body .swag-grid-6 .product-flow-item { min-width: 0; }
-html body .swag-grid-6 .card__name,
-html body .swag-grid-6 .card__price { font-size: clamp(8px, 1.6vw, 13px) !important; overflow-wrap: anywhere; }
-html body .swag-grid-6 .card__body { padding: 3px 0 !important; }

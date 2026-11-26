@@ -426,7 +426,11 @@ export default function App() {
               {visibleProducts.map((product, index) => {
                 const favorite = isFavorite(product.id);
                 return (
-                  <div key={product.id} className="product-flow-item">
+                  <motion.div key={product.id} className="product-flow-item"
+                    layout={!reducedMotion}
+                    layoutDependency={gridColumns}
+                    transition={{ layout: { duration: 0.48, ease: [0.22, 1, 0.36, 1] } }}
+                  >
                     <div className={`swag-card-wrap${product.inStock ? "" : " is-sold-out"}`}>
                       <button
                         type="button"
@@ -457,7 +461,7 @@ export default function App() {
                         }}
                       />
                     </div>
-                  </div>
+                  </motion.div>
                 );
               })}
             </div>

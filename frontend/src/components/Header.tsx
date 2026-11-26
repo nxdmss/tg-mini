@@ -126,9 +126,10 @@ export function Header({
 
         {showCart && <div className="header__actions">
           {gridColumns && onGridColumnsChange && (
-            <button type="button" className="header-action swag-grid-switch" aria-label={gridColumns === 6 ? "Увеличить товары" : "Уменьшить товары"} onClick={() => onGridColumnsChange(gridColumns === 6 ? 3 : 6)}>
+            <button type="button" className={`header-action swag-grid-switch${gridColumns === 6 ? " is-plus" : " is-minus"}`} aria-label={gridColumns === 6 ? "Увеличить товары" : "Уменьшить товары"} onClick={() => onGridColumnsChange(gridColumns === 6 ? 3 : 6)}>
               <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <path d={gridColumns === 6 ? "M5 12H19 M12 5V19" : "M5 12H19"} stroke="currentColor" strokeWidth="2" strokeLinecap="square" />
+                <path d="M4 12H20" stroke="currentColor" strokeWidth="2.35" strokeLinecap="square" />
+                <path className="swag-grid-switch__vertical" d="M12 4V20" stroke="currentColor" strokeWidth="2.35" strokeLinecap="square" />
               </svg>
             </button>
           )}
