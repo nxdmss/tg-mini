@@ -36,13 +36,14 @@ html body .swag-only .store-experience__catalog .card__name {
   margin-top: 0 !important;
 }
 
-/* Fine, one-direction graphite hatching on unavailable product photos. */
+/* Horizontal irregular graphite hatching on unavailable product photos. */
 .swag-only .store-experience__catalog .card__sold-out-static {
   position: absolute;
   inset: 0;
   z-index: 6;
   display: block;
-  background: url("/icons/sold-out-hatching-v1.svg") center / 100% 100% no-repeat;
+  background: url("/icons/sold-out-horizontal-v2.svg") center / 100% 100% no-repeat;
+  opacity: .68;
   pointer-events: none;
   user-select: none;
 }
