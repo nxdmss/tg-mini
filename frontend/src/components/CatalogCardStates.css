@@ -36,20 +36,13 @@ html body .swag-only .store-experience__catalog .card__name {
   margin-top: 0 !important;
 }
 
-/* Full-frame analogue TV snow. Static, monochrome, no text or motion. */
+/* Fine, one-direction graphite hatching on unavailable product photos. */
 .swag-only .store-experience__catalog .card__sold-out-static {
   position: absolute;
   inset: 0;
   z-index: 6;
   display: block;
-  background-color: #909090;
-  background-image: url("/icons/sold-out-static.svg");
-  background-repeat: repeat;
-  background-size: 180px 180px;
-  /* Hand-scratched silhouette: the TV snow shows through pencil strokes. */
-  -webkit-mask: url("/icons/sold-out-scribble-v1.svg") center / 100% 100% no-repeat;
-  mask: url("/icons/sold-out-scribble-v1.svg") center / 100% 100% no-repeat;
-  opacity: .42;
+  background: url("/icons/sold-out-hatching-v1.svg") center / 100% 100% no-repeat;
   pointer-events: none;
   user-select: none;
 }
