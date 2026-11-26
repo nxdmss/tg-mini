@@ -36,35 +36,29 @@ html body .swag-only .store-experience__catalog .card__name {
   margin-top: 0 !important;
 }
 
-/* Plain oversized SOLD OUT type over an untouched product photo. */
-.swag-only .store-experience__catalog .card__sold-out-stamp {
+/* Static editorial signal interference, without blocking product controls. */
+.swag-only .store-experience__catalog .card__sold-out-glitch {
   position: absolute;
-  top: 50%;
-  left: 50%;
+  inset: 0;
   z-index: 6;
   display: block;
-  transform: translate(-50%, -50%) rotate(-5deg);
-  /* White fill remains readable on black fabric; dark outline stays
-     readable on white/light fabric. No background or image dimming. */
-  color: #fff;
-  font-family: "IBM Plex Mono", monospace !important;
-  font-size: clamp(26px, 4vw, 58px);
-  font-weight: 900 !important;
-  -webkit-text-stroke: 3px #111;
-  paint-order: stroke fill;
-  letter-spacing: -.06em;
-  line-height: .94;
-  white-space: nowrap;
-  text-align: center;
+  overflow: hidden;
   pointer-events: none;
   user-select: none;
 }
-
-@media (max-width: 699px) {
-  .swag-only .store-experience__catalog .card__sold-out-stamp {
-    font-size: clamp(21px, 6.1vw, 33px);
-    -webkit-text-stroke: 2px #111;
-  }
+.swag-only .store-experience__catalog .card__sold-out-glitch svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  opacity: .94;
+}
+/* Keep the disturbance on the image, not the product name or price. */
+.swag-only .store-experience__catalog .card__sold-out-glitch::after {
+  content: "";
+  position: absolute;
+  inset: 23% 0 22%;
+  background: repeating-linear-gradient(0deg, transparent 0 5px, rgba(17,17,17,.09) 5px 6px);
+  pointer-events: none;
 }
 
 /* Catalog cards: title and price only. Keep all product data. */
