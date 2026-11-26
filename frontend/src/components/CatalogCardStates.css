@@ -36,29 +36,18 @@ html body .swag-only .store-experience__catalog .card__name {
   margin-top: 0 !important;
 }
 
-/* Static editorial signal interference, without blocking product controls. */
-.swag-only .store-experience__catalog .card__sold-out-glitch {
+/* Full-frame analogue TV snow. Static, monochrome, no text or motion. */
+.swag-only .store-experience__catalog .card__sold-out-static {
   position: absolute;
   inset: 0;
   z-index: 6;
   display: block;
-  overflow: hidden;
+  background-color: #909090;
+  background-image: url("/icons/sold-out-static.svg");
+  background-repeat: repeat;
+  background-size: 180px 180px;
   pointer-events: none;
   user-select: none;
-}
-.swag-only .store-experience__catalog .card__sold-out-glitch svg {
-  display: block;
-  width: 100%;
-  height: 100%;
-  opacity: .94;
-}
-/* Keep the disturbance on the image, not the product name or price. */
-.swag-only .store-experience__catalog .card__sold-out-glitch::after {
-  content: "";
-  position: absolute;
-  inset: 23% 0 22%;
-  background: repeating-linear-gradient(0deg, transparent 0 5px, rgba(17,17,17,.09) 5px 6px);
-  pointer-events: none;
 }
 
 /* Catalog cards: title and price only. Keep all product data. */
