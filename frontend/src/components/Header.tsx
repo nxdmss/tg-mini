@@ -108,12 +108,6 @@ export function Header({
           </span>
         </motion.button>
 
-        {gridColumns && onGridColumnsChange && (
-          <div className="swag-grid-switch" role="group" aria-label="Размер товаров">
-            <button type="button" aria-label="Уменьшить товары" aria-pressed={gridColumns === 6} onClick={() => onGridColumnsChange(6)}>−</button>
-            <button type="button" aria-label="Увеличить товары" aria-pressed={gridColumns === 3} onClick={() => onGridColumnsChange(3)}>+</button>
-          </div>
-        )}
         {navItems && navItems.length > 0 && (
           <nav className="swag-nav swag-nav--header" aria-label="Навигация магазина">
             {navItems.map((item) => (
@@ -131,6 +125,13 @@ export function Header({
         )}
 
         {showCart && <div className="header__actions">
+          {gridColumns && onGridColumnsChange && (
+            <button type="button" className="header-action swag-grid-switch" aria-label={gridColumns === 6 ? "Увеличить товары" : "Уменьшить товары"} onClick={() => onGridColumnsChange(gridColumns === 6 ? 3 : 6)}>
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d={gridColumns === 6 ? "M5 12H19 M12 5V19" : "M5 12H19"} stroke="currentColor" strokeWidth="2" strokeLinecap="square" />
+              </svg>
+            </button>
+          )}
           <button
             type="button"
             className="header-action header-cart"
