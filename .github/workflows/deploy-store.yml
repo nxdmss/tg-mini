@@ -1,0 +1,40 @@
+name: Deploy storefront
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/deploy-store.yml'
+permissions:
+  contents: read
+concurrency:
+  group: deploy-store
+  cancel-in-progress: false
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci
+        working-directory: frontend
+      - run: npm run build
+        working-directory: frontend
+        env:
+          VITE_API_URL: https://api.swagystan.ru
+      - name: Publish storefront
+        env:
+          DEPLOY_KEY: ${{ secrets.STORE_DEPLOY_SSH_KEY }}
+        run: |
+          set -eu
+          test -n "$DEPLOY_KEY"
+          umask 077
+          mkdir -p ~/.ssh
+          printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/deploy_key
+          trap 'rm -f ~/.ssh/deploy_key' EXIT
+          printf '%s\n' '158.160.138.84 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICqsP9KhJH1jMf4L9aIORUhzjhKPzC0X0COvDok4iVgc' > ~/.ssh/known_hosts
+          test -s frontend/dist/index.html
+          rsync -rt --delay-updates -e 'ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o BatchMode=yes' frontend/dist/ swa6admin@158.160.138.84:./
