@@ -36,14 +36,18 @@ html body .swag-only .store-experience__catalog .card__name {
   margin-top: 0 !important;
 }
 
-/* Horizontal irregular graphite hatching on unavailable product photos. */
+/* SOLD OUT: a flat black mourning ribbon crossing the photo's lower-right corner. */
 .swag-only .store-experience__catalog .card__sold-out-static {
   position: absolute;
-  inset: 0;
+  inset: auto 0 0 auto;
   z-index: 6;
   display: block;
-  background: url("/icons/sold-out-horizontal-v2.svg") center / 100% 100% no-repeat;
-  opacity: .68;
+  width: clamp(64px, 34%, 120px);
+  aspect-ratio: 1;
+  height: auto;
+  background: #000;
+  clip-path: polygon(0 100%, 24% 100%, 100% 24%, 100% 0);
+  opacity: 1;
   pointer-events: none;
   user-select: none;
 }
