@@ -65,8 +65,8 @@ html body .swag-only .store-experience__catalog .card__name {
   opacity: 1;
   color: #fff;
   font-family: "IBM Plex Mono", monospace !important;
-  font-size: clamp(17px, 3.4vw, 26px);
-  font-weight: 700;
+  font-size: clamp(21px, 4.4vw, 34px);
+  font-weight: 800;
   letter-spacing: .12em;
   line-height: 1;
   text-align: center;
