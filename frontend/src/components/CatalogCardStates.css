@@ -46,6 +46,7 @@ html body .swag-only .store-experience__catalog .card__name {
   background-image: url("/icons/sold-out-static.svg");
   background-repeat: repeat;
   background-size: 180px 180px;
+  opacity: .42;
   pointer-events: none;
   user-select: none;
 }
