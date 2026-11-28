@@ -98,7 +98,25 @@ export default function App() {
   const swipeTransition = { duration: reducedMotion ? 0 : 0.58, ease: [0.4, 0, 0.2, 1] as const };
   const isLanding = location.pathname === "/" && !isProductPage;
   const landingDuration = reducedMotion ? 0 : 0.55;
+  const heroPointer = useRef<{ id: number; x: number; y: number } | null>(null);
+  const heroNavigating = useRef(false);
   const previousLanding = useRef(isLanding);
+  const heroHeight = "var(--swag-iphone-screen-height, 100lvh)";
+
+  // A landing gesture should navigate, never scroll the catalogue underneath.
+  useLayoutEffect(() => {
+    heroPointer.current = null;
+    if (isLanding) heroNavigating.current = false;
+    if (isLanding || previousLanding.current) {
+      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    }
+  }, [isLanding]);
+
+  function enterCatalog() {
+    if (!isLanding || heroNavigating.current) return;
+    heroNavigating.current = true;
+    navigate("/catalog");
+  }
   const previousSection = useRef(section);
   const fromLanding = previousLanding.current;
   const swipeDirection = SECTION_ORDER.indexOf(section) < SECTION_ORDER.indexOf(previousSection.current) ? -1 : 1;
@@ -324,7 +342,8 @@ export default function App() {
   ) : null;
 
   return (
-    <div className={`app store-experience swag-only swag-grid-${gridColumns} ${isLanding ? "swag-landing" : ""} ${introRevealed ? "swag-intro-revealed" : "swag-intro-hidden"}`}>
+    <div className={`app store-experience swag-only swag-grid-${gridColumns} ${isLanding ? "swag-landing" : ""} ${introRevealed ? "swag-intro-revealed" : "swag-intro-hidden"}`}
+      style={isLanding ? { height: heroHeight, overflow: "hidden", overscrollBehavior: "none" } : undefined}>
       <StoreIntro catalogLoading={isLanding ? false : loading} onReveal={revealIntro} />
       <div className="store-top store-experience__top">
         <Header
@@ -335,7 +354,7 @@ export default function App() {
           showCart={!isLanding}
           gridColumns={!isLanding && (section === "catalog" || section === "favorites") ? gridColumns : undefined}
           onGridColumnsChange={setGridColumns}
-          onLogoClick={isLanding ? () => navigate("/catalog") : undefined}
+          onLogoClick={isLanding ? enterCatalog : undefined}
           navItems={isLanding ? undefined : [
             { id: "catalog", title: "КАТАЛОГ", active: section === "catalog", onSelect: () => openSection("catalog") },
             { id: "favorites", title: "ИЗБРАННОЕ", active: section === "favorites", onSelect: () => openSection("favorites") },
@@ -351,19 +370,42 @@ export default function App() {
           <motion.div
             key="landing-video"
             className="swag-hero-layer"
-            onClick={() => navigate("/catalog")}
+            onClick={enterCatalog}
+            onPointerDown={(event) => {
+              if (!isLanding || !event.isPrimary || event.pointerType === "mouse") return;
+              heroPointer.current = { id: event.pointerId, x: event.clientX, y: event.clientY };
+              event.currentTarget.setPointerCapture(event.pointerId);
+            }}
+            onPointerUp={(event) => {
+              const start = heroPointer.current;
+              heroPointer.current = null;
+              if (!start || start.id !== event.pointerId) return;
+              const distance = Math.hypot(event.clientX - start.x, event.clientY - start.y);
+              if (distance >= 32) enterCatalog();
+            }}
+            onPointerCancel={() => { heroPointer.current = null; }}
             role="button"
             tabIndex={isLanding ? 0 : -1}
             aria-label="Перейти в каталог SWAGYSTAN"
             onKeyDown={(event) => {
               if (event.key === "Enter" || event.key === " ") {
                 event.preventDefault();
-                navigate("/catalog");
+                enterCatalog();
               }
             }}
             initial={false}
             animate={{ opacity: isLanding ? 1 : 0 }}
-            style={{ pointerEvents: isLanding ? "auto" : "none", zIndex: 19 }}
+            style={{
+              pointerEvents: isLanding ? "auto" : "none",
+              zIndex: 19,
+              position: "fixed",
+              inset: 0,
+              width: "100%",
+              height: heroHeight,
+              minHeight: heroHeight,
+              touchAction: "none",
+              overscrollBehavior: "none",
+            }}
             aria-hidden={!isLanding}
             transition={{ duration: landingDuration, ease: "easeInOut" }}
           >
