@@ -94,22 +94,27 @@ export default function App() {
 
   const productIdFromUrl = getProductId(location.pathname);
   const isProductPage = Boolean(productIdFromUrl);
-  const section = readSection(isProductPage ? sessionStorage.getItem("swagystan:product-path") || "/catalog" : location.pathname);
-  const swipeTransition = { duration: reducedMotion ? 0 : 0.58, ease: [0.4, 0, 0.2, 1] as const };
   const isLanding = location.pathname === "/" && !isProductPage;
+  const previousSection = useRef<Section>("catalog");
+  // Keep the last storefront page mounted and unchanged underneath the campaign.
+  const section = isLanding ? previousSection.current : readSection(isProductPage ? sessionStorage.getItem("swagystan:product-path") || "/catalog" : location.pathname);
+  const swipeTransition = { duration: reducedMotion ? 0 : 0.58, ease: [0.4, 0, 0.2, 1] as const };
   const landingDuration = reducedMotion ? 0 : 0.55;
   const heroPointer = useRef<{ id: number; x: number; y: number } | null>(null);
   const heroNavigating = useRef(false);
   const previousLanding = useRef(isLanding);
   const heroHeight = "var(--swag-iphone-screen-height, 100lvh)";
 
-  // A landing gesture should navigate, never scroll the catalogue underneath.
+  // Freeze input, not geometry: do not resize the storefront or reset its scroll.
+  const heroLayer = useRef<HTMLDivElement>(null);
   useLayoutEffect(() => {
     heroPointer.current = null;
-    if (isLanding) heroNavigating.current = false;
-    if (isLanding || previousLanding.current) {
-      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
-    }
+    if (!isLanding) return;
+    heroNavigating.current = false;
+    const layer = heroLayer.current;
+    const preventScroll = (event: Event) => event.preventDefault();
+    layer?.addEventListener("wheel", preventScroll, { passive: false });
+    return () => layer?.removeEventListener("wheel", preventScroll);
   }, [isLanding]);
 
   function enterCatalog() {
@@ -117,12 +122,11 @@ export default function App() {
     heroNavigating.current = true;
     navigate("/catalog");
   }
-  const previousSection = useRef(section);
   const fromLanding = previousLanding.current;
   const swipeDirection = SECTION_ORDER.indexOf(section) < SECTION_ORDER.indexOf(previousSection.current) ? -1 : 1;
   useEffect(() => {
     previousLanding.current = isLanding;
-    previousSection.current = section;
+    if (!isLanding) previousSection.current = section;
   }, [isLanding, section]);
   const fadeTransition = { duration: reducedMotion ? 0 : 0.32, ease: [0.4, 0, 0.2, 1] as const };
 
@@ -342,34 +346,32 @@ export default function App() {
   ) : null;
 
   return (
-    <div className={`app store-experience swag-only swag-grid-${gridColumns} ${isLanding ? "swag-landing" : ""} ${introRevealed ? "swag-intro-revealed" : "swag-intro-hidden"}`}
-      style={isLanding ? { height: heroHeight, overflow: "hidden", overscrollBehavior: "none" } : undefined}>
+    <div className={`app store-experience swag-only swag-grid-${gridColumns} ${introRevealed ? "swag-intro-revealed" : "swag-intro-hidden"}`}>
       <StoreIntro catalogLoading={isLanding ? false : loading} onReveal={revealIntro} />
-      <div className="store-top store-experience__top">
+      <div className="store-top store-experience__top" inert={isLanding}>
         <Header
           onCartClick={openCart}
-          homePath={isLanding ? "/catalog" : "/"}
-          logoPosition={isLanding ? "center" : "left"}
-          landing={isLanding}
-          showCart={!isLanding}
-          gridColumns={!isLanding && (section === "catalog" || section === "favorites") ? gridColumns : undefined}
+          homePath="/"
+          logoPosition="left"
+          showCart
+          gridColumns={section === "catalog" || section === "favorites" ? gridColumns : undefined}
           onGridColumnsChange={setGridColumns}
-          onLogoClick={isLanding ? enterCatalog : undefined}
-          navItems={isLanding ? undefined : [
+          navItems={[
             { id: "catalog", title: "КАТАЛОГ", active: section === "catalog", onSelect: () => openSection("catalog") },
             { id: "favorites", title: "ИЗБРАННОЕ", active: section === "favorites", onSelect: () => openSection("favorites") },
             { id: "about", title: "О НАС", active: section === "about", onSelect: () => openSection("about") },
             { id: "account", title: "КАБИНЕТ", active: section === "account", onSelect: () => openSection("account") },
           ]}
         />
-        {!isLanding && section === "catalog" && (
+        {section === "catalog" && (
           <Filters categories={categories} query={query} onChange={setQuery} />
         )}
       </div>
 
           <motion.div
             key="landing-video"
-            className="swag-hero-layer"
+            ref={heroLayer}
+            className={`swag-hero-layer${isLanding ? " swag-landing" : ""}`}
             onClick={enterCatalog}
             onPointerDown={(event) => {
               if (!isLanding || !event.isPrimary || event.pointerType === "mouse") return;
@@ -397,7 +399,7 @@ export default function App() {
             animate={{ opacity: isLanding ? 1 : 0 }}
             style={{
               pointerEvents: isLanding ? "auto" : "none",
-              zIndex: 19,
+              zIndex: 30,
               position: "fixed",
               inset: 0,
               width: "100%",
@@ -410,10 +412,30 @@ export default function App() {
             transition={{ duration: landingDuration, ease: "easeInOut" }}
           >
             <StoreHeroScreen active={isLanding} />
+            <div aria-hidden="true" style={{
+              position: "absolute",
+              zIndex: 1,
+              top: "env(safe-area-inset-top, 0px)",
+              left: 0,
+              right: 0,
+              height: "clamp(76px, 8vw, 88px)",
+              display: "grid",
+              placeItems: "center",
+              pointerEvents: "none",
+            }}>
+              <img src="/logo.png" alt="" draggable={false} style={{
+                display: "block",
+                width: "auto",
+                height: "clamp(50px, 8vw, 72px)",
+                maxWidth: "min(32vw, 230px)",
+                objectFit: "contain",
+                filter: "brightness(0)",
+              }} />
+            </div>
           </motion.div>
 
 
-      <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr)", overflow: "clip", flex: "1 0 auto" }}>
+      <div inert={isLanding} style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr)", overflow: "clip", flex: "1 0 auto" }}>
       <AnimatePresence initial={false} custom={{ toLanding: isLanding, direction: swipeDirection }}>
           <motion.div
             key={section}
@@ -514,14 +536,12 @@ export default function App() {
       </AnimatePresence>
       </div>
 
-      {!isLanding && (
-        <motion.footer className="footer swag-footer" initial={false} animate={{ opacity: isLanding ? 0 : 1 }} transition={{ duration: landingDuration, ease: "easeInOut" }} style={{ pointerEvents: isLanding ? "none" : "auto" }}>
+        <motion.footer className="footer swag-footer" inert={isLanding} initial={false} style={{ pointerEvents: isLanding ? "none" : "auto" }}>
           <div className="container footer__inner">
             <span className="footer__brand">SWAGYSTAN © <span className="swag-num">{new Date().getFullYear()}</span></span>
             <button type="button" onClick={() => openSection("about")}>О НАС ↗</button>
           </div>
         </motion.footer>
-      )}
       <AnimatePresence initial={false} onExitComplete={() => setProductExiting(false)}>{productOverlay}</AnimatePresence>
       <Suspense fallback={null}>
         <AnimatePresence initial={false}>
