@@ -103,10 +103,39 @@ export default function App() {
   const heroPointer = useRef<{ id: number; x: number; y: number } | null>(null);
   const heroNavigating = useRef(false);
   const previousLanding = useRef(isLanding);
-  const heroHeight = "var(--swag-iphone-screen-height, 100lvh)";
+  // Measure the permanent video surface before any route transition.
+  // Mobile browser toolbar changes must not alter its crop.
+  const heroLayer = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    const layer = heroLayer.current;
+    if (!layer) return;
+    let viewportWidth = window.innerWidth;
+    let viewportHeight = window.innerHeight;
+    let frame = 0;
+    const measure = () => {
+      layer.style.removeProperty("--swag-hero-height");
+      const height = layer.getBoundingClientRect().height;
+      if (height > 0) layer.style.setProperty("--swag-hero-height", `${height}px`);
+    };
+    measure();
+    const resize = () => {
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      const mobile = window.matchMedia("(hover: none) and (pointer: coarse)").matches;
+      if (width === viewportWidth && (mobile || height === viewportHeight)) return;
+      viewportWidth = width;
+      viewportHeight = height;
+      window.cancelAnimationFrame(frame);
+      frame = window.requestAnimationFrame(measure);
+    };
+    window.addEventListener("resize", resize);
+    return () => {
+      window.removeEventListener("resize", resize);
+      window.cancelAnimationFrame(frame);
+    };
+  }, []);
 
   // Freeze input, not geometry: do not resize the storefront or reset its scroll.
-  const heroLayer = useRef<HTMLDivElement>(null);
   useLayoutEffect(() => {
     heroPointer.current = null;
     if (!isLanding) return;
@@ -114,7 +143,11 @@ export default function App() {
     const layer = heroLayer.current;
     const preventScroll = (event: Event) => event.preventDefault();
     layer?.addEventListener("wheel", preventScroll, { passive: false });
-    return () => layer?.removeEventListener("wheel", preventScroll);
+    layer?.addEventListener("touchmove", preventScroll, { passive: false });
+    return () => {
+      layer?.removeEventListener("wheel", preventScroll);
+      layer?.removeEventListener("touchmove", preventScroll);
+    };
   }, [isLanding]);
 
   function enterCatalog() {
@@ -130,13 +163,19 @@ export default function App() {
   }, [isLanding, section]);
   const fadeTransition = { duration: reducedMotion ? 0 : 0.32, ease: [0.4, 0, 0.2, 1] as const };
 
-  // iOS uses the PWA theme as a fallback behind the system status bar.
-  // Keep the landing video warm-toned, but return to white on shopping pages.
+  // Change browser chrome only after the video fade, never mid-transition.
+  const themeInitialized = useRef(false);
   useEffect(() => {
     const theme = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
-    theme?.setAttribute("content", isLanding ? "#080808" : "#ffffff");
-    return () => theme?.setAttribute("content", "#ffffff");
-  }, [isLanding]);
+    const applyTheme = () => theme?.setAttribute("content", isLanding ? "#080808" : "#ffffff");
+    if (!themeInitialized.current) {
+      themeInitialized.current = true;
+      applyTheme();
+      return;
+    }
+    const timer = window.setTimeout(applyTheme, landingDuration * 1000);
+    return () => window.clearTimeout(timer);
+  }, [isLanding, landingDuration]);
 
   const { ids: favoriteIds, isFavorite, toggle } = useFavorites();
 
@@ -371,7 +410,7 @@ export default function App() {
           <motion.div
             key="landing-video"
             ref={heroLayer}
-            className={`swag-hero-layer${isLanding ? " swag-landing" : ""}`}
+            className="swag-hero-layer"
             onClick={enterCatalog}
             onPointerDown={(event) => {
               if (!isLanding || !event.isPrimary || event.pointerType === "mouse") return;
@@ -400,13 +439,6 @@ export default function App() {
             style={{
               pointerEvents: isLanding ? "auto" : "none",
               zIndex: 30,
-              position: "fixed",
-              inset: 0,
-              width: "100%",
-              height: heroHeight,
-              minHeight: heroHeight,
-              touchAction: "none",
-              overscrollBehavior: "none",
             }}
             aria-hidden={!isLanding}
             transition={{ duration: landingDuration, ease: "easeInOut" }}
