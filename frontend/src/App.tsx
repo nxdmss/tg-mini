@@ -99,7 +99,10 @@ export default function App() {
   // Keep the last storefront page mounted and unchanged underneath the campaign.
   const section = isLanding ? previousSection.current : readSection(isProductPage ? sessionStorage.getItem("swagystan:product-path") || "/catalog" : location.pathname);
   const swipeTransition = { duration: reducedMotion ? 0 : 0.58, ease: [0.4, 0, 0.2, 1] as const };
-  const landingDuration = reducedMotion ? 0 : 0.55;
+  const landingDuration = reducedMotion ? 0 : 0.85;
+  const [heroVisible, setHeroVisible] = useState(isLanding);
+  const [heroPlaying, setHeroPlaying] = useState(isLanding);
+  const heroBlocking = isLanding || heroVisible || heroPlaying;
   const heroPointer = useRef<{ id: number; x: number; y: number } | null>(null);
   const heroNavigating = useRef(false);
   const previousLanding = useRef(isLanding);
@@ -135,11 +138,54 @@ export default function App() {
     };
   }, []);
 
-  // Freeze input, not geometry: do not resize the storefront or reset its scroll.
+  // Prepare the moving video before revealing it. Keep playback alive throughout
+  // the outgoing fade, and pause only after the video is fully transparent.
   useLayoutEffect(() => {
     heroPointer.current = null;
-    if (!isLanding) return;
+    if (!isLanding) {
+      setHeroVisible(false);
+      const timer = window.setTimeout(() => setHeroPlaying(false), landingDuration * 1000 + 50);
+      return () => window.clearTimeout(timer);
+    }
     heroNavigating.current = false;
+    setHeroPlaying(true);
+    const video = heroLayer.current?.querySelector("video");
+    if (reducedMotion || !video) {
+      setHeroVisible(true);
+      return;
+    }
+    let frame = 0;
+    let videoFrame: number | undefined;
+    let cancelled = false;
+    const reveal = () => {
+      if (cancelled) return;
+      window.cancelAnimationFrame(frame);
+      frame = window.requestAnimationFrame(() => { if (!cancelled) setHeroVisible(true); });
+    };
+    const prepare = () => {
+      if (videoFrame !== undefined) return;
+      if (typeof video.requestVideoFrameCallback === "function") {
+        videoFrame = video.requestVideoFrameCallback(reveal);
+      } else {
+        reveal();
+      }
+    };
+    video.addEventListener("playing", prepare);
+    if (!video.paused && video.readyState >= 2) prepare();
+    // A paused or autoplay-restricted video may not produce a new frame.
+    const timer = window.setTimeout(reveal, 180);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+      window.cancelAnimationFrame(frame);
+      video.removeEventListener("playing", prepare);
+      if (videoFrame !== undefined) video.cancelVideoFrameCallback?.(videoFrame);
+    };
+  }, [isLanding, landingDuration, reducedMotion]);
+
+  // Prevent scroll-through for the entire fade, including its final frames.
+  useLayoutEffect(() => {
+    if (!heroBlocking) return;
     const layer = heroLayer.current;
     const preventScroll = (event: Event) => event.preventDefault();
     layer?.addEventListener("wheel", preventScroll, { passive: false });
@@ -148,7 +194,7 @@ export default function App() {
       layer?.removeEventListener("wheel", preventScroll);
       layer?.removeEventListener("touchmove", preventScroll);
     };
-  }, [isLanding]);
+  }, [heroBlocking]);
 
   function enterCatalog() {
     if (!isLanding || heroNavigating.current) return;
@@ -175,7 +221,7 @@ export default function App() {
     }
     const timer = window.setTimeout(applyTheme, landingDuration * 1000);
     return () => window.clearTimeout(timer);
-  }, [isLanding, landingDuration]);
+  }, [isLanding, landingDuration, heroVisible]);
 
   const { ids: favoriteIds, isFavorite, toggle } = useFavorites();
 
@@ -387,7 +433,7 @@ export default function App() {
   return (
     <div className={`app store-experience swag-only swag-grid-${gridColumns} ${introRevealed ? "swag-intro-revealed" : "swag-intro-hidden"}`}>
       <StoreIntro catalogLoading={isLanding ? false : loading} onReveal={revealIntro} />
-      <div className="store-top store-experience__top" inert={isLanding}>
+      <div className="store-top store-experience__top" inert={heroBlocking}>
         <Header
           onCartClick={openCart}
           homePath="/"
@@ -407,7 +453,7 @@ export default function App() {
         )}
       </div>
 
-          <motion.div
+          <div
             key="landing-video"
             ref={heroLayer}
             className="swag-hero-layer"
@@ -434,16 +480,15 @@ export default function App() {
                 enterCatalog();
               }
             }}
-            initial={false}
-            animate={{ opacity: isLanding ? 1 : 0 }}
             style={{
-              pointerEvents: isLanding ? "auto" : "none",
+              opacity: heroVisible ? 1 : 0,
+              transition: `opacity ${landingDuration}s cubic-bezier(0.42, 0, 0.58, 1)`,
+              pointerEvents: heroBlocking ? "auto" : "none",
               zIndex: 30,
             }}
             aria-hidden={!isLanding}
-            transition={{ duration: landingDuration, ease: "easeInOut" }}
           >
-            <StoreHeroScreen active={isLanding} />
+            <StoreHeroScreen active={isLanding || heroPlaying} />
             <div aria-hidden="true" style={{
               position: "absolute",
               zIndex: 1,
@@ -464,10 +509,10 @@ export default function App() {
                 filter: "brightness(0)",
               }} />
             </div>
-          </motion.div>
+          </div>
 
 
-      <div inert={isLanding} style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr)", overflow: "clip", flex: "1 0 auto" }}>
+      <div inert={heroBlocking} style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr)", overflow: "clip", flex: "1 0 auto" }}>
       <AnimatePresence initial={false} custom={{ toLanding: isLanding, direction: swipeDirection }}>
           <motion.div
             key={section}
@@ -568,7 +613,7 @@ export default function App() {
       </AnimatePresence>
       </div>
 
-        <motion.footer className="footer swag-footer" inert={isLanding} initial={false} style={{ pointerEvents: isLanding ? "none" : "auto" }}>
+        <motion.footer className="footer swag-footer" inert={heroBlocking} initial={false} style={{ pointerEvents: isLanding ? "none" : "auto" }}>
           <div className="container footer__inner">
             <span className="footer__brand">SWAGYSTAN © <span className="swag-num">{new Date().getFullYear()}</span></span>
             <button type="button" onClick={() => openSection("about")}>О НАС ↗</button>
