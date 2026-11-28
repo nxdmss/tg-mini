@@ -140,7 +140,7 @@
   height: 100%;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 0;
   padding: 0 16px max(14px, env(safe-area-inset-bottom, 0px));
 }
 .cart-window--mobile .checkout-cart-list {
@@ -251,6 +251,7 @@
 }
 .cart-window--mobile .checkout-cart-view > .checkout-submit-btn {
   flex-shrink: 0;
+  margin-top: 10px;
   min-height: 48px;
   padding: 10px 12px;
   font-size: 13px;
