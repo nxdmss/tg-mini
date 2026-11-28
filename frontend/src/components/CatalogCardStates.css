@@ -194,3 +194,35 @@ html body .swag-only .store-experience__catalog .card__price {
     transform: none;
   }
 }
+
+
+/* Mobile: refined shopping bag proportions without shrinking the tap targets.
+   Keep the desktop icon and checkout illustrations unchanged. */
+@media (max-width: 699px) {
+  html body .swag-only .store-top .header .header-cart .sketch-cart,
+  html body .swag-only .product-page__cart .sketch-cart {
+    width: 34px !important;
+    height: 30px !important;
+  }
+
+  html body .swag-only .store-top .header .header-cart .sharp-bag__mark,
+  html body .swag-only .product-page__cart .sharp-bag__mark {
+    width: 22px !important;
+    height: 22px !important;
+  }
+
+  html body .swag-only .store-experience__catalog .swag-card-quickadd__icon,
+  html body .swag-only .store-experience__catalog .swag-card-quickadd__icon .sharp-bag__mark,
+  html body .swag-only .product-page__cart-floating .sketch-cart,
+  html body .swag-only .product-page__cart-floating .sharp-bag__mark {
+    width: 20px !important;
+    height: 20px !important;
+  }
+
+  html body .swag-only .header-cart .sharp-bag__mark path,
+  html body .swag-only .swag-card-quickadd__icon .sharp-bag__mark path,
+  html body .swag-only .product-page__cart .sharp-bag__mark path,
+  html body .swag-only .product-page__cart-floating .sharp-bag__mark path {
+    stroke-width: 1.35;
+  }
+}
